@@ -1,4 +1,6 @@
-add_subdirectories(ordercontrol)
-add_subdirectories(common)
-add_subdirectories(movement)
-add_subdirectories(hardware)
+add_subdirectory(ordercontrol)
+add_subdirectory(common)
+add_subdirectory(movement)
+add_subdirectory(hardware)
+add_subdirectory(network)
+

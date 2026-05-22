@@ -5,9 +5,8 @@
 #include <stdio.h>
 #include <pthread.h>
 
-#include "../include/hardware/common/hardware.hpp"
-#include "../include/hardware/common/con_load.hpp"
-
+#include <hardware/hardware.hpp>
+#include <hardware/con_load.hpp>
 
 static int sockfd;
 static pthread_mutex_t sockmtx;
@@ -15,7 +14,7 @@ static pthread_mutex_t sockmtx;
 void elevator_hardware_init() {
     char ip[16] = "localhost";
     char port[8] = "15657";
-    con_load("elevator_hardware.con",
+    con_load("../config/elevator_hardware.con",
         con_val("com_ip",   ip,   "%s")
         con_val("com_port", port, "%s")
     )
