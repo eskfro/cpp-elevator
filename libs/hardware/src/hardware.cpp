@@ -4,16 +4,25 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <string.h>
 
 #include <hardware/hardware.hpp>
 #include <hardware/con_load.hpp>
+#include <common/config.hpp>
+
+namespace elev::hardware {
+
 
 static int sockfd;
 static pthread_mutex_t sockmtx;
 
-void elevator_hardware_init() {
-    char ip[16] = "localhost";
-    char port[8] = "15657";
+void initHardware() {
+    char ip[16]; 
+    char port[8]; 
+
+    strncpy(ip, elev::config::IP_HW, sizeof(ip)-1);
+    strncpy(port, elev::config::PORT_HW, sizeof(port)-1);
+
     con_load("../config/elevator_hardware.con",
         con_val("com_ip",   ip,   "%s")
         con_val("com_port", port, "%s")
@@ -41,20 +50,24 @@ void elevator_hardware_init() {
 }
 
 
+void setMotorDir(elev::common::MotorDir dir) {
 
+    int dirn = static_cast<int>(dir);
 
-void elevator_hardware_set_motor_direction(elevator_hardware_motor_direction_t dirn) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {1, dirn}, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
 
-void elevator_hardware_set_button_lamp(elevator_hardware_button_type_t button, int floor, int value) {
+void setBtnLamp(elev::common::BtnType btn, int floor, int value) {
+
+    int button = static_cast<int>(btn);
+
     assert(floor >= 0);
-    assert(floor < N_FLOORS);
+    assert(floor < elev::config::N_FLOORS);
     assert(button >= 0);
-    assert(button < N_BUTTONS);
+    assert(button < elev::config::N_BUTTONS);
 
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {2, button, floor, value}, 4, 0);
@@ -62,9 +75,9 @@ void elevator_hardware_set_button_lamp(elevator_hardware_button_type_t button, i
 }
 
 
-void elevator_hardware_set_floor_indicator(int floor) {
+void setFloorIndicator(int floor) {
     assert(floor >= 0);
-    assert(floor < N_FLOORS);
+    assert(floor < elev::config::N_FLOORS);
 
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {3, floor}, 4, 0);
@@ -72,23 +85,24 @@ void elevator_hardware_set_floor_indicator(int floor) {
 }
 
 
-void elevator_hardware_set_door_open_lamp(int value) {
+void setDoorOpenLamp(int value) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {4, value}, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
 
-void elevator_hardware_set_stop_lamp(int value) {
+void setStopLamp(int value) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {5, value}, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
 
+int getBtnSignal(elev::common::BtnType btn, int floor) {
 
+    int button = static_cast<int>(btn);
 
-int elevator_hardware_get_button_signal(elevator_hardware_button_type_t button, int floor) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {6, button, floor}, 4, 0);
     char buf[4];
@@ -98,7 +112,7 @@ int elevator_hardware_get_button_signal(elevator_hardware_button_type_t button, 
 }
 
 
-int elevator_hardware_get_floor_sensor_signal(void) {
+int getFloorSensor(void) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {7}, 4, 0);
     char buf[4];
@@ -108,7 +122,7 @@ int elevator_hardware_get_floor_sensor_signal(void) {
 }
 
 
-int elevator_hardware_get_stop_signal(void) {
+int getStopSignal(void) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {8}, 4, 0);
     char buf[4];
@@ -118,11 +132,13 @@ int elevator_hardware_get_stop_signal(void) {
 }
 
 
-int elevator_hardware_get_obstruction_signal(void) {
+int getObs(void) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {9}, 4, 0);
     char buf[4];
     recv(sockfd, buf, 4, 0);
     pthread_mutex_unlock(&sockmtx);
     return buf[1];
+}
+
 }

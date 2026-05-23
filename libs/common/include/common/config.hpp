@@ -1,9 +1,16 @@
 #pragma once
 
+#include <string>
 
-namespace elevator::config {
+namespace elev::config {
 
-#define N_FLOORS 4
-#define N_BUTTONS 3
-    
+    // Hardware config
+    constexpr char IP_HW[] = "localhost";
+    constexpr char PORT_HW[] = "15657";
+
+    // Elevator config
+    constexpr int N_ELEVS = 4;
+    constexpr int N_FLOORS = 4;
+    constexpr int N_BUTTONS = 3;
+
 }

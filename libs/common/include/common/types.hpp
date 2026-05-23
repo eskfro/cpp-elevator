@@ -3,43 +3,56 @@
 #include <cstdint>
 #include <string>
 
-using Floor = std::uint8_t;
+#include <config.hpp>
 
-namespace elevator::common {
+namespace elev::common {
 
-enum class Direction : std::uint8_t {
-    Up,
-    Down,
-    Stop,
-};
-
-enum class ButtonType : std::uint8_t {
-    HallUp,
-    HallDown,
-    Stop,
+enum class MotorDir : std::int8_t {
+    DOWN = -1,
+    STOP = 0,
+    UP = 1,
+    ERR = 2,
 };
 
 enum class Movement : std::uint8_t {
-    Idle, 
-    DoorOpen,
-    Moving,
-    Err,
+    IDLE, 
+    DOOR_OPEN,
+    MOVING,
+    ERR,
+};
+
+struct DirMovPair {
+    MotorDir dir;
+    Movement mov;
+};
+
+
+enum class BtnType : std::uint8_t {
+    HALL_UP = 0,
+    HALL_DOWN = 1,
+    CAB = 2,
+};
+
+
+enum class OrderStatus : std::uint8_t {
+    NONE,
+    REQ,
+    CONF,
+    CLEAR,
 };
 
 // [Input]
 // Requested order from button press
 struct Request {
-    Floor floor{};
-    ButtonType btn{};
+    int floor{};
+    BtnType btn{};
 };
 
 // Confirmed order to be distributed to elevID
 struct Order {
     int elevID;
-    Floor floor{};
-    ButtonType btn{};
+    int floor{};
+    BtnType btn{};
 };
 
-
-
-};
+}
