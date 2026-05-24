@@ -7,8 +7,9 @@
 
 int main() {
 
+    std::cout << "...main..." << std::endl << elev::config::N_BUTTONS;
+    
     elev::hardware::initHardware();
 
-    std::cout << "...main..." << std::endl << elev::config::N_BUTTONS;
 
 };

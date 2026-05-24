@@ -1,5 +1,4 @@
 #include <elevator/elevator.hpp>
-#include <hardware/hardware.hpp>
 
 namespace elev::elevator {
 
@@ -9,7 +8,7 @@ Elevator::Elevator(int _ID, std::string _IP) {
 }
 
 
-void Elevator::setNewDir(elev::common::MotorDir next_dir) {
+void Elevator::setDir(elev::common::MotorDir next_dir) {
     using namespace elev::common;
     using namespace elev::hardware;
     MotorDir newDir;
@@ -25,22 +24,28 @@ void Elevator::setNewDir(elev::common::MotorDir next_dir) {
 };
 
 
-void Elevator::setAllButtonLamps(elev::ordercontrol::OrderTable ot) {
-    using namespace elev::config;
-    using namespace elev::common;
-
-    for (int f = 0; f < N_FLOORS; f++) {
-        for (int b = 0; b < N_BUTTONS; b++) {
-            int value;
-            if (ot.getStatusAt(this->ID, f, b) == OrderStatus::CONF) {
-                value = 1;
-            } else {
-                value = 0;
-            }
-            this->setButtonLamp(f, static_cast<BtnType>(b), value);
-        }
-    }
+void Elevator::setMovement(elev::common::Movement mov) {
+    this->mov = mov;
 }
+
+
+void Elevator::setDoorOpenLamp(int value) {
+    elev::hardware::setDoorOpenLamp(value);
+}
+
+
+void Elevator::openDoor() {
+    this->setDoorOpenLamp(1);
+}
+
+void Elevator::closeDoor() {
+    this->setDoorOpenLamp(0);
+}
+
+
+void Elevator::setStopLamp(int value) {
+    elev::hardware::setStopLamp(value);
+}   
 
 
 void Elevator::setButtonLamp(int floor, elev::common::BtnType btn, int value) {
@@ -48,8 +53,8 @@ void Elevator::setButtonLamp(int floor, elev::common::BtnType btn, int value) {
 }
 
 
-void Elevator::setFloorIndicator(int floor) {
-    elev::hardware::setFloorIndicator(floor);
+void Elevator::setFloorIndicator() {
+    elev::hardware::setFloorIndicator(this->floor);
 }
 
 
@@ -72,6 +77,20 @@ int Elevator::getObs() {
     return elev::hardware::getObs();
 }
 
+
+elev::common::Movement Elevator::getMovement() {
+    return this->mov;
+}
+
+
+int Elevator::getFloor() {
+    return this->floor;
+}
+
+
+elev::common::MotorDir Elevator::getMotorDir() {
+    return this->dir;
+}
 
 
 }

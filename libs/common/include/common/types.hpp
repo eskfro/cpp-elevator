@@ -3,9 +3,11 @@
 #include <cstdint>
 #include <string>
 
-#include <config.hpp>
+#include <common/config.hpp>
 
 namespace elev::common {
+
+#define BETWEEN_FLOORS -1
 
 enum class MotorDir : std::int8_t {
     DOWN = -1,

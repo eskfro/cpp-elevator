@@ -2,11 +2,11 @@
 
 #include <string>
 
+// Libs
 #include <common/config.hpp>
 #include <common/types.hpp>
-
-#include <ordercontrol/ordercontrol.hpp>
-#include <movement/requests.hpp>
+#include <hardware/hardware.hpp>
+#include <control/requests.hpp>
 
 namespace elev::elevator {
 
@@ -18,26 +18,32 @@ class Elevator {
         int floor;
         bool is_obstruction;
 
-        // Local requests
-        elev::movement::RequestTable requests;
-        elev::ordercontrol::OrderTable ot;
-
-
+        // Movement
         elev::common::MotorDir dir;  
         elev::common::Movement mov;
 
     public:
         Elevator(int _ID, std::string _IP);
-        
-        // Set motor
-        void setNewDir(elev::common::MotorDir dir);
 
-        // Set lamp
-        void setFloorIndicator(int floor);
+        void openDoor();
+        void closeDoor();
+        
+        // Set
+        void setDir(elev::common::MotorDir dir);
+        void setMovement(elev::common::Movement mov);
+
+
+        // Set lamps
+        void setFloorIndicator();
         void setStopLamp(int value);
         void setDoorOpenLamp(int value);
         void setButtonLamp(int floor, elev::common::BtnType btn, int value);
-        void setAllButtonLamps(elev::ordercontrol::OrderTable ot);
+
+        // Get
+        elev::common::Movement getMovement();
+        elev::common::MotorDir getMotorDir();
+        int getFloor();
+
 
         // Get signals
         int getBtnSignal(int floor, elev::common::BtnType btn);
