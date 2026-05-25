@@ -4,20 +4,21 @@
 #include <common/config.hpp>
 #include <common/types.hpp>
 
+using namespace elev::common;
+using namespace elev::config;
+
 namespace elev::ordersync {
 
-class OrderTable {
+class OrderMatrix {
     private:
-        elev::common::OrderStatus table[elev::config::N_ELEVS][elev::config::N_FLOORS][elev::config::N_BUTTONS];
+        OrderStatus table[N_ELEVS][N_FLOORS][N_BUTTONS];
 
     public:
-        OrderTable();
+        OrderMatrix();
         void clearTable();
-        void clearAbove(int f);
-        void clearBelow(int f);
 
-        elev::common::OrderStatus getStatusAt(int elevID, int floor, int btn);
-        void setStatusAt(int elevID, int floor, int btn, elev::common::OrderStatus status);
+        OrderStatus getStatusAt(int elevID, int floor, BtnType btn);
+        void setStatusAt(int elevID, int floor, BtnType btn, OrderStatus status);
         
 
 };

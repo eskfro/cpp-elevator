@@ -12,7 +12,6 @@ namespace elev::control {
 
 class Controller {
     private:
-        elev::elevator::Elevator elev;
         RequestTable requests;
 
     public:

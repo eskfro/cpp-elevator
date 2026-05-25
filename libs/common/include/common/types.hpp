@@ -12,6 +12,18 @@ namespace elev::common {
 
 using ButtonFlags = std::array<bool, elev::config::N_BUTTONS>;
 
+
+struct ElevatorState {
+    int ID;
+    int floor;
+    MotorDir dir;
+    Movement mov;
+    bool active;
+    bool obstruction;
+    std::string IP;
+};
+
+
 enum class MotorDir : std::int8_t {
     DOWN = -1,
     STOP = 0,

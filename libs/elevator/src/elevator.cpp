@@ -6,8 +6,25 @@
 namespace elev::elevator {
 
 Elevator::Elevator(int _ID, std::string _IP) {
-    this->ID = _ID;
-    this->IP = _IP;
+    state.ID = _ID;
+    state.IP = _IP;
+    state.active = true;
+}
+
+
+// TODO: idk
+void Elevator::setInactive() {
+    state.active = false;
+};
+
+
+int Elevator::getID() {
+    return state.ID;
+}
+
+
+std::string Elevator::getIP() {
+    return state.IP;
 }
 
 
@@ -15,19 +32,19 @@ void Elevator::setDir(elev::common::MotorDir dir) {
     using namespace elev::common;
     MotorDir newDir;
 
-    if (this->is_obstruction) {
+    if (state.obstruction) {
         newDir = MotorDir::STOP;
     } else {
         newDir = dir;
     }
 
     elev::hardware::setMotorDir(newDir);
-    this->dir = newDir;
+    state.dir = newDir;
 };
 
 
 void Elevator::setMovement(elev::common::Movement mov) {
-    this->mov = mov;
+    state.mov = mov;
 }
 
 
@@ -56,7 +73,7 @@ void Elevator::setButtonLamp(int floor, elev::common::BtnType btn, int value) {
 
 
 void Elevator::setFloorIndicator() {
-    elev::hardware::setFloorIndicator(this->floor);
+    elev::hardware::setFloorIndicator(state.floor);
 }
 
 
@@ -81,17 +98,17 @@ int Elevator::getObs() {
 
 
 elev::common::Movement Elevator::getMovement() {
-    return this->mov;
+    return state.mov;
 }
 
 
 int Elevator::getFloor() {
-    return this->floor;
+    return state.floor;
 }
 
 
 elev::common::MotorDir Elevator::getDir() {
-    return this->dir;
+    return state.dir;
 }
 
 

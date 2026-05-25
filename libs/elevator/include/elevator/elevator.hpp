@@ -10,30 +10,27 @@ namespace elev::elevator {
 
 class Elevator {
     private:
-        int ID;
-        std::string IP; 
-
-        int floor;
-        bool is_obstruction;
-
-        // Movement
-        elev::common::MotorDir dir;  
-        elev::common::Movement mov;
+        elev::common::ElevatorState state;
 
     public:
         Elevator(int _ID, std::string _IP);
 
+        void setInactive();
+
+        // Door
         void openDoor();
         void closeDoor();
-        void setDir(elev::common::MotorDir dir);
         
         // Set
+        void setDir(elev::common::MotorDir dir);
         void setMovement(elev::common::Movement mov);
 
         // Get
         elev::common::Movement getMovement();
         elev::common::MotorDir getDir();
+        std::string getIP();
         int getFloor();
+        int getID();
 
         // Lamps
         void setDoorOpenLamp(int value);
