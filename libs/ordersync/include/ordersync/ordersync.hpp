@@ -1,9 +1,10 @@
 #pragma once
 
+// Libs
 #include <common/config.hpp>
 #include <common/types.hpp>
 
-namespace elev::ordercontrol {
+namespace elev::ordersync {
 
 class OrderTable {
     private:

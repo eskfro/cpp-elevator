@@ -8,7 +8,7 @@ void Controller::onTableUpdate(elev::elevator::Elevator* elev) {
 
     // Extract elev variables
     int floor = elev->getFloor();
-    MotorDir dir = elev->getMotorDir();
+    MotorDir dir = elev->getDir();
 
     switch (elev->getMovement()) {
 
@@ -21,7 +21,7 @@ void Controller::onTableUpdate(elev::elevator::Elevator* elev) {
             // doorTimer.Start()
 
             // Clearing floor
-            std::array<bool, elev::config::N_BUTTONS> b2c;
+            ButtonFlags b2c;
             b2c = clearCurrentFloor(floor, dir);
 
             // TODO:
@@ -70,7 +70,7 @@ void Controller::onTableUpdate(elev::elevator::Elevator* elev) {
 
             //doorTimer.start();
 
-            std::array<bool, elev::config::N_BUTTONS> b2c;
+            ButtonFlags b2c;
             b2c = clearCurrentFloor(floor, dir);
             break;
 
@@ -91,7 +91,7 @@ void Controller::onFloorArrival(elev::elevator::Elevator* elev) {
     using namespace elev::common;
     
     int floor = elev->getFloor();
-    MotorDir dir = elev->getMotorDir();
+    MotorDir dir = elev->getDir();
 
     elev->setFloorIndicator();
 
@@ -99,19 +99,60 @@ void Controller::onFloorArrival(elev::elevator::Elevator* elev) {
     
     case Movement::MOVING:
         if (shouldStop(floor, dir)) {
-
             // Stop and open door
             elev->setDir(MotorDir::STOP);
             elev->openDoor();
 
-            std::array<bool, elev::config::N_BUTTONS> b2c;
+            ButtonFlags b2c;
             b2c = clearCurrentFloor(floor, dir);
 
-
+            // doorTimer.start();
+            elev->setMovement(Movement::DOOR_OPEN);
         }
+        break;
+    default:
+        break;
+    }
+    
+}
+
+
+void Controller::onDoorTimeout(elev::elevator::Elevator* elev) {
+    using namespace elev::common;
+
+    int floor = elev->getFloor();
+    MotorDir dir = elev->getDir();
+    
+    switch(elev->getMovement()) {
+
+    case Movement::DOOR_OPEN:
+        DirMovPair pair;
+        pair = chooseDirection(floor, dir);
+        elev->setDir(pair.dir);
+        elev->setMovement(pair.mov);
+        
+        switch (pair.mov) {
+        
+        case Movement::DOOR_OPEN:
+            //doorTimer.start();
+            
+            ButtonFlags b2c;
+            b2c = clearCurrentFloor(elev->getFloor(), elev->getDir());
+            break;
+
+        case Movement::MOVING:
+        case Movement::IDLE:
+            elev->closeDoor();
+            elev->setDir(elev->getDir());
+            break;
+        }
+        break;
+    
+    default:
+        break;
+
 
     }
-
 
 }
 

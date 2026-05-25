@@ -6,8 +6,9 @@
 #include <elevator/elevator.hpp>
 #include <control/requests.hpp>
 
-namespace elev::control {
+using namespace elev::common;
 
+namespace elev::control {
 
 class Controller {
     private:
@@ -22,10 +23,10 @@ class Controller {
         void onDoorTimeout(elev::elevator::Elevator* elev);
 
         // Decisions
-        std::array<bool, elev::config::N_BUTTONS> clearCurrentFloor(int floor, elev::common::MotorDir dir);
-        bool shouldStop(int floor, elev::common::MotorDir dir);
-        bool shouldClearImmediately(int floor, elev::common::MotorDir dir, int btnFloor, elev::common::BtnType btn);
-        elev::common::DirMovPair chooseDirection(int floor, elev::common::MotorDir dir);
+        ButtonFlags clearCurrentFloor(int floor, MotorDir dir);
+        bool shouldStop(int floor, MotorDir dir);
+        bool shouldClearImmediately(int floor, MotorDir dir, int btnFloor, BtnType btn);
+        DirMovPair chooseDirection(int floor, MotorDir dir);
 
 
 };

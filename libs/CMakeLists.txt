@@ -1,4 +1,4 @@
-add_subdirectory(ordercontrol)
+add_subdirectory(ordersync)
 add_subdirectory(common)
 add_subdirectory(control)
 add_subdirectory(hardware)

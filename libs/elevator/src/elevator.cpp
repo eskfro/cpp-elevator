@@ -1,5 +1,8 @@
 #include <elevator/elevator.hpp>
 
+// Libs
+#include <hardware/hardware.hpp> 
+
 namespace elev::elevator {
 
 Elevator::Elevator(int _ID, std::string _IP) {
@@ -8,18 +11,17 @@ Elevator::Elevator(int _ID, std::string _IP) {
 }
 
 
-void Elevator::setDir(elev::common::MotorDir next_dir) {
+void Elevator::setDir(elev::common::MotorDir dir) {
     using namespace elev::common;
-    using namespace elev::hardware;
     MotorDir newDir;
 
     if (this->is_obstruction) {
         newDir = MotorDir::STOP;
     } else {
-        newDir = next_dir;
+        newDir = dir;
     }
 
-    setMotorDir(newDir);
+    elev::hardware::setMotorDir(newDir);
     this->dir = newDir;
 };
 
@@ -88,7 +90,7 @@ int Elevator::getFloor() {
 }
 
 
-elev::common::MotorDir Elevator::getMotorDir() {
+elev::common::MotorDir Elevator::getDir() {
     return this->dir;
 }
 

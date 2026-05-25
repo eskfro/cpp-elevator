@@ -3,11 +3,14 @@
 #include <cstdint>
 #include <string>
 
+// Libs
 #include <common/config.hpp>
 
 namespace elev::common {
 
 #define BETWEEN_FLOORS -1
+
+using ButtonFlags = std::array<bool, elev::config::N_BUTTONS>;
 
 enum class MotorDir : std::int8_t {
     DOWN = -1,

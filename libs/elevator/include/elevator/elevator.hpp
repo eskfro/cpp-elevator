@@ -5,8 +5,6 @@
 // Libs
 #include <common/config.hpp>
 #include <common/types.hpp>
-#include <hardware/hardware.hpp>
-#include <control/requests.hpp>
 
 namespace elev::elevator {
 
@@ -27,23 +25,21 @@ class Elevator {
 
         void openDoor();
         void closeDoor();
+        void setDir(elev::common::MotorDir dir);
         
         // Set
-        void setDir(elev::common::MotorDir dir);
         void setMovement(elev::common::Movement mov);
-
-
-        // Set lamps
-        void setFloorIndicator();
-        void setStopLamp(int value);
-        void setDoorOpenLamp(int value);
-        void setButtonLamp(int floor, elev::common::BtnType btn, int value);
 
         // Get
         elev::common::Movement getMovement();
-        elev::common::MotorDir getMotorDir();
+        elev::common::MotorDir getDir();
         int getFloor();
 
+        // Lamps
+        void setDoorOpenLamp(int value);
+        void setFloorIndicator();
+        void setStopLamp(int value);
+        void setButtonLamp(int floor, elev::common::BtnType btn, int value);
 
         // Get signals
         int getBtnSignal(int floor, elev::common::BtnType btn);
