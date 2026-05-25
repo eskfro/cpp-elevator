@@ -15,6 +15,7 @@ class OrderMatrix {
 
     public:
         OrderMatrix();
+        ~OrderMatrix();
         void clearTable();
 
         OrderStatus getStatusAt(int elevID, int floor, BtnType btn);

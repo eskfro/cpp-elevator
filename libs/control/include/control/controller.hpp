@@ -15,6 +15,8 @@ class Controller {
         RequestTable requests;
 
     public:
+        Controller();
+        ~Controller();
 
         // Event driven state machine
         void onTableUpdate(elev::elevator::Elevator* elev);
