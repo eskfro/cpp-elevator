@@ -7,29 +7,22 @@
 #include <common/types.hpp>
 #include <ordersync/ordersync.hpp>
 
-using PeerList = std::array<elev::network::Peer, elev::config::N_ELEVS>;
-
 namespace elev::network {
 
 class Peers {
     private:
         int numElevs;
-        PeerList peers;
+        std::array<elev::ordersync::OrderMatrix, elev::config::N_ELEVS> allOrders;
+        std::array<elev::common::ElevatorState, elev::config::N_ELEVS> allElevs;
 
     public:
         Peers();
         int getNumElevs();
+
+        elev::ordersync::OrderMatrix* getOrdersAt(int elevID);
+
         void setNumElevs(int n);
-};
-
-
-class Peer {
-    private:
-        elev::common::ElevatorState state;
-        elev::ordersync::OrderMatrix orders;
-    
-    public:
-        Peer();
+        void setStatusAt(int elevID, int floor, BtnType btn);
 };
 
 }

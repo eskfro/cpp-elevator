@@ -3,7 +3,7 @@
 namespace elev::control {
 
 
-void Controller::onTableUpdate(elev::elevator::Elevator* elev) {
+void Controller::fsm_table_update(elev::elevator::Elevator* elev) {
     using namespace elev::common;
 
     // Extract elev variables
@@ -87,7 +87,7 @@ void Controller::onTableUpdate(elev::elevator::Elevator* elev) {
 }
 
 
-void Controller::onFloorArrival(elev::elevator::Elevator* elev) {
+void Controller::fsm_floor_arrival(elev::elevator::Elevator* elev, int floor) {
     using namespace elev::common;
     
     int floor = elev->getFloor();
@@ -117,7 +117,7 @@ void Controller::onFloorArrival(elev::elevator::Elevator* elev) {
 }
 
 
-void Controller::onDoorTimeout(elev::elevator::Elevator* elev) {
+void Controller::fsm_door_timeout(elev::elevator::Elevator* elev) {
     using namespace elev::common;
 
     int floor = elev->getFloor();
@@ -150,14 +150,8 @@ void Controller::onDoorTimeout(elev::elevator::Elevator* elev) {
     
     default:
         break;
-
-
     }
-
 }
-
-
-
 
 
 elev::common::DirMovPair Controller::chooseDirection(int floor, elev::common::MotorDir dir) {
@@ -213,14 +207,16 @@ bool Controller::shouldClearImmediately(int floor, elev::common::MotorDir dir, i
     );
 }
 
-std::array<bool, elev::config::N_BUTTONS> Controller::clearCurrentFloor(int floor, elev::common::MotorDir dir) {
+
+ButtonFlags Controller::clearCurrentFloor(int floor, elev::common::MotorDir dir) {
     using namespace elev::common;
 
-    // Buttons 2 Clear :)
-    std::array<bool, elev::config::N_BUTTONS> b2c{};
+    // Buttons to clear
+    ButtonFlags b2c{};
 
     // Always clear cab
     requests.setValueAt(floor, BtnType::CAB, false);
+    b2c[(int)BtnType::CAB] = true;
 
     // Clearing hall calls
     switch(dir) {
@@ -231,7 +227,7 @@ std::array<bool, elev::config::N_BUTTONS> Controller::clearCurrentFloor(int floo
             }
             requests.setValueAt(floor, BtnType::HALL_UP, false);
             b2c[(int)BtnType::HALL_UP] = true;
-            break;
+            return b2c;
 
         case MotorDir::DOWN:
             if (!requests.isRequestBelow(floor) && !requests.getValueAt(floor, BtnType::HALL_DOWN)) {
@@ -240,8 +236,7 @@ std::array<bool, elev::config::N_BUTTONS> Controller::clearCurrentFloor(int floo
             }
             requests.setValueAt(floor, BtnType::HALL_DOWN, false);
             b2c[(int)BtnType::HALL_DOWN] = true;
-
-            break;
+            return b2c;
 
         case MotorDir::STOP:
         default:
@@ -249,6 +244,7 @@ std::array<bool, elev::config::N_BUTTONS> Controller::clearCurrentFloor(int floo
             requests.setValueAt(floor, BtnType::HALL_DOWN, false);
             b2c[(int)BtnType::HALL_UP] = true;
             b2c[(int)BtnType::HALL_DOWN] = true;
+            return b2c;
 
     }
 

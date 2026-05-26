@@ -12,16 +12,16 @@ namespace elev::control {
 
 class Controller {
     private:
-        RequestTable requests;
+        RequestTable requests{};
 
     public:
         Controller();
         ~Controller();
 
         // Event driven state machine
-        void onTableUpdate(elev::elevator::Elevator* elev);
-        void onFloorArrival(elev::elevator::Elevator* elev);
-        void onDoorTimeout(elev::elevator::Elevator* elev);
+        void fsm_table_update(elev::elevator::Elevator* elev);
+        void fsm_floor_arrival(elev::elevator::Elevator* elev, int floor);
+        void fsm_door_timeout(elev::elevator::Elevator* elev);
 
         // Decisions
         ButtonFlags clearCurrentFloor(int floor, MotorDir dir);
