@@ -3,6 +3,16 @@
 namespace elev::control {
 
 
+Controller::Controller() {
+    doortimer.stop();
+}
+
+
+DoorTimer Controller::getDoorTimer() {
+    return this->doortimer;
+}
+
+
 bool Controller::is_door_timeout(bool timer_active) {
     if (timer_active && doortimer.isExpired()) return true;
     return false;
@@ -90,8 +100,10 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
                     return b2c;
                 
             }
-            return b2c;        
+            return b2c;
+        return b2c;        
     }
+    return b2c;
 }
 
 

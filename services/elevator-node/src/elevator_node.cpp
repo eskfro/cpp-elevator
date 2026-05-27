@@ -9,11 +9,21 @@ using namespace std::chrono_literals;
 
 namespace elev::node {
 
+
+ElevatorNode::ElevatorNode() : running{true} {};
+
+
+ElevatorNode::ElevatorNode(int _ID, std::string _IP) {
+    running = true;
+    elev.setID(_ID);
+    elev.setIP(_IP);
+}   
+
+
 void ElevatorNode::loop() {
     int thisID = elev.getID();
     int prev_floor = elev.getFloorSensor();
-    bool prev_doorState = false;
-    elev::control::RequestTable prev_requests;
+    elev::control::RequestTable prev_requests{};
     ButtonFlags b2c{};
 
     // begin network bcast thread;
@@ -33,7 +43,6 @@ void ElevatorNode::loop() {
         // [ Event ] - NewFloor
         if (elev.getFloor() != prev_floor) {
             prev_floor = elev.getFloor();
-            elev.setFloorIndicator();
             b2c = controller.fsm_floor_arrival(&elev);
         }
 
@@ -44,8 +53,8 @@ void ElevatorNode::loop() {
         }
 
         // [ Event ] - DoorTimeout
-        if (prev_doorState != elev.getDoorState() && elev.getDoorState() == false) {
-            prev_doorState = elev.getDoorState();
+        if (controller.getDoorTimer().isExpired()) {
+            controller.getDoorTimer().stop();
             b2c = controller.fsm_door_timeout(&elev);
         }
 
@@ -82,4 +91,4 @@ void ElevatorNode::pollBtnSignals() {
 }
 
 
-}
+} // end namespace

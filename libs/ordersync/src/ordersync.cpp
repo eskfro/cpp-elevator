@@ -2,6 +2,10 @@
 
 #include <ordersync/ordersync.hpp>
 
+using namespace elev::common;
+using namespace elev::config;
+
+
 namespace elev::ordersync {
 
 
@@ -15,8 +19,6 @@ void OrderMatrix::setFromButtonFlags(int elevID, int floor, ButtonFlags b2c) {
     
 
 OrderSlice OrderMatrix::getSliceAt(int elevID) {
-    using namespace common;
-
     OrderSlice slice = OrderSlice();
     
     for (int f = 0; f < N_FLOORS; f++) {
@@ -45,9 +47,6 @@ OrderMatrix::OrderMatrix() {
 
 
 void OrderMatrix::clearTable() {
-    using namespace elev::config;
-    using namespace elev::common;
-
     for (int e = 0; e < N_ELEVS; e++) {
         for (int f = 0; f < N_FLOORS; f++) {
             for (int b = 0; b < N_BUTTONS; b++) {
@@ -58,7 +57,7 @@ void OrderMatrix::clearTable() {
 }
 
 
-elev::common::OrderStatus OrderMatrix::getStatusAt(int elevID, int floor, BtnType btn) {
+OrderStatus OrderMatrix::getStatusAt(int elevID, int floor, BtnType btn) {
     return this->table[elevID][floor][(int)btn];
 }
 

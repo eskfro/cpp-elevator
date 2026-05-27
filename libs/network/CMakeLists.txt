@@ -3,3 +3,5 @@ add_library(network
 )
 target_include_directories(network PUBLIC include)
 target_link_directories(network PUBLIC common)
+
+target_link_libraries(network PUBLIC ordersync)

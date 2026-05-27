@@ -19,7 +19,6 @@ class Controller {
 
     public:
         Controller();
-        ~Controller();
 
         void updateRequests(elev::ordersync::OrderSlice slice);
 
@@ -38,6 +37,7 @@ class Controller {
 
         // get
         RequestTable getRequestTable();
+        DoorTimer getDoorTimer();
 
         bool is_table_update(RequestTable prev_requests);
         bool is_door_timeout(bool timer_active);

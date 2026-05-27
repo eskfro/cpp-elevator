@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <memory>
 
-#include <elevator_node.hpp>
+#include <elevator-node/elevator_node.hpp>
 
 // Libs
 #include <common/config.hpp>
@@ -13,7 +13,6 @@
 #include <network/udp_bcast.hpp>
 
 int main() {
-    using namespace elev;
 
     std::cout << "=== MAIN THREAD ===" << std::endl;
 
@@ -21,9 +20,9 @@ int main() {
     int ID = 0;
     std::string IP = "localhost";
     
-    hardware::initHardware();
+    elev::hardware::initHardware();
 
-    node::ElevatorNode node = node::ElevatorNode(ID, IP);
+    elev::node::ElevatorNode node = elev::node::ElevatorNode(ID, IP);
     
     node.loop();
 

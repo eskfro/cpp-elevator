@@ -10,19 +10,8 @@ namespace elev::common {
 
 #define BETWEEN_FLOORS -1
 
+
 using ButtonFlags = std::array<bool, elev::config::N_BUTTONS>;
-
-
-struct ElevatorState {
-    int ID;
-    int floor;
-    MotorDir dir;
-    Movement mov;
-    bool active;
-    bool obstruction;
-    bool door_open;
-    std::string IP;
-};
 
 
 enum class MotorDir : std::int8_t {
@@ -32,12 +21,14 @@ enum class MotorDir : std::int8_t {
     ERR = 2,
 };
 
+
 enum class Movement : std::uint8_t {
     IDLE, 
     DOOR_OPEN,
     MOVING,
     ERR,
 };
+
 
 struct DirMovPair {
     MotorDir dir;
@@ -59,18 +50,18 @@ enum class OrderStatus : std::uint8_t {
     CLEAR,
 };
 
-// [Input]
-// Requested order from button press
-struct Request {
-    int floor{};
-    BtnType btn{};
+
+struct ElevatorState {
+    int ID;
+    int floor;
+    MotorDir dir;
+    Movement mov;
+    bool active;
+    bool obstruction;
+    bool door_open;
+    std::string IP;
 };
 
-// Confirmed order to be distributed to elevID
-struct Order {
-    int elevID;
-    int floor{};
-    BtnType btn{};
-};
+
 
 }

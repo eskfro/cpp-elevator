@@ -4,10 +4,24 @@
 #include <common/config.hpp>
 #include <common/types.hpp>
 
+
 using namespace elev::common;
 using namespace elev::config;
 
 namespace elev::ordersync {
+
+
+class OrderSlice {
+    private:
+        OrderStatus table[N_FLOORS][N_BUTTONS];
+    
+    public:
+        OrderSlice() = default;
+        
+        OrderStatus getValueAt(int floor, BtnType btn);
+        void setValueAt(int floor, BtnType btn, OrderStatus status);
+};
+
 
 class OrderMatrix {
     private:
@@ -15,7 +29,6 @@ class OrderMatrix {
 
     public:
         OrderMatrix();
-        ~OrderMatrix();
 
         void clearTable();
 
@@ -24,26 +37,8 @@ class OrderMatrix {
 
         OrderSlice getSliceAt(int elevID);
 
-        void setFromButtonFlags(int elevID, int floor, ButtonFlags b2c);
-
-
-        
+        void setFromButtonFlags(int elevID, int floor, ButtonFlags b2c);  
 };
 
 
-class OrderSlice {
-    private:
-        OrderStatus table[N_FLOORS][N_BUTTONS];
-    
-    public:
-        OrderSlice();
-        
-        OrderStatus getValueAt(int floor, BtnType btn);
-        void setValueAt(int floor, BtnType btn, OrderStatus status);
-
-
-
-};
-    
-
-}
+} //end namespace

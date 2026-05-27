@@ -13,6 +13,7 @@ class Elevator {
         elev::common::ElevatorState state;
 
     public:
+        Elevator();
         Elevator(int _ID, std::string _IP);
 
         void setInactive();
@@ -22,10 +23,12 @@ class Elevator {
         void closeDoor();
         
         // Set
+        void setID(int _ID);
+        void setIP(std::string _IP);
         void setFloor(int floor);
         void setDir(elev::common::MotorDir dir);
         void setMovement(elev::common::Movement mov);
-
+        void setObs(bool value);
         void setDoorState(bool state);
         bool getDoorState();
 

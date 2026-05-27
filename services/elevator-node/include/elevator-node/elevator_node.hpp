@@ -22,8 +22,8 @@ class ElevatorNode {
         elev::network::Peers peers;
     
     public:
+        ElevatorNode();
         ElevatorNode(int _ID, std::string _IP);
-        ~ElevatorNode();
 
         void loop();
 

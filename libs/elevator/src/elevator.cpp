@@ -6,6 +6,26 @@
 namespace elev::elevator {
 
 
+Elevator::Elevator() {
+    state.active = true;
+}
+
+
+void Elevator::setIP(std::string _IP) {
+    state.IP = _IP;
+}
+
+
+void Elevator::setID(int _ID) {
+    state.ID = _ID;
+}
+
+
+void Elevator::setObs(bool value) {
+    this->state.obstruction = value;
+}
+
+
 bool Elevator::getDoorState() {
     return this->state.door_open;
 }
