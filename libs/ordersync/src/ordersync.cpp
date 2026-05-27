@@ -3,6 +3,30 @@
 
 namespace elev::ordersync {
     
+// TODO: make this the = overload function
+OrderSlice OrderMatrix::getSliceAt(int elevID) {
+    using namespace common;
+
+    OrderSlice slice;
+    for (int f = 0; f < N_FLOORS; f++) {
+        for (int b = 0; b < N_BUTTONS; b++) {
+            OrderStatus thisStatus = getStatusAt(elevID, f, (BtnType)b);
+            slice.setValueAt(f, (BtnType)b, thisStatus);
+        }
+    }
+    return slice;
+}
+
+
+OrderStatus OrderSlice::getValueAt(int floor, BtnType btn) {
+    return table[floor][(int)btn];
+}
+
+
+void OrderSlice::setValueAt(int floor, BtnType btn, OrderStatus status) {
+    table[floor][(int)btn] = status;
+}
+
     
 OrderMatrix::OrderMatrix() {
     clearTable();

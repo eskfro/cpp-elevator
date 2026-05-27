@@ -15,7 +15,7 @@
 int main() {
     using namespace elev;
 
-    std::cout << "=== MAIN ===" << std::endl;
+    std::cout << "=== MAIN THREAD ===" << std::endl;
 
     // TODO: parse this from cmd line
     int ID = 0;

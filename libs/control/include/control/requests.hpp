@@ -20,6 +20,10 @@ class RequestTable {
         bool isRequestBelow(int floor);
         bool isRequestHere(int floor);
 
+        RequestTable copy(RequestTable rhs);
+
+        bool areEqual(RequestTable rhs);
+
 };
 
 }

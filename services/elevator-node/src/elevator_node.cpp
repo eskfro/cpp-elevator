@@ -13,6 +13,7 @@ void ElevatorNode::loop() {
 
     int thisID = elev.getID();
     int prev_floor = elev.getFloorSensor();
+    elev::control::RequestTable prev_requests;
 
     // begin network bcast thread;
     // begin network reciever thread that writes to peers;
@@ -34,17 +35,27 @@ void ElevatorNode::loop() {
         // - New networkpacket
 
 
+        // [ Event ] - NewFloor
         int floor = elev.getFloorSensor();
         if (floor != prev_floor) {
             controller.fsm_floor_arrival(&elev, floor);
             prev_floor = floor;
         }
 
-        pollBtnSignals(peers.getOrdersAt(thisID));
+        // Button press
+        pollBtnSignals();
+    
+        // Update controllers data
+        setRequestTable();
 
-          
+        // [ Event ] - TableUpdate
+        if (controller.is_table_update(prev_requests)) {
+            controller.fsm_table_update(&elev);
+            prev_requests.copy(controller.getRequestTable());
+        }
 
 
+        
 
         
 
@@ -60,30 +71,28 @@ void ElevatorNode::loop() {
 };
 
 // Sets the controller request-table according to the synced OrderMatrix orders
-void ElevatorNode::setRequestTable(elev::control::RequestTable* requests, elev::ordersync::OrderMatrix* orders) {
-    // TODO: mutex
-    using namespace elev::common;
+void ElevatorNode::setRequestTable() {
     int thisID = this->elev.getID();
-    for (int f = 0; f < N_FLOORS; f++) {
-        for (int b = 0; b < N_BUTTONS; b++) {
-            if (orders->getStatusAt(thisID, f, (BtnType)b) == OrderStatus::CONF) {
-                requests->setValueAt(f, (BtnType)b, 1);
-            }
-        }
-    }
+
+    elev::ordersync::OrderSlice localSlice = peers.getSliceFor(thisID);
+
+    controller.setFromOrderSlice(localSlice);
+
+    
 }
 
 // Polls BtnSignals and set status at OrderMatrix orders
-void ElevatorNode::pollBtnSignals(elev::ordersync::OrderMatrix* orders) {
+void ElevatorNode::pollBtnSignals() {
     using namespace elev::common;
-    // TODO: mutex
     int thisID = this->elev.getID();
 
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
             if (elev.getBtnSignal(f, (BtnType)b)) {
-                orders->setStatusAt(thisID, f, (BtnType)b, OrderStatus::CONF); 
-                // TODO: Set to REQ when distr logic is in place
+    
+                // TODO: set to requested when distr logic is inplace
+                peers.registerBtnPress(thisID, f, (BtnType)b, OrderStatus::CONFIRMED);
+
             }
         }
     }

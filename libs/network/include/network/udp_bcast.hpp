@@ -17,12 +17,14 @@ class Peers {
 
     public:
         Peers();
+        
+        elev::ordersync::OrderSlice getSliceFor(int elevID);
+        
+        void registerBtnPress(int elevID, int floor, BtnType btn, OrderStatus status);
+        
         int getNumElevs();
-
-        elev::ordersync::OrderMatrix* getOrdersAt(int elevID);
-
         void setNumElevs(int n);
-        void setStatusAt(int elevID, int floor, BtnType btn);
+
 };
 
 }

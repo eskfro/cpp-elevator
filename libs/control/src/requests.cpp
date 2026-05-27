@@ -2,6 +2,36 @@
 
 namespace elev::control {
 
+
+bool RequestTable::areEqual(RequestTable rhs) {
+    using namespace elev::config;
+    using namespace elev::common;
+   
+    for (int f = 0; f < N_FLOORS; f++) {
+        for (int b = 0; b < N_BUTTONS; b++) {
+            if (table[f][b] != rhs.getValueAt(f, (BtnType)b)) {
+                return false;
+            }
+        }
+    }
+    return true;
+
+}
+
+
+RequestTable RequestTable::copy(RequestTable rhs) {
+    using namespace elev::config;
+    using namespace elev::common;
+    RequestTable res{};
+    for (int f = 0; f < N_FLOORS; f++) {
+        for (int b = 0; b < N_BUTTONS; b++) {
+            res.setValueAt(f, (BtnType)b, rhs.getValueAt(f, (BtnType)b));  
+        }
+    }
+
+}
+
+
 RequestTable::RequestTable() {
     using namespace elev::config;
     for (int f = 0; f < N_FLOORS; f++) {

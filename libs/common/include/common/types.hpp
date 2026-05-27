@@ -53,8 +53,8 @@ enum class BtnType : std::uint8_t {
 
 enum class OrderStatus : std::uint8_t {
     NONE,
-    REQ,
-    CONF,
+    REQUESTED,
+    CONFIRMED,
     CLEAR,
 };
 

@@ -3,10 +3,27 @@
 namespace elev::network {
 
 
-elev::ordersync::OrderMatrix* Peers::getOrdersAt(int elevID) {
-     return &allOrders[elevID];
-};
+void Peers::setNumElevs(int n) {
+     numElevs = n;
+}
 
+
+int Peers::getNumElevs() {
+     return numElevs;
+}
+
+
+elev::ordersync::OrderSlice Peers::getSliceFor(int elevID) {
+
+     elev::ordersync::OrderMatrix localOrders = allOrders.at(elevID);
+
+     return localOrders.getSliceAt(elevID);
+}
+
+
+void Peers::registerBtnPress(int elevID, int floor, BtnType btn, OrderStatus status) {
+     allOrders.at(elevID).setStatusAt(elevID, floor, btn, status);
+}
 
 
 

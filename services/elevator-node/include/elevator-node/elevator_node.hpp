@@ -11,7 +11,7 @@ namespace elev::node {
 class ElevatorNode {
     private:
         bool running = true;
-
+        
         // hardware abstraction
         elev::elevator::Elevator elev;
 
@@ -28,12 +28,12 @@ class ElevatorNode {
         void loop();
 
         // Polling shi
-        void pollBtnSignals(elev::ordersync::OrderMatrix* orders);
+        void pollBtnSignals();
         void pollStopSignal();
         int pollFloorSensor();
         void pollObs();
 
-        void setRequestTable(elev::control::RequestTable* requests, elev::ordersync::OrderMatrix* orders);
+        void setRequestTable();
         
 };
 

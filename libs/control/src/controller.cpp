@@ -3,6 +3,33 @@
 namespace elev::control {
 
 
+bool Controller::is_table_update(RequestTable prev_requests) {
+    using namespace elev::common;
+    if (requests.areEqual(prev_requests)) return true;
+    else return false;
+}
+
+
+RequestTable Controller::getRequestTable() {
+    return this->requests;
+}
+
+
+void Controller::setFromOrderSlice(elev::ordersync::OrderSlice slice) {
+    using namespace elev::common;
+    for (int f = 0; f < N_FLOORS; f++) {
+        for (int b = 0; b < N_BUTTONS; b++) {
+            
+            if (slice.getValueAt(f, (BtnType)b) == OrderStatus::CONFIRMED) {
+                requests.setValueAt(f, (BtnType)b, true);
+            } else {
+                requests.setValueAt(f, (BtnType)b, false);
+            }
+        }
+    }
+}
+
+
 void Controller::fsm_table_update(elev::elevator::Elevator* elev) {
     using namespace elev::common;
 

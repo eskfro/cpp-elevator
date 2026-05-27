@@ -5,6 +5,7 @@
 // Libs
 #include <elevator/elevator.hpp>
 #include <control/requests.hpp>
+#include <ordersync/ordersync.hpp>
 
 using namespace elev::common;
 
@@ -18,16 +19,26 @@ class Controller {
         Controller();
         ~Controller();
 
+        void setFromOrderSlice(elev::ordersync::OrderSlice slice);
+
         // Event driven state machine
         void fsm_table_update(elev::elevator::Elevator* elev);
         void fsm_floor_arrival(elev::elevator::Elevator* elev, int floor);
         void fsm_door_timeout(elev::elevator::Elevator* elev);
 
-        // Decisions
+        // Change values on table 
         ButtonFlags clearCurrentFloor(int floor, MotorDir dir);
+
+        // Decisions
         bool shouldStop(int floor, MotorDir dir);
         bool shouldClearImmediately(int floor, MotorDir dir, int btnFloor, BtnType btn);
         DirMovPair chooseDirection(int floor, MotorDir dir);
+
+        // get
+        RequestTable getRequestTable();
+
+        // checks
+        bool is_table_update(RequestTable prev_requests);
 
 
 };
