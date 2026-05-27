@@ -16,11 +16,17 @@ class OrderMatrix {
     public:
         OrderMatrix();
         ~OrderMatrix();
+
         void clearTable();
 
         OrderStatus getStatusAt(int elevID, int floor, BtnType btn);
-        OrderSlice getSliceAt(int elevID);
         void setStatusAt(int elevID, int floor, BtnType btn, OrderStatus status);
+
+        OrderSlice getSliceAt(int elevID);
+
+        void setFromButtonFlags(int elevID, int floor, ButtonFlags b2c);
+
+
         
 };
 

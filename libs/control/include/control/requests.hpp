@@ -20,9 +20,9 @@ class RequestTable {
         bool isRequestBelow(int floor);
         bool isRequestHere(int floor);
 
+        // Operator overloading lol
         RequestTable copy(RequestTable rhs);
-
-        bool areEqual(RequestTable rhs);
+        bool equal(RequestTable rhs);
 
 };
 

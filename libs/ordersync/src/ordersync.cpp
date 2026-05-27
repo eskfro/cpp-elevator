@@ -1,13 +1,24 @@
-#include <common/types.hpp>
+#include <array>
+
 #include <ordersync/ordersync.hpp>
 
 namespace elev::ordersync {
+
+
+void OrderMatrix::setFromButtonFlags(int elevID, int floor, ButtonFlags b2c) {
+    for (int b = 0; b < N_BUTTONS; b++) {
+        if (b2c[b]) {
+            table[elevID][floor][b] = OrderStatus::NONE; // TODO: distr logic
+        }
+    }   
+}
     
-// TODO: make this the = overload function
+
 OrderSlice OrderMatrix::getSliceAt(int elevID) {
     using namespace common;
 
-    OrderSlice slice;
+    OrderSlice slice = OrderSlice();
+    
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
             OrderStatus thisStatus = getStatusAt(elevID, f, (BtnType)b);

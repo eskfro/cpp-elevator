@@ -21,6 +21,8 @@ class Peers {
         elev::ordersync::OrderSlice getSliceFor(int elevID);
         
         void registerBtnPress(int elevID, int floor, BtnType btn, OrderStatus status);
+
+        void setClearOrders(int elevID, int floor, ButtonFlags b2c);
         
         int getNumElevs();
         void setNumElevs(int n);

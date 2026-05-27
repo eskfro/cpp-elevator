@@ -5,6 +5,22 @@
 
 namespace elev::elevator {
 
+
+bool Elevator::getDoorState() {
+    return this->state.door_open;
+}
+
+
+void Elevator::setDoorState(bool state) {
+    this->state.door_open = state;
+}
+
+
+void Elevator::setFloor(int floor) {
+    state.floor = floor;
+}
+
+
 Elevator::Elevator(int _ID, std::string _IP) {
     state.ID = _ID;
     state.IP = _IP;
@@ -55,10 +71,12 @@ void Elevator::setDoorOpenLamp(int value) {
 
 void Elevator::openDoor() {
     this->setDoorOpenLamp(1);
+    this->state.door_open = true;
 }
 
 void Elevator::closeDoor() {
     this->setDoorOpenLamp(0);
+    this->state.door_open = false;
 }
 
 

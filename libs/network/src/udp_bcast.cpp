@@ -3,6 +3,11 @@
 namespace elev::network {
 
 
+void Peers::setClearOrders(int elevID, int floor, ButtonFlags b2c) {
+     allOrders.at(elevID).setFromButtonFlags(elevID, floor, b2c);
+}
+
+
 void Peers::setNumElevs(int n) {
      numElevs = n;
 }

@@ -10,60 +10,47 @@ using namespace std::chrono_literals;
 namespace elev::node {
 
 void ElevatorNode::loop() {
-
     int thisID = elev.getID();
     int prev_floor = elev.getFloorSensor();
+    bool prev_doorState = false;
     elev::control::RequestTable prev_requests;
+    ButtonFlags b2c{};
 
     // begin network bcast thread;
     // begin network reciever thread that writes to peers;
     // begin ordersync thread
 
     while (running) {
-
-        // IN:
-        // - Button press
         
-        // OUT
-        // - (Open / Close) door
-        // - Set motordir
-
-        // EVENTS:
-        // - New floor
-        // - Door timer
-        // - Button Press
-        // - New networkpacket
-
-
-        // [ Event ] - NewFloor
-        int floor = elev.getFloorSensor();
-        if (floor != prev_floor) {
-            controller.fsm_floor_arrival(&elev, floor);
-            prev_floor = floor;
-        }
-
         // Button press
         pollBtnSignals();
     
         // Update controllers data
         setRequestTable();
 
-        // [ Event ] - TableUpdate
-        if (controller.is_table_update(prev_requests)) {
-            controller.fsm_table_update(&elev);
-            prev_requests.copy(controller.getRequestTable());
+        elev.setFloor(elev.getFloorSensor());
+
+        // [ Event ] - NewFloor
+        if (elev.getFloor() != prev_floor) {
+            prev_floor = elev.getFloor();
+            elev.setFloorIndicator();
+            b2c = controller.fsm_floor_arrival(&elev);
         }
 
+        // [ Event ] - TableUpdate
+        if (controller.is_table_update(prev_requests)) {
+            prev_requests.copy(controller.getRequestTable());
+            b2c = controller.fsm_table_update(&elev);
+        }
 
-        
+        // [ Event ] - DoorTimeout
+        if (prev_doorState != elev.getDoorState() && elev.getDoorState() == false) {
+            prev_doorState = elev.getDoorState();
+            b2c = controller.fsm_door_timeout(&elev);
+        }
 
-        
+        peers.setClearOrders(thisID, elev.getFloor(), b2c);
 
-        
-
-
-
-        
         std::this_thread::sleep_for(20ms);
     }
 
@@ -73,12 +60,8 @@ void ElevatorNode::loop() {
 // Sets the controller request-table according to the synced OrderMatrix orders
 void ElevatorNode::setRequestTable() {
     int thisID = this->elev.getID();
-
     elev::ordersync::OrderSlice localSlice = peers.getSliceFor(thisID);
-
-    controller.setFromOrderSlice(localSlice);
-
-    
+    controller.updateRequests(localSlice);
 }
 
 // Polls BtnSignals and set status at OrderMatrix orders

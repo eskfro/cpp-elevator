@@ -20,6 +20,7 @@ struct ElevatorState {
     Movement mov;
     bool active;
     bool obstruction;
+    bool door_open;
     std::string IP;
 };
 

@@ -14,4 +14,6 @@ namespace elev::config {
     constexpr int N_FLOORS = 4;
     constexpr int N_BUTTONS = 3;
 
+    constexpr int DOOR_OPEN_TIME_MS = 3000;
+
 }

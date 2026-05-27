@@ -22,8 +22,12 @@ class Elevator {
         void closeDoor();
         
         // Set
+        void setFloor(int floor);
         void setDir(elev::common::MotorDir dir);
         void setMovement(elev::common::Movement mov);
+
+        void setDoorState(bool state);
+        bool getDoorState();
 
         // Get
         elev::common::Movement getMovement();
