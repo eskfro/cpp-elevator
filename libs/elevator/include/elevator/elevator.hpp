@@ -16,6 +16,8 @@ class Elevator {
         Elevator();
         Elevator(int _ID, std::string _IP);
 
+        void initToFloor();
+
         void setInactive();
 
         // Door
@@ -43,7 +45,7 @@ class Elevator {
         void setDoorOpenLamp(int value);
         void setFloorIndicator();
         void setStopLamp(int value);
-        void setButtonLamp(int floor, elev::common::BtnType btn, int value);
+        void setBtnLamp(int floor, elev::common::BtnType btn, int value);
 
         // Get signals
         int getBtnSignal(int floor, elev::common::BtnType btn);

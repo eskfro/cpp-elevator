@@ -22,9 +22,7 @@ int Peers::getNumElevs() {
 
 
 elev::ordersync::OrderSlice Peers::getSliceFor(int elevID) {
-
      elev::ordersync::OrderMatrix localOrders = allOrders.at(elevID);
-
      return localOrders.getSliceAt(elevID);
 }
 

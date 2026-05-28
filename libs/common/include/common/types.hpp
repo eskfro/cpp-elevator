@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <iostream>
 
 // Libs
 #include <common/config.hpp>
@@ -63,5 +64,28 @@ struct ElevatorState {
 };
 
 
-
+inline std::string btnTypeToStr(BtnType btn) {
+    switch (btn) {
+        case BtnType::HALL_UP:   return "HALL_UP";
+        case BtnType::HALL_DOWN: return "HALL_DOWN";
+        case BtnType::CAB:       return "CAB";
+        default:                 return "UNKNOWN_BTN";
+    }
 }
+
+
+inline void print(std::string s) {
+    std::cout << s << std::endl;
+}
+
+inline void printFloorArrival(int elevID, int floor) {
+    std::cout << "[ Elevator "<< elevID << " ] - arrived at floor " << floor << std::endl; 
+}
+
+inline void printBtnPress(int elevID, int floor, BtnType btn) {
+    std::cout << "[ Elevator " << elevID << " ] - buttonpress " << btnTypeToStr(btn) << \
+    " at floor " << floor << std::endl;
+}
+
+
+}// end namespace

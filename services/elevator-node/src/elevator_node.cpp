@@ -1,6 +1,7 @@
 #include <memory>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 
 // Service
 #include <elevator-node/elevator_node.hpp>
@@ -24,50 +25,48 @@ void ElevatorNode::loop() {
     int thisID = elev.getID();
     int prev_floor = elev.getFloorSensor();
     elev::control::RequestTable prev_requests{};
-    ButtonFlags b2c{};
 
     // begin network bcast thread;
     // begin network reciever thread that writes to peers;
     // begin ordersync thread
 
+    elev.initToFloor();
+
     while (running) {
+        int cf = elev.getFloorSensor(); // raw floor sensor
         
         // Button press
         pollBtnSignals();
-    
-        // Update controllers data
-        setRequestTable();
-
-        elev.setFloor(elev.getFloorSensor());
+        syncRequests();
+        setBtnLamps();
 
         // [ Event ] - NewFloor
-        if (elev.getFloor() != prev_floor) {
+        if (cf != prev_floor && cf != BETWEEN_FLOORS) {
+            elev.setFloor(cf);
             prev_floor = elev.getFloor();
-            b2c = controller.fsm_floor_arrival(&elev);
+            peers.setClearOrders(thisID, elev.getFloor(), controller.fsm_floor_arrival(&elev));
         }
 
         // [ Event ] - TableUpdate
-        if (controller.is_table_update(prev_requests)) {
-            prev_requests.copy(controller.getRequestTable());
-            b2c = controller.fsm_table_update(&elev);
+        bool req_changed = !controller.getRequests().is_equal(prev_requests);
+        if (req_changed) {
+            peers.setClearOrders(thisID, elev.getFloor(), controller.fsm_table_update(&elev));
+            syncRequests();
+            prev_requests.set_equal(controller.getRequests());
         }
 
         // [ Event ] - DoorTimeout
-        if (controller.getDoorTimer().isExpired()) {
-            controller.getDoorTimer().stop();
-            b2c = controller.fsm_door_timeout(&elev);
+        if (controller.getDoorTimer()->isExpired()) {
+            controller.getDoorTimer()->stop();
+            peers.setClearOrders(thisID, elev.getFloor(), controller.fsm_door_timeout(&elev));
         }
-
-        peers.setClearOrders(thisID, elev.getFloor(), b2c);
 
         std::this_thread::sleep_for(20ms);
     }
-
-
 };
 
 // Sets the controller request-table according to the synced OrderMatrix orders
-void ElevatorNode::setRequestTable() {
+void ElevatorNode::syncRequests() {
     int thisID = this->elev.getID();
     elev::ordersync::OrderSlice localSlice = peers.getSliceFor(thisID);
     controller.updateRequests(localSlice);
@@ -82,9 +81,26 @@ void ElevatorNode::pollBtnSignals() {
         for (int b = 0; b < N_BUTTONS; b++) {
             if (elev.getBtnSignal(f, (BtnType)b)) {
     
+                printBtnPress(thisID, f, (BtnType)b);
+
                 // TODO: set to requested when distr logic is inplace
                 peers.registerBtnPress(thisID, f, (BtnType)b, OrderStatus::CONFIRMED);
+                
 
+            }
+        }
+    }
+}
+
+
+void ElevatorNode::setBtnLamps() {
+    using namespace elev::common;
+    for (int f = 0; f < N_FLOORS; f++) {
+        for (int b = 0; b < N_BUTTONS; b++) {
+            if (controller.getRequests().getValueAt(f, (BtnType)b)) {
+                elev.setBtnLamp(f, (BtnType)b, true);
+            } else {
+                elev.setBtnLamp(f, (BtnType)b, false);
             }
         }
     }

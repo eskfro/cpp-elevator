@@ -3,7 +3,7 @@
 namespace elev::control {
 
 
-bool RequestTable::equal(RequestTable rhs) {
+bool RequestTable::is_equal(RequestTable rhs) {
     using namespace elev::config;
     using namespace elev::common;
    
@@ -19,7 +19,7 @@ bool RequestTable::equal(RequestTable rhs) {
 }
 
 
-RequestTable RequestTable::copy(RequestTable rhs) {
+RequestTable RequestTable::set_equal(RequestTable rhs) {
     using namespace elev::config;
     using namespace elev::common;
     RequestTable res{};

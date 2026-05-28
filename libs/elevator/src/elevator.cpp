@@ -1,13 +1,31 @@
+#include <thread>
+#include <chrono> 
+
 #include <elevator/elevator.hpp>
 
 // Libs
-#include <hardware/hardware.hpp> 
+#include <hardware/hardware.hpp>
 
 namespace elev::elevator {
 
 
 Elevator::Elevator() {
     state.active = true;
+}
+
+
+void Elevator::initToFloor() {
+    setDir(elev::common::MotorDir::DOWN);
+
+    while (getFloorSensor() == BETWEEN_FLOORS) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+
+    setDir(elev::common::MotorDir::STOP);
+    setFloor(getFloorSensor());
+    setFloorIndicator();
+
+    std::cout << "[ Elevator " << state.ID << " ] - INIT to floor " << state.floor << std::endl;
 }
 
 
@@ -94,6 +112,7 @@ void Elevator::openDoor() {
     this->state.door_open = true;
 }
 
+
 void Elevator::closeDoor() {
     this->setDoorOpenLamp(0);
     this->state.door_open = false;
@@ -105,12 +124,13 @@ void Elevator::setStopLamp(int value) {
 }   
 
 
-void Elevator::setButtonLamp(int floor, elev::common::BtnType btn, int value) {
+void Elevator::setBtnLamp(int floor, elev::common::BtnType btn, int value) {
     elev::hardware::setBtnLamp(btn, floor, value);
 }
 
 
 void Elevator::setFloorIndicator() {
+    if (state.floor == BETWEEN_FLOORS) return;
     elev::hardware::setFloorIndicator(state.floor);
 }
 

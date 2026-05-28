@@ -21,8 +21,8 @@ class RequestTable {
         bool isRequestHere(int floor);
 
         // Operator overloading lol
-        RequestTable copy(RequestTable rhs);
-        bool equal(RequestTable rhs);
+        RequestTable set_equal(RequestTable rhs);
+        bool is_equal(RequestTable rhs);
 
 };
 

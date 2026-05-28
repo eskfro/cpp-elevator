@@ -14,7 +14,7 @@ namespace elev::control {
 
 class Controller {
     private:
-        RequestTable requests{};
+        RequestTable requests;
         DoorTimer doortimer;
 
     public:
@@ -36,12 +36,8 @@ class Controller {
         DirMovPair chooseDirection(int floor, MotorDir dir);
 
         // get
-        RequestTable getRequestTable();
-        DoorTimer getDoorTimer();
-
-        bool is_table_update(RequestTable prev_requests);
-        bool is_door_timeout(bool timer_active);
-
+        RequestTable getRequests();
+        DoorTimer* getDoorTimer();
 
 };
 

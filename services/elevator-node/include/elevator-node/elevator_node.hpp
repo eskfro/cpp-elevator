@@ -33,7 +33,8 @@ class ElevatorNode {
         int pollFloorSensor();
         void pollObs();
 
-        void setRequestTable();
+        void syncRequests();
+        void setBtnLamps();
         
 };
 

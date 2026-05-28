@@ -8,25 +8,14 @@ Controller::Controller() {
 }
 
 
-DoorTimer Controller::getDoorTimer() {
-    return this->doortimer;
+DoorTimer* Controller::getDoorTimer() {
+    return &doortimer;
 }
 
 
-bool Controller::is_door_timeout(bool timer_active) {
-    if (timer_active && doortimer.isExpired()) return true;
-    return false;
-
-}
 
 
-bool Controller::is_table_update(RequestTable prev_requests) {
-    if (requests.equal(prev_requests)) return true;
-    else return false;
-}
-
-
-RequestTable Controller::getRequestTable() {
+RequestTable Controller::getRequests() {
     return this->requests;
 }
 
@@ -47,6 +36,8 @@ void Controller::updateRequests(elev::ordersync::OrderSlice slice) {
 
 
 ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
+    std::cout << "[ Elevator "<< elev->getID() << " ] - Table Update" << std::endl;
+
     using namespace elev::common;
 
     ButtonFlags b2c{};
@@ -56,8 +47,8 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
     switch (elev->getMovement()) {
         case Movement::DOOR_OPEN:
             if (shouldStop(floor, dir)) {
-                elev->setMovement(Movement::DOOR_OPEN);
-                doortimer.start(DOOR_OPEN_TIME_MS);
+                //elev->setMovement(Movement::DOOR_OPEN);
+                //doortimer.start(DOOR_OPEN_TIME_MS);
                 b2c = clearCurrentFloor(floor, dir);
                 return b2c;
 
@@ -108,6 +99,8 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
 
 
 ButtonFlags Controller::fsm_floor_arrival(elev::elevator::Elevator* elev) {
+     std::cout << "[ Elevator "<< elev->getID() << " ] - arrived at floor " << elev->getFloor() << std::endl; 
+
     using namespace elev::common;
     
     ButtonFlags b2c{};
@@ -230,33 +223,26 @@ ButtonFlags Controller::clearCurrentFloor(int floor, elev::common::MotorDir dir)
     ButtonFlags b2c{};
 
     // Always clear cab
-    requests.setValueAt(floor, BtnType::CAB, false);
     b2c[(int)BtnType::CAB] = true;
 
     // Clearing hall calls
     switch(dir) {
         case MotorDir::UP:
             if (!requests.isRequestAbove(floor) && !requests.getValueAt(floor, BtnType::HALL_UP)) {
-                requests.setValueAt(floor, BtnType::HALL_DOWN, false);
                 b2c[(int)BtnType::HALL_DOWN] = true;
             }
-            requests.setValueAt(floor, BtnType::HALL_UP, false);
             b2c[(int)BtnType::HALL_UP] = true;
             return b2c;
 
         case MotorDir::DOWN:
             if (!requests.isRequestBelow(floor) && !requests.getValueAt(floor, BtnType::HALL_DOWN)) {
-                requests.setValueAt(floor, BtnType::HALL_UP, false);
                 b2c[(int)BtnType::HALL_UP] = true;
             }
-            requests.setValueAt(floor, BtnType::HALL_DOWN, false);
             b2c[(int)BtnType::HALL_DOWN] = true;
             return b2c;
 
         case MotorDir::STOP:
         default:
-            requests.setValueAt(floor, BtnType::HALL_UP, false);
-            requests.setValueAt(floor, BtnType::HALL_DOWN, false);
             b2c[(int)BtnType::HALL_UP] = true;
             b2c[(int)BtnType::HALL_DOWN] = true;
             return b2c;
