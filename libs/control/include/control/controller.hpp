@@ -16,11 +16,14 @@ class Controller {
     private:
         RequestTable requests;
         DoorTimer doortimer;
+        Inertia inertia;
 
     public:
         Controller();
 
         void updateRequests(elev::ordersync::OrderSlice slice);
+
+        void setInertia(MotorDir dir);
 
         // Event driven FSM
         ButtonFlags fsm_table_update(elev::elevator::Elevator* elev);

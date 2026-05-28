@@ -11,8 +11,14 @@ namespace elev::common {
 
 #define BETWEEN_FLOORS -1
 
-
 using ButtonFlags = std::array<bool, elev::config::N_BUTTONS>;
+
+
+enum class Inertia : std::uint8_t {
+    UP,
+    DOWN, 
+    NONE,
+};
 
 
 enum class MotorDir : std::int8_t {

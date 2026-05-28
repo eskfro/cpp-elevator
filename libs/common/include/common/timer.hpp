@@ -16,8 +16,8 @@ class DoorTimer {
     public:
         DoorTimer() = default;
 
-        void start(int durationMs) {
-            m_endTime = Clock::now() + Duration(durationMs);
+        void start(int duration_ms) {
+            m_endTime = Clock::now() + Duration(duration_ms);
             m_active = true;
         }
 

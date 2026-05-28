@@ -52,7 +52,7 @@ void ElevatorNode::loop() {
         if (req_changed) {
             peers.setClearOrders(thisID, elev.getFloor(), controller.fsm_table_update(&elev));
             syncRequests();
-            prev_requests.set_equal(controller.getRequests());
+            prev_requests = controller.getRequests();
         }
 
         // [ Event ] - DoorTimeout
