@@ -47,16 +47,13 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
 
     ButtonFlags b2c{};
     int floor = elev->getFloor();
-    MotorDir dir = elev->getDir();
 
     switch (elev->getMovement()) {
         case Movement::DOOR_OPEN:
-            if (shouldStop(floor, dir)) {
-                //---
+            if (shouldStop(floor)) {
                 elev->setMovement(Movement::DOOR_OPEN);
                 doortimer.start(DOOR_OPEN_TIME_MS);
-                //---
-                b2c = clearCurrentFloor(floor, dir);
+                b2c = clearCurrentFloor(floor);
                 return b2c;
 
             } else {
@@ -65,7 +62,7 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
                 } else {
                     elev->closeDoor();
                     DirMovPair pair;
-                    pair = chooseDirection(floor, dir);
+                    pair = chooseDirection(floor);
                     elev->setDir(pair.dir);
                     elev->setMovement(pair.mov);
                     setInertia(elev->getDir());
@@ -78,7 +75,7 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
         
         case Movement::IDLE:
             DirMovPair pair;
-            pair = chooseDirection(floor, dir);
+            pair = chooseDirection(floor);
             elev->setDir(pair.dir);
             elev->setMovement(pair.mov);
             setInertia(elev->getDir());
@@ -89,7 +86,7 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
                         elev->openDoor();
                     }
                     doortimer.start(DOOR_OPEN_TIME_MS);
-                    b2c = clearCurrentFloor(floor, dir);
+                    b2c = clearCurrentFloor(floor);
                     return b2c;
 
                 case Movement::MOVING:
@@ -114,16 +111,15 @@ ButtonFlags Controller::fsm_floor_arrival(elev::elevator::Elevator* elev) {
     
     ButtonFlags b2c{};
     int floor = elev->getFloor();
-    MotorDir dir = elev->getDir();
 
     elev->setFloorIndicator();
 
     switch (elev->getMovement()) {
         case Movement::MOVING:
-            if (shouldStop(floor, dir)) {
+            if (shouldStop(floor)) {
                 elev->setDir(MotorDir::STOP);
                 elev->openDoor();
-                b2c = clearCurrentFloor(floor, dir);
+                b2c = clearCurrentFloor(floor);
                 doortimer.start(DOOR_OPEN_TIME_MS);
                 elev->setMovement(Movement::DOOR_OPEN);
             }
@@ -141,12 +137,11 @@ ButtonFlags Controller::fsm_door_timeout(elev::elevator::Elevator* elev) {
 
     ButtonFlags b2c{};
     int floor = elev->getFloor();
-    MotorDir dir = elev->getDir();
     
     switch(elev->getMovement()) {
         case Movement::DOOR_OPEN:
             DirMovPair pair;
-            pair = chooseDirection(floor, dir);
+            pair = chooseDirection(floor);
             elev->setDir(pair.dir);
             elev->setMovement(pair.mov);
             setInertia(elev->getDir());
@@ -154,7 +149,7 @@ ButtonFlags Controller::fsm_door_timeout(elev::elevator::Elevator* elev) {
             switch (pair.mov) {
                 case Movement::DOOR_OPEN:
                     doortimer.start(DOOR_OPEN_TIME_MS);
-                    b2c = clearCurrentFloor(elev->getFloor(), elev->getDir());
+                    b2c = clearCurrentFloor(elev->getFloor());
                     return b2c;
 
                 case Movement::MOVING:
@@ -172,7 +167,7 @@ ButtonFlags Controller::fsm_door_timeout(elev::elevator::Elevator* elev) {
 }
 
 
-elev::common::DirMovPair Controller::chooseDirection(int floor, elev::common::MotorDir dir) {
+elev::common::DirMovPair Controller::chooseDirection(int floor) {
     using namespace elev::common;
     switch (inertia) {
         case Inertia::UP:
@@ -199,7 +194,7 @@ elev::common::DirMovPair Controller::chooseDirection(int floor, elev::common::Mo
 };
 
 
-bool Controller::shouldStop(int floor, elev::common::MotorDir dir) {
+bool Controller::shouldStop(int floor) {
     using namespace elev::common;
     switch (inertia) {
     case(Inertia::DOWN):
@@ -213,7 +208,7 @@ bool Controller::shouldStop(int floor, elev::common::MotorDir dir) {
 }
 
 
-bool Controller::shouldClearImmediately(int floor, elev::common::MotorDir dir, int btnFloor, elev::common::BtnType btn) {
+bool Controller::shouldClearImmediately(int floor, int btnFloor, elev::common::BtnType btn) {
     using namespace elev::common;
     return floor == btnFloor &&
     (
@@ -225,7 +220,7 @@ bool Controller::shouldClearImmediately(int floor, elev::common::MotorDir dir, i
 }
 
 
-ButtonFlags Controller::clearCurrentFloor(int floor, elev::common::MotorDir dir) {
+ButtonFlags Controller::clearCurrentFloor(int floor) {
     using namespace elev::common;
 
     // Buttons to clear

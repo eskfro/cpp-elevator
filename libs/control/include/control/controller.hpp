@@ -31,12 +31,12 @@ class Controller {
         ButtonFlags fsm_door_timeout(elev::elevator::Elevator* elev);
 
         // Change values on table 
-        ButtonFlags clearCurrentFloor(int floor, MotorDir dir);
+        ButtonFlags clearCurrentFloor(int floor);
 
         // Decisions
-        bool shouldStop(int floor, MotorDir dir);
-        bool shouldClearImmediately(int floor, MotorDir dir, int btnFloor, BtnType btn);
-        DirMovPair chooseDirection(int floor, MotorDir dir);
+        bool shouldStop(int floor);
+        bool shouldClearImmediately(int floor, int btnFloor, BtnType btn);
+        DirMovPair chooseDirection(int floor);
 
         // get
         RequestTable getRequests();
