@@ -39,7 +39,7 @@ void Controller::updateRequests(elev::ordersync::OrderSlice slice) {
     }
 }
 
-
+// FSM Table Update
 ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator "<< elev->getID() << " ] - Table Update" << std::endl;
 
@@ -48,40 +48,42 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
     ButtonFlags b2c{};
     int floor = elev->getFloor();
 
-    switch (elev->getMovement()) {
-        case Movement::DOOR_OPEN:
+    switch (elev->getMovingState()) {
+
+        case MovingState::DOOR_OPEN:
             if (shouldStop(floor)) {
-                elev->setMovement(Movement::DOOR_OPEN);
+                elev->setMovingState(MovingState::DOOR_OPEN);
                 doortimer.start(DOOR_OPEN_TIME_MS);
                 b2c = clearCurrentFloor(floor);
                 return b2c;
+            }
 
+            if (doortimer.isActive()) {
+                return b2c;
+                
             } else {
-                if (doortimer.isActive()) {
-                    return b2c;
-                } else {
-                    elev->closeDoor();
-                    DirMovPair pair;
-                    pair = chooseDirection(floor);
-                    elev->setDir(pair.dir);
-                    elev->setMovement(pair.mov);
-                    setInertia(elev->getDir());
-                    return b2c;
-                }
-            }   
+                elev->closeDoor();
+                DirMovPair pair;
+                pair = chooseDirection(floor);
+                elev->setMotorDir(pair.dir);
+                elev->setMovingState(pair.mov);
+                setInertia(elev->getMotorDir());
+                return b2c;
+            }
+               
 
-        case Movement::MOVING:
+        case MovingState::MOVING:
             return b2c;
         
-        case Movement::IDLE:
+        case MovingState::IDLE:
             DirMovPair pair;
             pair = chooseDirection(floor);
-            elev->setDir(pair.dir);
-            elev->setMovement(pair.mov);
-            setInertia(elev->getDir());
+            elev->setMotorDir(pair.dir);
+            elev->setMovingState(pair.mov);
+            setInertia(elev->getMotorDir());
 
-            switch (elev->getMovement()) {
-                case Movement::DOOR_OPEN:
+            switch (elev->getMovingState()) {
+                case MovingState::DOOR_OPEN:
                     if (elev->getFloor() != BETWEEN_FLOORS) {
                         elev->openDoor();
                     }
@@ -89,11 +91,11 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
                     b2c = clearCurrentFloor(floor);
                     return b2c;
 
-                case Movement::MOVING:
+                case MovingState::MOVING:
                     elev->closeDoor();
                     return b2c;
 
-                case Movement::IDLE:
+                case MovingState::IDLE:
                     return b2c;
                 
             }
@@ -103,25 +105,23 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
     return b2c;
 }
 
-
+// FSM Floor Arrival
 ButtonFlags Controller::fsm_floor_arrival(elev::elevator::Elevator* elev) {
      std::cout << "[ Elevator "<< elev->getID() << " ] - arrived at floor " << elev->getFloor() << std::endl; 
-
     using namespace elev::common;
     
     ButtonFlags b2c{};
     int floor = elev->getFloor();
-
     elev->setFloorIndicator();
 
-    switch (elev->getMovement()) {
-        case Movement::MOVING:
+    switch (elev->getMovingState()) {
+        case MovingState::MOVING:
             if (shouldStop(floor)) {
-                elev->setDir(MotorDir::STOP);
+                elev->setMotorDir(MotorDir::STOP);
                 elev->openDoor();
-                b2c = clearCurrentFloor(floor);
                 doortimer.start(DOOR_OPEN_TIME_MS);
-                elev->setMovement(Movement::DOOR_OPEN);
+                b2c = clearCurrentFloor(floor);
+                elev->setMovingState(MovingState::DOOR_OPEN);
             }
             return b2c;
             
@@ -131,31 +131,31 @@ ButtonFlags Controller::fsm_floor_arrival(elev::elevator::Elevator* elev) {
     
 }
 
-
+// FSM Door Timeout
 ButtonFlags Controller::fsm_door_timeout(elev::elevator::Elevator* elev) {
     using namespace elev::common;
 
     ButtonFlags b2c{};
     int floor = elev->getFloor();
     
-    switch(elev->getMovement()) {
-        case Movement::DOOR_OPEN:
+    switch(elev->getMovingState()) {
+        case MovingState::DOOR_OPEN:
             DirMovPair pair;
             pair = chooseDirection(floor);
-            elev->setDir(pair.dir);
-            elev->setMovement(pair.mov);
-            setInertia(elev->getDir());
+            elev->setMotorDir(pair.dir);
+            elev->setMovingState(pair.mov);
+            setInertia(elev->getMotorDir());
             
             switch (pair.mov) {
-                case Movement::DOOR_OPEN:
+                case MovingState::DOOR_OPEN:
                     doortimer.start(DOOR_OPEN_TIME_MS);
                     b2c = clearCurrentFloor(elev->getFloor());
                     return b2c;
 
-                case Movement::MOVING:
-                case Movement::IDLE:
+                case MovingState::MOVING:
+                case MovingState::IDLE:
                     elev->closeDoor();
-                    elev->setDir(elev->getDir());
+                    elev->setMotorDir(elev->getMotorDir());
                     return b2c;
             }
 
@@ -171,25 +171,25 @@ elev::common::DirMovPair Controller::chooseDirection(int floor) {
     using namespace elev::common;
     switch (inertia) {
         case Inertia::UP:
-            if (requests.isRequestAbove(floor)) return {MotorDir::UP,   Movement::MOVING};
-            if (requests.isRequestHere(floor))  return {MotorDir::DOWN, Movement::DOOR_OPEN};
-            if (requests.isRequestBelow(floor)) return {MotorDir::DOWN, Movement::MOVING};
-            else return {MotorDir::STOP, Movement::IDLE};
+            if (requests.isRequestAbove(floor)) return {MotorDir::UP,   MovingState::MOVING};
+            if (requests.isRequestHere(floor))  return {MotorDir::DOWN, MovingState::DOOR_OPEN};
+            if (requests.isRequestBelow(floor)) return {MotorDir::DOWN, MovingState::MOVING};
+            else return {MotorDir::STOP, MovingState::IDLE};
 
         case Inertia::DOWN:
-            if (requests.isRequestBelow(floor)) return {MotorDir::DOWN, Movement::MOVING};
-            if (requests.isRequestHere(floor))  return {MotorDir::UP,   Movement::DOOR_OPEN};
-            if (requests.isRequestAbove(floor)) return {MotorDir::UP,   Movement::MOVING};
-            else return {MotorDir::STOP, Movement::IDLE};
+            if (requests.isRequestBelow(floor)) return {MotorDir::DOWN, MovingState::MOVING};
+            if (requests.isRequestHere(floor))  return {MotorDir::UP,   MovingState::DOOR_OPEN};
+            if (requests.isRequestAbove(floor)) return {MotorDir::UP,   MovingState::MOVING};
+            else return {MotorDir::STOP, MovingState::IDLE};
             
         case Inertia::NONE:
-            if (requests.isRequestHere(floor))  return {MotorDir::STOP, Movement::DOOR_OPEN};
-            if (requests.isRequestAbove(floor)) return {MotorDir::UP,   Movement::MOVING};
-            if (requests.isRequestBelow(floor)) return {MotorDir::DOWN, Movement::MOVING};
-            else return {MotorDir::STOP, Movement::IDLE};
+            if (requests.isRequestHere(floor))  return {MotorDir::STOP, MovingState::DOOR_OPEN};
+            if (requests.isRequestAbove(floor)) return {MotorDir::UP,   MovingState::MOVING};
+            if (requests.isRequestBelow(floor)) return {MotorDir::DOWN, MovingState::MOVING};
+            else return {MotorDir::STOP, MovingState::IDLE};
 
         default:
-            return {MotorDir::STOP, Movement::IDLE};
+            return {MotorDir::STOP, MovingState::IDLE};
     }
 };
 

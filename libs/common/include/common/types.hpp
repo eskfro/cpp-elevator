@@ -13,7 +13,6 @@ namespace elev::common {
 
 using ButtonFlags = std::array<bool, elev::config::N_BUTTONS>;
 
-
 enum class Inertia : std::uint8_t {
     UP,
     DOWN, 
@@ -29,7 +28,7 @@ enum class MotorDir : std::int8_t {
 };
 
 
-enum class Movement : std::uint8_t {
+enum class MovingState : std::uint8_t {
     IDLE, 
     DOOR_OPEN,
     MOVING,
@@ -39,7 +38,7 @@ enum class Movement : std::uint8_t {
 
 struct DirMovPair {
     MotorDir dir;
-    Movement mov;
+    MovingState mov;
 };
 
 
@@ -62,7 +61,7 @@ struct ElevatorState {
     int ID;
     int floor;
     MotorDir dir;
-    Movement mov;
+    MovingState mov;
     bool active;
     bool obstruction;
     bool door_open;
@@ -84,9 +83,6 @@ inline void print(std::string s) {
     std::cout << s << std::endl;
 }
 
-inline void printFloorArrival(int elevID, int floor) {
-    std::cout << "[ Elevator "<< elevID << " ] - arrived at floor " << floor << std::endl; 
-}
 
 inline void printBtnPress(int elevID, int floor, BtnType btn) {
     std::cout << "[ Elevator " << elevID << " ] - buttonpress " << btnTypeToStr(btn) << \

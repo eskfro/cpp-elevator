@@ -15,13 +15,13 @@ Elevator::Elevator() {
 
 
 void Elevator::initToFloor() {
-    setDir(elev::common::MotorDir::DOWN);
+    setMotorDir(elev::common::MotorDir::DOWN);
 
     while (getFloorSensor() == BETWEEN_FLOORS) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
 
-    setDir(elev::common::MotorDir::STOP);
+    setMotorDir(elev::common::MotorDir::STOP);
     setFloor(getFloorSensor());
     setFloorIndicator();
 
@@ -82,7 +82,7 @@ std::string Elevator::getIP() {
 }
 
 
-void Elevator::setDir(elev::common::MotorDir dir) {
+void Elevator::setMotorDir(elev::common::MotorDir dir) {
     using namespace elev::common;
     MotorDir newDir;
 
@@ -97,7 +97,7 @@ void Elevator::setDir(elev::common::MotorDir dir) {
 };
 
 
-void Elevator::setMovement(elev::common::Movement mov) {
+void Elevator::setMovingState(elev::common::MovingState mov) {
     state.mov = mov;
 }
 
@@ -150,12 +150,12 @@ int Elevator::getStopSignal() {
 }
 
 
-int Elevator::getObs() {
+int Elevator::getObsSignal() {
     return elev::hardware::getObs();
 }
 
 
-elev::common::Movement Elevator::getMovement() {
+elev::common::MovingState Elevator::getMovingState() {
     return state.mov;
 }
 
@@ -165,7 +165,7 @@ int Elevator::getFloor() {
 }
 
 
-elev::common::MotorDir Elevator::getDir() {
+elev::common::MotorDir Elevator::getMotorDir() {
     return state.dir;
 }
 

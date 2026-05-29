@@ -28,18 +28,18 @@ class Elevator {
         void setID(int _ID);
         void setIP(std::string _IP);
         void setFloor(int floor);
-        void setDir(elev::common::MotorDir dir);
-        void setMovement(elev::common::Movement mov);
+        void setMotorDir(elev::common::MotorDir dir);
+        void setMovingState(elev::common::MovingState mov);
         void setObs(bool value);
         void setDoorState(bool state);
-        bool getDoorState();
-
+        
         // Get
-        elev::common::Movement getMovement();
-        elev::common::MotorDir getDir();
+        int getID();
         std::string getIP();
         int getFloor();
-        int getID();
+        elev::common::MotorDir getMotorDir();
+        elev::common::MovingState getMovingState();
+        bool getDoorState();
 
         // Lamps
         void setDoorOpenLamp(int value);
@@ -51,7 +51,7 @@ class Elevator {
         int getBtnSignal(int floor, elev::common::BtnType btn);
         int getFloorSensor(void);
         int getStopSignal(void);
-        int getObs(void);
+        int getObsSignal(void);
 
 
 

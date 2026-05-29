@@ -44,26 +44,32 @@ void ElevatorNode::loop() {
         if (cf != prev_floor && cf != BETWEEN_FLOORS) {
             elev.setFloor(cf);
             prev_floor = elev.getFloor();
-            peers.setClearOrders(thisID, elev.getFloor(), controller.fsm_floor_arrival(&elev));
+            controllerEvent(controller.fsm_floor_arrival(&elev));
         }
 
         // [ Event ] - TableUpdate
         bool req_changed = !controller.getRequests().is_equal(prev_requests);
         if (req_changed) {
-            peers.setClearOrders(thisID, elev.getFloor(), controller.fsm_table_update(&elev));
-            syncRequests();
+            controllerEvent(controller.fsm_table_update(&elev));
             prev_requests = controller.getRequests();
         }
 
         // [ Event ] - DoorTimeout
         if (controller.getDoorTimer()->isExpired()) {
             controller.getDoorTimer()->stop();
-            peers.setClearOrders(thisID, elev.getFloor(), controller.fsm_door_timeout(&elev));
+            controllerEvent(controller.fsm_door_timeout(&elev));
         }
 
-        std::this_thread::sleep_for(20ms);
+        std::this_thread::sleep_for(25ms);
     }
 };
+
+
+void ElevatorNode::controllerEvent(ButtonFlags b2c) {
+    peers.setClearOrders(elev.getID(), elev.getFloor(), b2c);
+    syncRequests();
+}
+
 
 // Sets the controller request-table according to the synced OrderMatrix orders
 void ElevatorNode::syncRequests() {
