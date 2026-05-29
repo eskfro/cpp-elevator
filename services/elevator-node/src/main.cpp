@@ -20,11 +20,11 @@ int main() {
     int ID = 0;
     std::string IP = "localhost";
     
-    elev::hardware::initHardware();
+    elev::hardware::init_hardware();
 
     elev::node::ElevatorNode node = elev::node::ElevatorNode(ID, IP);
     
-    node.loop();
+    node.eventLoop();
 
 
 

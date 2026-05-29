@@ -4,18 +4,18 @@
 
 namespace elev::hardware {
 
-void initHardware();
+void init_hardware();
 
-void setMotorDir(elev::common::MotorDir dir);
-void setBtnLamp(elev::common::BtnType button, int floor, int value);
-void setFloorIndicator(int floor);
-void setDoorOpenLamp(int value);
-void setStopLamp(int value);
+void set_motor_dir(elev::common::MotorDir dir);
+void set_btn_lamp(elev::common::BtnType button, int floor, int value);
+void set_floor_indicator(int floor);
+void set_door_open_lamp(int value);
+void set_stop_lamp(int value);
 
-int getBtnSignal(elev::common::BtnType btn, int floor);
-int getFloorSensor(void);
-int getStopSignal(void);
-int getObs(void);
+int get_btn_signal(elev::common::BtnType btn, int floor);
+int get_floor_sensor(void);
+int get_stop_signal(void);
+int get_obs_signal(void);
 
 }
 

@@ -107,7 +107,7 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
 
 // FSM Floor Arrival
 ButtonFlags Controller::fsm_floor_arrival(elev::elevator::Elevator* elev) {
-     std::cout << "[ Elevator "<< elev->getID() << " ] - arrived at floor " << elev->getFloor() << std::endl; 
+     std::cout << "[ Elevator "<< elev->getID() << " ] - Arrived @ Floor " << elev->getFloor() << std::endl; 
     using namespace elev::common;
     
     ButtonFlags b2c{};
@@ -133,6 +133,7 @@ ButtonFlags Controller::fsm_floor_arrival(elev::elevator::Elevator* elev) {
 
 // FSM Door Timeout
 ButtonFlags Controller::fsm_door_timeout(elev::elevator::Elevator* elev) {
+     std::cout << "[ Elevator "<< elev->getID() << " ] - Door Timeout" << std::endl;
     using namespace elev::common;
 
     ButtonFlags b2c{};

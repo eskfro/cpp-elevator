@@ -39,8 +39,8 @@ void Elevator::setID(int _ID) {
 }
 
 
-void Elevator::setObs(bool value) {
-    this->state.obstruction = value;
+void Elevator::setObs(bool obstruction) {
+    this->state.obstruction = obstruction;
 }
 
 
@@ -49,8 +49,8 @@ bool Elevator::getDoorState() {
 }
 
 
-void Elevator::setDoorState(bool state) {
-    this->state.door_open = state;
+void Elevator::setDoorState(bool door_open) {
+    this->state.door_open = door_open;
 }
 
 
@@ -67,8 +67,8 @@ Elevator::Elevator(int _ID, std::string _IP) {
 
 
 // TODO: idk
-void Elevator::setInactive() {
-    state.active = false;
+void Elevator::setActivity(bool active) {
+    state.active = active;
 };
 
 
@@ -92,7 +92,7 @@ void Elevator::setMotorDir(elev::common::MotorDir dir) {
         newDir = dir;
     }
 
-    elev::hardware::setMotorDir(newDir);
+    elev::hardware::set_motor_dir(newDir);
     state.dir = newDir;
 };
 
@@ -103,7 +103,7 @@ void Elevator::setMovingState(elev::common::MovingState mov) {
 
 
 void Elevator::setDoorOpenLamp(int value) {
-    elev::hardware::setDoorOpenLamp(value);
+    elev::hardware::set_door_open_lamp(value);
 }
 
 
@@ -120,38 +120,38 @@ void Elevator::closeDoor() {
 
 
 void Elevator::setStopLamp(int value) {
-    elev::hardware::setStopLamp(value);
+    elev::hardware::set_stop_lamp(value);
 }   
 
 
 void Elevator::setBtnLamp(int floor, elev::common::BtnType btn, int value) {
-    elev::hardware::setBtnLamp(btn, floor, value);
+    elev::hardware::set_btn_lamp(btn, floor, value);
 }
 
 
 void Elevator::setFloorIndicator() {
     if (state.floor == BETWEEN_FLOORS) return;
-    elev::hardware::setFloorIndicator(state.floor);
+    elev::hardware::set_floor_indicator(state.floor);
 }
 
 
 int Elevator::getBtnSignal(int floor, elev::common::BtnType btn) {
-    return elev::hardware::getBtnSignal(btn, floor);
+    return elev::hardware::get_btn_signal(btn, floor);
 }
 
 
 int Elevator::getFloorSensor() {
-    return elev::hardware::getFloorSensor();
+    return elev::hardware::get_floor_sensor();
 }
 
 
 int Elevator::getStopSignal() {
-    return elev::hardware::getStopSignal();
+    return elev::hardware::get_stop_signal();
 }
 
 
 int Elevator::getObsSignal() {
-    return elev::hardware::getObs();
+    return elev::hardware::get_obs_signal();
 }
 
 

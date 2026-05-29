@@ -16,7 +16,7 @@ namespace elev::hardware {
 static int sockfd;
 static pthread_mutex_t sockmtx;
 
-void initHardware() {
+void init_hardware() {
     char ip[16]; 
     char port[8]; 
 
@@ -50,7 +50,7 @@ void initHardware() {
 }
 
 
-void setMotorDir(elev::common::MotorDir dir) {
+void set_motor_dir(elev::common::MotorDir dir) {
 
     int dirn = static_cast<int>(dir);
 
@@ -60,7 +60,7 @@ void setMotorDir(elev::common::MotorDir dir) {
 }
 
 
-void setBtnLamp(elev::common::BtnType btn, int floor, int value) {
+void set_btn_lamp(elev::common::BtnType btn, int floor, int value) {
 
     int button = static_cast<int>(btn);
 
@@ -75,7 +75,7 @@ void setBtnLamp(elev::common::BtnType btn, int floor, int value) {
 }
 
 
-void setFloorIndicator(int floor) {
+void set_floor_indicator(int floor) {
     assert(floor >= 0);
     assert(floor < elev::config::N_FLOORS);
 
@@ -85,21 +85,21 @@ void setFloorIndicator(int floor) {
 }
 
 
-void setDoorOpenLamp(int value) {
+void set_door_open_lamp(int value) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {4, value}, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
 
-void setStopLamp(int value) {
+void set_stop_lamp(int value) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {5, value}, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
 
-int getBtnSignal(elev::common::BtnType btn, int floor) {
+int get_btn_signal(elev::common::BtnType btn, int floor) {
 
     int button = static_cast<int>(btn);
 
@@ -112,7 +112,7 @@ int getBtnSignal(elev::common::BtnType btn, int floor) {
 }
 
 
-int getFloorSensor(void) {
+int get_floor_sensor(void) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {7}, 4, 0);
     char buf[4];
@@ -122,7 +122,7 @@ int getFloorSensor(void) {
 }
 
 
-int getStopSignal(void) {
+int get_stop_signal(void) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {8}, 4, 0);
     char buf[4];
@@ -132,7 +132,7 @@ int getStopSignal(void) {
 }
 
 
-int getObs(void) {
+int get_obs_signal(void) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {9}, 4, 0);
     char buf[4];

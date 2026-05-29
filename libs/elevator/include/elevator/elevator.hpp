@@ -18,8 +18,7 @@ class Elevator {
 
         void initToFloor();
 
-        void setInactive();
-
+        
         // Door
         void openDoor();
         void closeDoor();
@@ -31,6 +30,7 @@ class Elevator {
         void setMotorDir(elev::common::MotorDir dir);
         void setMovingState(elev::common::MovingState mov);
         void setObs(bool value);
+        void setActivity(bool active);
         void setDoorState(bool state);
         
         // Get

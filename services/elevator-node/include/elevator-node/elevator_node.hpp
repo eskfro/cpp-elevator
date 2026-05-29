@@ -25,8 +25,8 @@ class ElevatorNode {
         ElevatorNode();
         ElevatorNode(int _ID, std::string _IP);
 
-        void loop();
-        void controllerEvent(ButtonFlags b2c);
+        void eventLoop();
+        void event(ButtonFlags b2c);
 
         // Polling shi
         void pollBtnSignals();

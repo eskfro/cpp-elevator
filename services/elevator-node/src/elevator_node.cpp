@@ -21,7 +21,7 @@ ElevatorNode::ElevatorNode(int _ID, std::string _IP) {
 }   
 
 
-void ElevatorNode::loop() {
+void ElevatorNode::eventLoop() {
     int thisID = elev.getID();
     int prev_floor = elev.getFloorSensor();
     elev::control::RequestTable prev_requests{};
@@ -44,20 +44,20 @@ void ElevatorNode::loop() {
         if (cf != prev_floor && cf != BETWEEN_FLOORS) {
             elev.setFloor(cf);
             prev_floor = elev.getFloor();
-            controllerEvent(controller.fsm_floor_arrival(&elev));
+            event(controller.fsm_floor_arrival(&elev));
         }
 
         // [ Event ] - TableUpdate
         bool req_changed = !controller.getRequests().is_equal(prev_requests);
         if (req_changed) {
-            controllerEvent(controller.fsm_table_update(&elev));
+            event(controller.fsm_table_update(&elev));
             prev_requests = controller.getRequests();
         }
 
         // [ Event ] - DoorTimeout
         if (controller.getDoorTimer()->isExpired()) {
             controller.getDoorTimer()->stop();
-            controllerEvent(controller.fsm_door_timeout(&elev));
+            event(controller.fsm_door_timeout(&elev));
         }
 
         std::this_thread::sleep_for(25ms);
@@ -65,7 +65,7 @@ void ElevatorNode::loop() {
 };
 
 
-void ElevatorNode::controllerEvent(ButtonFlags b2c) {
+void ElevatorNode::event(ButtonFlags b2c) {
     peers.setClearOrders(elev.getID(), elev.getFloor(), b2c);
     syncRequests();
 }
