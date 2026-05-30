@@ -24,6 +24,7 @@ ElevatorNode::ElevatorNode(int _ID, std::string _IP) {
 void ElevatorNode::eventLoop() {
     int thisID = elev.getID();
     int prev_floor = elev.getFloorSensor();
+    bool prev_stop = elev.getStopSignal();
     elev::control::RequestTable prev_requests{};
 
     // begin network bcast thread;
@@ -33,18 +34,27 @@ void ElevatorNode::eventLoop() {
     elev.initToFloor();
 
     while (running) {
-        int cf = elev.getFloorSensor(); // raw floor sensor
         
         // Button press
-        pollBtnSignals();
+        checkObs();
+        checkBtnSignals();
         syncRequests();
         setBtnLamps();
-
+        
+        // [ Event ] - Emergency Stop
+        bool stop = elev.getStopSignal(); // Current Stop Signal
+        if (stop != prev_stop) {
+            elev.setStop(stop);
+            event(controller.fsm_emergency_stop(&elev));
+            prev_stop = stop;
+        }
+        
         // [ Event ] - NewFloor
+        int cf = elev.getFloorSensor(); // Current Floor
         if (cf != prev_floor && cf != BETWEEN_FLOORS) {
             elev.setFloor(cf);
-            prev_floor = elev.getFloor();
             event(controller.fsm_floor_arrival(&elev));
+            prev_floor = elev.getFloor();
         }
 
         // [ Event ] - TableUpdate
@@ -65,9 +75,21 @@ void ElevatorNode::eventLoop() {
 };
 
 
+void ElevatorNode::checkObs() {
+    bool obstruction = elev.getObsSignal();
+    elev.setObs(obstruction);
+}
+
+
 void ElevatorNode::event(ButtonFlags b2c) {
-    peers.setClearOrders(elev.getID(), elev.getFloor(), b2c);
-    syncRequests();
+
+    ButtonFlags zeros{};
+
+    if (b2c != zeros) {
+        peers.setClearOrders(elev.getID(), elev.getFloor(), b2c);
+        syncRequests();
+    }
+
 }
 
 
@@ -79,7 +101,7 @@ void ElevatorNode::syncRequests() {
 }
 
 // Polls BtnSignals and set status at OrderMatrix orders
-void ElevatorNode::pollBtnSignals() {
+void ElevatorNode::checkBtnSignals() {
     using namespace elev::common;
     int thisID = this->elev.getID();
 

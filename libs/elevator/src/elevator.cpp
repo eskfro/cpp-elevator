@@ -14,6 +14,11 @@ Elevator::Elevator() {
 }
 
 
+bool Elevator::getObs() {
+    return state.obstruction;
+}
+
+
 void Elevator::initToFloor() {
     setMotorDir(elev::common::MotorDir::DOWN);
 
@@ -86,7 +91,7 @@ void Elevator::setMotorDir(elev::common::MotorDir dir) {
     using namespace elev::common;
     MotorDir newDir;
 
-    if (state.obstruction) {
+    if (state.stop) {
         newDir = MotorDir::STOP;
     } else {
         newDir = dir;
@@ -110,6 +115,7 @@ void Elevator::setDoorOpenLamp(int value) {
 void Elevator::openDoor() {
     this->setDoorOpenLamp(1);
     this->state.door_open = true;
+    this->setMovingState(elev::common::MovingState::DOOR_OPEN);
 }
 
 
@@ -167,6 +173,16 @@ int Elevator::getFloor() {
 
 elev::common::MotorDir Elevator::getMotorDir() {
     return state.dir;
+}
+
+
+void Elevator::setStop(bool stop) {
+    state.stop = stop;
+}
+
+
+bool Elevator::getStop() {
+    return state.stop;
 }
 
 

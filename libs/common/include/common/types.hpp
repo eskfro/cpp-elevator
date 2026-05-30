@@ -13,6 +13,13 @@ namespace elev::common {
 
 using ButtonFlags = std::array<bool, elev::config::N_BUTTONS>;
 
+
+enum class DoorState : bool {
+    CLOSED = false,
+    OPEN = true,   
+};
+
+
 enum class Inertia : std::uint8_t {
     UP,
     DOWN, 
@@ -65,6 +72,7 @@ struct ElevatorState {
     bool active;
     bool obstruction;
     bool door_open;
+    bool stop;
     std::string IP;
 };
 

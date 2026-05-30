@@ -29,10 +29,9 @@ class ElevatorNode {
         void event(ButtonFlags b2c);
 
         // Polling shi
-        void pollBtnSignals();
-        void pollStopSignal();
-        int pollFloorSensor();
-        void pollObs();
+        void checkBtnSignals();
+        void checkStopSignal();
+        void checkObs();
 
         void syncRequests();
         void setBtnLamps();

@@ -29,9 +29,10 @@ class Elevator {
         void setFloor(int floor);
         void setMotorDir(elev::common::MotorDir dir);
         void setMovingState(elev::common::MovingState mov);
-        void setObs(bool value);
+        void setObs(bool obs);
         void setActivity(bool active);
-        void setDoorState(bool state);
+        void setDoorState(bool door_open);
+        void setStop(bool stop);
         
         // Get
         int getID();
@@ -40,6 +41,8 @@ class Elevator {
         elev::common::MotorDir getMotorDir();
         elev::common::MovingState getMovingState();
         bool getDoorState();
+        bool getStop();
+        bool getObs();
 
         // Lamps
         void setDoorOpenLamp(int value);

@@ -24,11 +24,14 @@ class Controller {
         void updateRequests(elev::ordersync::OrderSlice slice);
 
         void setInertia(MotorDir dir);
+        void executeDecision(elev::elevator::Elevator* elev, DirMovPair pair);
+        int tryCloseDoor(elev::elevator::Elevator* elev);
 
         // Event driven FSM
         ButtonFlags fsm_table_update(elev::elevator::Elevator* elev);
         ButtonFlags fsm_floor_arrival(elev::elevator::Elevator* elev);
         ButtonFlags fsm_door_timeout(elev::elevator::Elevator* elev);
+        ButtonFlags fsm_emergency_stop(elev::elevator::Elevator* elev);
 
         // Change values on table 
         ButtonFlags clearCurrentFloor(int floor);
