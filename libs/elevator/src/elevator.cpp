@@ -49,12 +49,12 @@ void Elevator::setObs(bool obstruction) {
 }
 
 
-bool Elevator::getDoorState() {
+bool Elevator::getDoorOpen() {
     return this->state.door_open;
 }
 
 
-void Elevator::setDoorState(bool door_open) {
+void Elevator::setDoorOpen(bool door_open) {
     this->state.door_open = door_open;
 }
 

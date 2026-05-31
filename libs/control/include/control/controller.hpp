@@ -32,6 +32,7 @@ class Controller {
         ButtonFlags fsm_floor_arrival(elev::elevator::Elevator* elev);
         ButtonFlags fsm_door_timeout(elev::elevator::Elevator* elev);
         ButtonFlags fsm_emergency_stop(elev::elevator::Elevator* elev);
+        ButtonFlags fsm_release_stop(elev::elevator::Elevator* elev);
 
         // Change values on table 
         ButtonFlags clearCurrentFloor(int floor);

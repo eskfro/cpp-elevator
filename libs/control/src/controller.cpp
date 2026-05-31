@@ -40,31 +40,42 @@ void Controller::updateRequests(elev::ordersync::OrderSlice slice) {
 }
 
 
+// FSM Release Stop
+ButtonFlags Controller::fsm_release_stop(elev::elevator::Elevator* elev) {
+    std::cout << "[ Elevator "<< elev->getID() << " ] - FSM: Release Stop" << std::endl;
+    ButtonFlags zeros{};
+    
+    elev->setStop(false);
+    elev->setStopLamp(0);
+
+    if (elev->getFloorSensor() == BETWEEN_FLOORS) {
+        if (inertia == Inertia::UP) elev->setMotorDir(MotorDir::UP);
+        else elev->setMotorDir(MotorDir::DOWN);
+
+    } else {
+        if (elev->getDoorOpen()) {
+            doortimer.start(DOOR_OPEN_TIME_MS);
+        } 
+
+    }
+}
+
+
 // FSM Emergency Stop
 ButtonFlags Controller::fsm_emergency_stop(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator "<< elev->getID() << " ] - FSM: Emergency Stop" << std::endl;
-    ButtonFlags zeros{};
+    ButtonFlags zero{};
 
-    switch(elev->getStop()) {
+    elev->setStop(true);
+    elev->setMotorDir(MotorDir::STOP);
+    elev->setStopLamp(1);
 
-        case true:
-            elev->setMotorDir(MotorDir::STOP);
-            elev->setStopLamp(1);
-
-            if (elev->getFloorSensor() != BETWEEN_FLOORS) {
-                elev->openDoor();
-                doortimer.start(DOOR_OPEN_TIME_MS);
-            }
-            return zeros;
-        
-        case false:
-            elev->setStopLamp(0);
-            tryCloseDoor(elev);
-            inertia = Inertia::NONE;
-            return zeros;
-    }    
+    if (elev->getFloorSensor() != BETWEEN_FLOORS) {
+        elev->openDoor();
+        doortimer.start(DOOR_OPEN_TIME_MS);
+    }
+    return zero;
 }
-
 
 
 // FSM Table Update
@@ -73,7 +84,8 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
 
     using namespace elev::common;
 
-    ButtonFlags zeros{};
+    DirMovPair pair;
+    ButtonFlags zero{};
     int floor = elev->getFloor();
 
     switch (elev->getMovingState()) {
@@ -83,21 +95,14 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
                 doortimer.start(DOOR_OPEN_TIME_MS);
                 return clearCurrentFloor(floor);
             }
-            if (doortimer.isActive()) {
-                return zeros;
-            } else {
-                if (tryCloseDoor(elev)) {
-                    executeDecision(elev, chooseDirection(floor));
-                }
-                return zeros;
-            }
-               
-
+            return zero;
+            
         case MovingState::MOVING:
-            return zeros;
+            return zero;
         
         case MovingState::IDLE:
-            executeDecision(elev, chooseDirection(floor));
+
+            pair = chooseDirection(floor);
 
             switch (elev->getMovingState()) {
 
@@ -106,22 +111,24 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
                         elev->openDoor();
                     }
                     doortimer.start(DOOR_OPEN_TIME_MS);
+                    executeDecision(elev, pair);
                     return clearCurrentFloor(floor);
 
                 case MovingState::MOVING:
-                    tryCloseDoor(elev);
-                    return zeros;
-
                 case MovingState::IDLE:
-                    return zeros;
+                    if (tryCloseDoor(elev)) {
+                        executeDecision(elev, pair);
+                    }
+                    return zero;
 
                 default:
-                    return zeros;
+                    return zero;
             }
 
         default:
-            return zeros;        
-        }
+            return zero;        
+    }
+    return zero;
 
 }
 
@@ -129,8 +136,8 @@ ButtonFlags Controller::fsm_table_update(elev::elevator::Elevator* elev) {
 ButtonFlags Controller::fsm_floor_arrival(elev::elevator::Elevator* elev) {
      std::cout << "[ Elevator "<< elev->getID() << " ] - FSM: Arrived @ Floor " << elev->getFloor() << std::endl; 
     using namespace elev::common;
-    
-    ButtonFlags zeros{};
+
+    ButtonFlags zero{};
     int floor = elev->getFloor();
     elev->setFloorIndicator();
 
@@ -143,11 +150,11 @@ ButtonFlags Controller::fsm_floor_arrival(elev::elevator::Elevator* elev) {
                 doortimer.start(DOOR_OPEN_TIME_MS);
                 return clearCurrentFloor(floor);
             } else {
-                return zeros;
+                return zero;
             }
             
         default:
-            return zeros;
+            return zero;
     }
     
 }
@@ -160,28 +167,40 @@ ButtonFlags Controller::fsm_door_timeout(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator "<< elev->getID() << " ] - FSM: Door Timeout" << std::endl;
     using namespace elev::common;
     
-    ButtonFlags zeros{};
+    DirMovPair pair;
+    elev->setObs(elev->getObsSignal());
+    ButtonFlags zero{};
     int floor = elev->getFloor();
+
+    if (elev->getObs()) {
+        std::cout << "OBS!" << std::endl;
+        doortimer.start(DOOR_OPEN_TIME_MS);
+        return zero;
+    }
     
     switch(elev->getMovingState()) {
 
         case MovingState::DOOR_OPEN:
-            executeDecision(elev, chooseDirection(floor));
+
+            pair =  chooseDirection(floor);
         
-            switch (elev->getMovingState()) {
+            switch (pair.mov) {
 
                 case MovingState::DOOR_OPEN:
+                    executeDecision(elev, pair);
                     doortimer.start(DOOR_OPEN_TIME_MS);
                     return clearCurrentFloor(elev->getFloor());
                 
                 case MovingState::MOVING:
                 case MovingState::IDLE:
-                    tryCloseDoor(elev);
-                    return zeros;
+                    if (tryCloseDoor(elev)) {
+                        executeDecision(elev, pair);
+                    }
+                    return zero;
             }
 
         default:
-            return zeros;
+            return zero;
     }
 }
 
@@ -189,7 +208,7 @@ ButtonFlags Controller::fsm_door_timeout(elev::elevator::Elevator* elev) {
 void Controller::executeDecision(elev::elevator::Elevator* elev, DirMovPair pair) {
     elev->setMotorDir(pair.dir);
     elev->setMovingState(pair.mov);
-    setInertia(pair.dir);           
+    setInertia(pair.dir);       
 }
 
 
@@ -199,7 +218,7 @@ int Controller::tryCloseDoor(elev::elevator::Elevator* elev) {
         return 0;
     } else {
         elev->closeDoor();
-        elev->setDoorState(false);
+        elev->setDoorOpen(false);
         return 1;
     }
 }   

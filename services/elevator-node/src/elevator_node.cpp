@@ -24,7 +24,7 @@ ElevatorNode::ElevatorNode(int _ID, std::string _IP) {
 void ElevatorNode::eventLoop() {
     int thisID = elev.getID();
     int prev_floor = elev.getFloorSensor();
-    bool prev_stop = elev.getStopSignal();
+    bool prev_stop = false;
     elev::control::RequestTable prev_requests{};
 
     // begin network bcast thread;
@@ -42,15 +42,14 @@ void ElevatorNode::eventLoop() {
         setBtnLamps();
         
         // [ Event ] - Emergency Stop
-        bool stop = elev.getStopSignal(); // Current Stop Signal
-        if (stop != prev_stop) {
-            elev.setStop(stop);
+        bool css = elev.getStopSignal();
+        if (css && !prev_stop) {
             event(controller.fsm_emergency_stop(&elev));
-            prev_stop = stop;
+            prev_stop = css;
         }
         
         // [ Event ] - NewFloor
-        int cf = elev.getFloorSensor(); // Current Floor
+        int cf = elev.getFloorSensor();
         if (cf != prev_floor && cf != BETWEEN_FLOORS) {
             elev.setFloor(cf);
             event(controller.fsm_floor_arrival(&elev));
@@ -76,8 +75,7 @@ void ElevatorNode::eventLoop() {
 
 
 void ElevatorNode::checkObs() {
-    bool obstruction = elev.getObsSignal();
-    elev.setObs(obstruction);
+    elev.setObs(elev.getObsSignal()); // set obs from sensor
 }
 
 

@@ -31,7 +31,7 @@ class Elevator {
         void setMovingState(elev::common::MovingState mov);
         void setObs(bool obs);
         void setActivity(bool active);
-        void setDoorState(bool door_open);
+        void setDoorOpen(bool door_open);
         void setStop(bool stop);
         
         // Get
@@ -40,7 +40,7 @@ class Elevator {
         int getFloor();
         elev::common::MotorDir getMotorDir();
         elev::common::MovingState getMovingState();
-        bool getDoorState();
+        bool getDoorOpen();
         bool getStop();
         bool getObs();
 
