@@ -25,6 +25,7 @@ class Controller {
 
         void setInertia(MotorDir dir);
         void executeDecision(elev::elevator::Elevator* elev, DirMovPair pair);
+        void stopAndOpenDoor(elev::elevator::Elevator* elev);
         int tryCloseDoor(elev::elevator::Elevator* elev);
 
         // Event driven FSM
@@ -32,7 +33,6 @@ class Controller {
         ButtonFlags fsm_floor_arrival(elev::elevator::Elevator* elev);
         ButtonFlags fsm_door_timeout(elev::elevator::Elevator* elev);
         ButtonFlags fsm_emergency_stop(elev::elevator::Elevator* elev);
-        ButtonFlags fsm_release_stop(elev::elevator::Elevator* elev);
 
         // Change values on table 
         ButtonFlags clearCurrentFloor(int floor);

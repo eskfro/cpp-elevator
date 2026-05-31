@@ -42,12 +42,9 @@ void ElevatorNode::eventLoop() {
         setBtnLamps();
         
         // [ Event ] - Emergency Stop
-        bool css = elev.getStopSignal();
-        if (css && !prev_stop) {
+        if (elev.getStopSignal()) {
             event(controller.fsm_emergency_stop(&elev));
-            prev_stop = css;
         }
-        
         // [ Event ] - NewFloor
         int cf = elev.getFloorSensor();
         if (cf != prev_floor && cf != BETWEEN_FLOORS) {
