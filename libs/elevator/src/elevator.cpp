@@ -10,179 +10,179 @@ namespace elev::elevator {
 
 
 Elevator::Elevator() {
-    state.active = true;
+    state_.active = true;
 }
 
 
-bool Elevator::getObs() {
-    return state.obstruction;
+bool Elevator::Obs() {
+    return state_.obstruction;
 }
 
 
-void Elevator::initToFloor() {
-    setMotorDir(elev::common::MotorDir::DOWN);
+void Elevator::InitToFloor() {
+    SetMotorDir(elev::common::MotorDir::DOWN);
 
-    while (getFloorSensor() == BETWEEN_FLOORS) {
+    while (GetFloorSensor() == BETWEEN_FLOORS) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
 
-    setMotorDir(elev::common::MotorDir::STOP);
-    setFloor(getFloorSensor());
-    setFloorIndicator();
+    SetMotorDir(elev::common::MotorDir::STOP);
+    SetFloor(GetFloorSensor());
+    SetFloorIndicator();
 
-    std::cout << "[ Elevator " << state.ID << " ] - INIT to floor " << state.floor << std::endl;
+    std::cout << "[ Elevator " << state_.ID << " ] - INIT to floor " << state_.floor << std::endl;
 }
 
 
-void Elevator::setIP(std::string _IP) {
-    state.IP = _IP;
+void Elevator::SetIP(std::string _IP) {
+    state_.IP = _IP;
 }
 
 
-void Elevator::setID(int _ID) {
-    state.ID = _ID;
+void Elevator::SetID(int _ID) {
+    state_.ID = _ID;
 }
 
 
-void Elevator::setObs(bool obstruction) {
-    this->state.obstruction = obstruction;
+void Elevator::SetObs(bool obstruction) {
+    this->state_.obstruction = obstruction;
 }
 
 
-bool Elevator::getDoorOpen() {
-    return this->state.door_open;
+bool Elevator::DoorOpen() {
+    return this->state_.door_open;
 }
 
 
-void Elevator::setDoorOpen(bool door_open) {
-    this->state.door_open = door_open;
+void Elevator::SetDoorOpen(bool door_open) {
+    this->state_.door_open = door_open;
 }
 
 
-void Elevator::setFloor(int floor) {
-    state.floor = floor;
+void Elevator::SetFloor(int floor) {
+    state_.floor = floor;
 }
 
 
 Elevator::Elevator(int _ID, std::string _IP) {
-    state.ID = _ID;
-    state.IP = _IP;
-    state.active = true;
+    state_.ID = _ID;
+    state_.IP = _IP;
+    state_.active = true;
 }
 
 
 // TODO: idk
-void Elevator::setActivity(bool active) {
-    state.active = active;
+void Elevator::SetActivity(bool active) {
+    state_.active = active;
 };
 
 
-int Elevator::getID() {
-    return state.ID;
+int Elevator::ID() {
+    return state_.ID;
 }
 
 
-std::string Elevator::getIP() {
-    return state.IP;
+std::string Elevator::IP() {
+    return state_.IP;
 }
 
 
-void Elevator::setMotorDir(elev::common::MotorDir dir) {
+void Elevator::SetMotorDir(elev::common::MotorDir dir) {
     using namespace elev::common;
-    MotorDir newDir;
+    enum MotorDir newDir;
 
-    if (state.stop) {
+    if (state_.stop) {
         newDir = MotorDir::STOP;
     } else {
         newDir = dir;
     }
 
     elev::hardware::set_motor_dir(newDir);
-    state.dir = newDir;
+    state_.motor_dir_ = newDir;
 };
 
 
-void Elevator::setMovingState(elev::common::MovingState mov) {
-    state.mov = mov;
+void Elevator::SetMovingState(elev::common::MovingState mov) {
+    state_.moving_state_ = mov;
 }
 
 
-void Elevator::setDoorOpenLamp(int value) {
+void Elevator::SetDoorOpenLamp(int value) {
     elev::hardware::set_door_open_lamp(value);
 }
 
 
-void Elevator::openDoor() {
-    this->setDoorOpenLamp(1);
-    this->state.door_open = true;
-    this->setMovingState(elev::common::MovingState::DOOR_OPEN);
+void Elevator::OpenDoor() {
+    this->SetDoorOpenLamp(1);
+    this->state_.door_open = true;
+    this->SetMovingState(elev::common::MovingState::DOOR_OPEN);
 }
 
 
-void Elevator::closeDoor() {
-    this->setDoorOpenLamp(0);
-    this->state.door_open = false;
+void Elevator::CloseDoor() {
+    this->SetDoorOpenLamp(0);
+    this->state_.door_open = false;
 }
 
 
-void Elevator::setStopLamp(int value) {
+void Elevator::SetStopLamp(int value) {
     elev::hardware::set_stop_lamp(value);
 }   
 
 
-void Elevator::setBtnLamp(int floor, elev::common::BtnType btn, int value) {
+void Elevator::SetBtnLamp(int floor, elev::common::BtnType btn, int value) {
     elev::hardware::set_btn_lamp(btn, floor, value);
 }
 
 
-void Elevator::setFloorIndicator() {
-    if (state.floor == BETWEEN_FLOORS) return;
-    elev::hardware::set_floor_indicator(state.floor);
+void Elevator::SetFloorIndicator() {
+    if (state_.floor == BETWEEN_FLOORS) return;
+    elev::hardware::set_floor_indicator(state_.floor);
 }
 
 
-int Elevator::getBtnSignal(int floor, elev::common::BtnType btn) {
+int Elevator::GetBtnSignal(int floor, elev::common::BtnType btn) {
     return elev::hardware::get_btn_signal(btn, floor);
 }
 
 
-int Elevator::getFloorSensor() {
+int Elevator::GetFloorSensor() {
     return elev::hardware::get_floor_sensor();
 }
 
 
-int Elevator::getStopSignal() {
+int Elevator::GetStopSignal() {
     return elev::hardware::get_stop_signal();
 }
 
 
-int Elevator::getObsSignal() {
+int Elevator::GetObsSignal() {
     return elev::hardware::get_obs_signal();
 }
 
 
-elev::common::MovingState Elevator::getMovingState() {
-    return state.mov;
+elev::common::MovingState Elevator::MovingState() {
+    return state_.moving_state_;
 }
 
 
-int Elevator::getFloor() {
-    return state.floor;
+int Elevator::Floor() {
+    return state_.floor;
 }
 
 
-elev::common::MotorDir Elevator::getMotorDir() {
-    return state.dir;
+elev::common::MotorDir Elevator::MotorDir() {
+    return state_.motor_dir_;
 }
 
 
-void Elevator::setStop(bool stop) {
-    state.stop = stop;
+void Elevator::SetStop(bool stop) {
+    state_.stop = stop;
 }
 
 
-bool Elevator::getStop() {
-    return state.stop;
+bool Elevator::Stop() {
+    return state_.stop;
 }
 
 

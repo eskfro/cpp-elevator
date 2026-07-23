@@ -1,6 +1,5 @@
 #include <iostream>
 #include <unistd.h>
-#include <memory>
 
 #include <elevator-node/elevator_node.hpp>
 
@@ -16,7 +15,8 @@ int main() {
 
     std::cout << "=== MAIN THREAD ===" << std::endl;
 
-    // TODO: parse this from cmd line
+    // TODO:
+    // parse this from cmd line
     int ID = 0;
     std::string IP = "localhost";
     
@@ -24,8 +24,6 @@ int main() {
 
     elev::node::ElevatorNode node = elev::node::ElevatorNode(ID, IP);
     
-    node.eventLoop();
-
-
+    node.EventLoop();
 
 };

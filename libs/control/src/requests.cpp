@@ -9,7 +9,7 @@ bool RequestTable::is_equal(RequestTable rhs) {
    
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
-            if (table[f][b] != rhs.getValueAt(f, (BtnType)b)) {
+            if (table_[f][b] != rhs.Value(f, (BtnType)b)) {
                 return false;
             }
         }
@@ -25,7 +25,7 @@ RequestTable RequestTable::set_equal(RequestTable rhs) {
     RequestTable res{};
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
-            res.setValueAt(f, (BtnType)b, rhs.getValueAt(f, (BtnType)b));  
+            res.SetValue(f, (BtnType)b, rhs.Value(f, (BtnType)b));  
         }
     }
     return res;
@@ -37,38 +37,38 @@ RequestTable::RequestTable() {
     using namespace elev::config;
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
-            table[f][b] = false;
+            table_[f][b] = false;
         }
     }
 }
 
 
-void RequestTable::setValueAt(int floor, elev::common::BtnType btn, bool value) {
-    this->table[floor][(int)btn] = value;
+void RequestTable::SetValue(int floor, elev::common::BtnType btn, bool value) {
+    this->table_[floor][(int)btn] = value;
 }
 
 
-bool RequestTable::getValueAt(int floor, elev::common::BtnType btn) {
-    return table[floor][(int)btn];
+bool RequestTable::Value(int floor, elev::common::BtnType btn) {
+    return table_[floor][(int)btn];
 }
 
 
-bool RequestTable::isRequestHere(int floor) {
+bool RequestTable::IsRequestHere(int floor) {
     using namespace elev::config;
-    for (int b = 0; b < N_BUTTONS; b++) if (this->table[floor][b]) return true;
+    for (int b = 0; b < N_BUTTONS; b++) if (this->table_[floor][b]) return true;
     return false;
 }
 
 
-bool RequestTable::isRequestAbove(int floor) {
+bool RequestTable::IsRequestAbove(int floor) {
     using namespace elev::config;
-    for (int f = floor+1; f < N_FLOORS; f++) if (isRequestHere(f)) return true;
+    for (int f = floor+1; f < N_FLOORS; f++) if (IsRequestHere(f)) return true;
     return false;
 }
 
 
-bool RequestTable::isRequestBelow(int floor) {
-    for (int df = floor-1; df >= 0; df--) if (isRequestHere(df)) return true;
+bool RequestTable::IsRequestBelow(int floor) {
+    for (int df = floor-1; df >= 0; df--) if (IsRequestHere(df)) return true;
     return false;
 }
 

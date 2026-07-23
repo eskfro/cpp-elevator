@@ -9,57 +9,53 @@
 namespace elev::elevator {
 
 class Elevator {
-    private:
-        elev::common::ElevatorState state;
-
     public:
         Elevator();
         Elevator(int _ID, std::string _IP);
 
-        void initToFloor();
+        void InitToFloor();
 
-        
         // Door
-        void openDoor();
-        void closeDoor();
+        void OpenDoor();
+        void CloseDoor();
         
         // Set
-        void setID(int _ID);
-        void setIP(std::string _IP);
-        void setFloor(int floor);
-        void setMotorDir(elev::common::MotorDir dir);
-        void setMovingState(elev::common::MovingState mov);
-        void setObs(bool obs);
-        void setActivity(bool active);
-        void setDoorOpen(bool door_open);
-        void setStop(bool stop);
+        void SetID(int _ID);
+        void SetIP(std::string _IP);
+        void SetFloor(int floor);
+        void SetMotorDir(elev::common::MotorDir dir);
+        void SetMovingState(elev::common::MovingState mov);
+        void SetObs(bool obs);
+        void SetActivity(bool active);
+        void SetDoorOpen(bool door_open);
+        void SetStop(bool stop);
         
         // Get
-        int getID();
-        std::string getIP();
-        int getFloor();
-        elev::common::MotorDir getMotorDir();
-        elev::common::MovingState getMovingState();
-        bool getDoorOpen();
-        bool getStop();
-        bool getObs();
+        int ID();
+        std::string IP();
+        int Floor();
+        elev::common::MotorDir MotorDir();
+        elev::common::MovingState MovingState();
+        bool DoorOpen();
+        bool Stop();
+        bool Obs();
 
         // Lamps
-        void setDoorOpenLamp(int value);
-        void setFloorIndicator();
-        void setStopLamp(int value);
-        void setBtnLamp(int floor, elev::common::BtnType btn, int value);
+        void SetDoorOpenLamp(int value);
+        void SetFloorIndicator();
+        void SetStopLamp(int value);
+        void SetBtnLamp(int floor, elev::common::BtnType btn, int value);
 
         // Get signals
-        int getBtnSignal(int floor, elev::common::BtnType btn);
-        int getFloorSensor(void);
-        int getStopSignal(void);
-        int getObsSignal(void);
+        int GetBtnSignal(int floor, elev::common::BtnType btn);
+        int GetFloorSensor(void);
+        int GetStopSignal(void);
+        int GetObsSignal(void);
 
+    private:
+        elev::common::ElevatorState state_;
 
-
-        
 };
 
-}
+} // namespace elev::elevator
 

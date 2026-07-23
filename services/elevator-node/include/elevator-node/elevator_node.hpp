@@ -1,45 +1,40 @@
 #pragma once
 
+#include <stdio.h>
+#include <string>
+#include <array>
+
 // Libs
 #include <control/controller.hpp>
 #include <ordersync/ordersync.hpp>
-#include <network/udp_bcast.hpp>
+#include <network/peers.hpp>
 
 namespace elev::node {
 
 // The node connecting things
 class ElevatorNode {
-    private:
-        bool running = true;
-        
-        // hardware abstraction
-        elev::elevator::Elevator elev;
 
-        // hardware controller
-        elev::control::Controller controller;
-
-        // overview of all elevator-nodes :)
-        elev::network::Peers peers;
-    
     public:
         ElevatorNode();
         ElevatorNode(int _ID, std::string _IP);
 
-        void eventLoop();
-        void event(ButtonFlags b2c);
+        void EventLoop();
+        void Event(ButtonFlags b2c);
 
         // Polling shi
-        void checkBtnSignals();
-        void checkStopSignal();
-        void checkObs();
+        void CheckBtnSignals();
+        void CheckStopSignal();
+        void CheckObs();
 
-        void syncRequests();
-        void setBtnLamps();
-        
+        void SyncRequests();
+        void SetBtnLamps();
+
+
+    private:
+        bool running_ = true;
+        elev::elevator::Elevator elev_;
+        elev::control::Controller controller_;
+        elev::network::Peers peers_;
 };
 
-
-
-
-
-}
+} //namespace elev::node

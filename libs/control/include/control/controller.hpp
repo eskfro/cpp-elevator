@@ -1,8 +1,8 @@
 #pragma once
 
-#include <array>
-
 // Libs
+#include "common/config.hpp"
+#include <array>
 #include <elevator/elevator.hpp>
 #include <control/requests.hpp>
 #include <ordersync/ordersync.hpp>
@@ -14,43 +14,40 @@ namespace elev::control {
 
 class Controller {
     private:
-        RequestTable requests;
-        DoorTimer doortimer;
-        Inertia inertia;
+        RequestTable requests_;
+        DoorTimer doortimer_;
+        Inertia inertia_;
 
     public:
         Controller();
 
-        void updateRequests(elev::ordersync::OrderSlice slice);
+        void UpdateRequests(std::array<std::array<bool, N_BUTTONS>, N_FLOORS> bool_table);
 
-        void setInertia(MotorDir dir);
-        void executeDecision(elev::elevator::Elevator* elev, DirMovPair pair);
-        void stopAndOpenDoor(elev::elevator::Elevator* elev);
-        int tryCloseDoor(elev::elevator::Elevator* elev);
+        void SetInertia(MotorDir dir);
+        void ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair);
+        void StopAndOpenDoor(elev::elevator::Elevator* elev);
+        int TryCloseDoor(elev::elevator::Elevator* elev);
 
         // Event driven FSM
-        ButtonFlags fsm_table_update(elev::elevator::Elevator* elev);
-        ButtonFlags fsm_floor_arrival(elev::elevator::Elevator* elev);
-        ButtonFlags fsm_door_timeout(elev::elevator::Elevator* elev);
-        ButtonFlags fsm_emergency_stop(elev::elevator::Elevator* elev);
+        ButtonFlags _fsm_table_update(elev::elevator::Elevator* elev);
+        ButtonFlags _fsm_floor_arrival(elev::elevator::Elevator* elev);
+        ButtonFlags _fsm_door_timeout(elev::elevator::Elevator* elev);
+        ButtonFlags _fsm_emergency_stop(elev::elevator::Elevator* elev);
 
         // Change values on table 
-        ButtonFlags clearCurrentFloor(int floor);
+        ButtonFlags ClearCurrentFloor(int floor);
 
         // Decisions
-        bool shouldStop(int floor);
-        bool shouldClearImmediately(int floor, int btnFloor, BtnType btn);
-        DirMovPair chooseDirection(int floor);
+        bool ShouldStop(int floor);
+        bool ShouldClearImmediately(int floor, int btnFloor, BtnType btn);
+        bool IsRequestsChanged(elev::control::RequestTable prev_requests);
+
+        DirMovPair ChooseDirection(int floor);
 
         // get
-        RequestTable getRequests();
-        DoorTimer* getDoorTimer();
+        RequestTable Requests();
+        DoorTimer* Doortimer();
 
 };
 
-
-
-
-
-
-}
+} // namespace elev::control

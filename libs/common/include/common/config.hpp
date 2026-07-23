@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 namespace elev::config {
 
     // Hardware config
@@ -13,7 +11,6 @@ namespace elev::config {
     constexpr int N_ELEVS = 4;
     constexpr int N_FLOORS = 4;
     constexpr int N_BUTTONS = 3;
-
     constexpr int DOOR_OPEN_TIME_MS = 3000;
 
-}
+} // namespace elev::config

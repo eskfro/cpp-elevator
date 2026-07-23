@@ -10,31 +10,31 @@ class DoorTimer {
         using TimePoint = std::chrono::time_point<Clock>;
         using Duration = std::chrono::milliseconds;
 
-        TimePoint m_endTime;
-        bool m_active{false};
+        TimePoint endTime_;
+        bool active_{false};
 
     public:
         DoorTimer() = default;
 
-        void start(int duration_ms) {
-            m_endTime = Clock::now() + Duration(duration_ms);
-            m_active = true;
+        void Start(int duration_ms) {
+            endTime_ = Clock::now() + Duration(duration_ms);
+            active_ = true;
         }
 
         // Stops the timer explicitly
-        void stop() {
-            m_active = false;
+        void Stop() {
+            active_ = false;
         }
 
         // Checks if the timer has reached its end time
-        bool isExpired() const {
-            if (!m_active) return false;
-            return Clock::now() >= m_endTime;
+        bool Expired() const {
+            if (!active_) return false;
+            return Clock::now() >= endTime_;
         }
 
-        bool isActive() const {
-            return m_active;
+        bool Active() const {
+            return active_;
         }
 };
 
-}
+} // namespace elev::common

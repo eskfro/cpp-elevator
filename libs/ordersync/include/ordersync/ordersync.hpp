@@ -1,6 +1,7 @@
 #pragma once
 
 // Libs
+#include <array>
 #include <common/config.hpp>
 #include <common/types.hpp>
 
@@ -10,35 +11,28 @@ using namespace elev::config;
 
 namespace elev::ordersync {
 
-
-class OrderSlice {
-    private:
-        OrderStatus table[N_FLOORS][N_BUTTONS];
-    
+class OrderTable {
     public:
-        OrderSlice() = default;
-        
-        OrderStatus getValueAt(int floor, BtnType btn);
-        void setValueAt(int floor, BtnType btn, OrderStatus status);
+        OrderTable() = default;
+        OrderStatus Status(int floor, BtnType btn);
+        void SetStatus(int floor, BtnType btn, OrderStatus status);
+        void SetFromButtonFlags(int floor, ButtonFlags b2c);
+        void ClearTable();
+        std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> ToBoolTable();
+
+    private:
+        OrderStatus table_[N_FLOORS][N_BUTTONS];
 };
 
 
 class OrderMatrix {
-    private:
-        OrderStatus table[N_ELEVS][N_FLOORS][N_BUTTONS];
-
     public:
         OrderMatrix();
+        void ClearMatrix();
+        OrderTable* Table(int elevID);
 
-        void clearTable();
-
-        OrderStatus getStatusAt(int elevID, int floor, BtnType btn);
-        void setStatusAt(int elevID, int floor, BtnType btn, OrderStatus status);
-
-        OrderSlice getSliceAt(int elevID);
-
-        void setFromButtonFlags(int elevID, int floor, ButtonFlags b2c);  
+    private:
+        OrderTable matrix_[N_ELEVS];
 };
 
-
-} //end namespace
+} // namespace elev::ordersync

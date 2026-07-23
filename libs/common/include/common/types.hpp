@@ -44,8 +44,8 @@ enum class MovingState : std::uint8_t {
 
 
 struct DirMovPair {
-    MotorDir dir;
-    MovingState mov;
+    MotorDir motor_dir;
+    MovingState moving_state;
 };
 
 
@@ -67,12 +67,16 @@ enum class OrderStatus : std::uint8_t {
 struct ElevatorState {
     int ID;
     int floor;
-    MotorDir dir;
-    MovingState mov;
+
     bool active;
     bool obstruction;
+    bool fault;
     bool door_open;
     bool stop;
+
+    MotorDir motor_dir_;
+    MovingState moving_state_;
+    
     std::string IP;
 };
 
@@ -87,15 +91,15 @@ inline std::string btnTypeToStr(BtnType btn) {
 }
 
 
-inline void print(std::string s) {
+inline void Print(std::string s) {
     std::cout << s << std::endl;
 }
 
 
-inline void printBtnPress(int elevID, int floor, BtnType btn) {
+inline void PrintBtnPress(int elevID, int floor, BtnType btn) {
     std::cout << "[ Elevator " << elevID << " ] - buttonpress " << btnTypeToStr(btn) << \
     " at floor " << floor << std::endl;
 }
 
 
-}// end namespace
+}// namespace elev::common
