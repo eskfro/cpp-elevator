@@ -1,3 +1,4 @@
+#include "common/types.hpp"
 #include "ordersync/ordersync.hpp"
 #include <thread>
 
@@ -21,7 +22,7 @@ ElevatorNode::ElevatorNode(int _ID, std::string _IP) {
 
 void ElevatorNode::EventLoop() {
     int thisID = elev_.ID();
-    int prev_floor = elev_.GetFloorSensor();
+    int prev_floor = elev_.FloorSensor();
     bool prev_stop = false;
     elev::control::RequestTable prev_requests{};
 
@@ -39,32 +40,27 @@ void ElevatorNode::EventLoop() {
         //    peers_.MergeIncomingMatrix(int matr, elev::ordersync::OrderMatrix matrix)
         //}
         
-        // Button press
         CheckObs();
         CheckBtnSignals();
         SyncRequests();
         SetBtnLamps();
         
-        // [ Event ] - Emergency Stop
-        if (elev_.GetStopSignal()) {
+        if (elev_.StopSignal()) {
             Event(controller_._fsm_emergency_stop(&elev_));
         }
-        // [ Event ] - NewFloor
-        int cf = elev_.GetFloorSensor();
+
+        int cf = elev_.FloorSensor();
         if (cf != prev_floor && cf != BETWEEN_FLOORS) {
             elev_.SetFloor(cf);
             Event(controller_._fsm_floor_arrival(&elev_));
             prev_floor = elev_.Floor();
         }
 
-        // [ Event ] - TableUpdate
-        bool req_changed = controller_.IsRequestsChanged(prev_requests);
-        if (req_changed) {
+        if (controller_.IsRequestsChanged(prev_requests)) {
             Event(controller_._fsm_table_update(&elev_));
             prev_requests = controller_.Requests();
         }
 
-        // [ Event ] - DoorTimeout
         if (controller_.Doortimer()->Expired()) {
             controller_.Doortimer()->Stop();
             Event(controller_._fsm_door_timeout(&elev_));
@@ -76,7 +72,7 @@ void ElevatorNode::EventLoop() {
 
 
 void ElevatorNode::CheckObs() {
-    elev_.SetObs(elev_.GetObsSignal()); // set obs from sensor
+    elev_.SetObs(elev_.ObsSignal()); // set obs from sensor
 }
 
 
@@ -105,7 +101,7 @@ void ElevatorNode::CheckBtnSignals() {
 
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
-            if (elev_.GetBtnSignal(f, (BtnType)b)) {
+            if (elev_.Buttons()->Button(f, (BtnType)b)->Pressed()) {
     
                 PrintBtnPress(e, f, (BtnType)b);
 

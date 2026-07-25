@@ -51,7 +51,7 @@ ButtonFlags Controller::_fsm_emergency_stop(elev::elevator::Elevator* elev) {
     elev->SetMotorDir(MotorDir::STOP);
     elev->SetStopLamp(1);
 
-    if (elev->GetFloorSensor() != BETWEEN_FLOORS) {
+    if (elev->FloorSensor() != BETWEEN_FLOORS) {
         if (!elev->DoorOpen()) elev->OpenDoor();
         doortimer_.Start(DOOR_OPEN_TIME_MS);
     }
@@ -137,7 +137,7 @@ ButtonFlags Controller::_fsm_door_timeout(elev::elevator::Elevator* elev) {
     using namespace elev::common;
     
     DirMovPair pair;
-    elev->SetObs(elev->GetObsSignal());
+    elev->SetObs(elev->ObsSignal());
     ButtonFlags zero{};
     int floor = elev->Floor();
 

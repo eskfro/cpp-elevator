@@ -1,9 +1,9 @@
+#include "buttons/button.hpp"
 #include <thread>
 #include <chrono> 
 
-#include <elevator/elevator.hpp>
-
 // Libs
+#include <elevator/elevator.hpp>
 #include <hardware/hardware.hpp>
 
 namespace elev::elevator {
@@ -11,6 +11,9 @@ namespace elev::elevator {
 
 Elevator::Elevator() {
     state_.active = true;
+
+    buttons_ = buttons::ButtonMatrix();
+
 }
 
 
@@ -22,15 +25,20 @@ bool Elevator::Obs() {
 void Elevator::InitToFloor() {
     SetMotorDir(elev::common::MotorDir::DOWN);
 
-    while (GetFloorSensor() == BETWEEN_FLOORS) {
+    while (FloorSensor() == BETWEEN_FLOORS) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
 
     SetMotorDir(elev::common::MotorDir::STOP);
-    SetFloor(GetFloorSensor());
+    SetFloor(FloorSensor());
     SetFloorIndicator();
 
     std::cout << "[ Elevator " << state_.ID << " ] - INIT to floor " << state_.floor << std::endl;
+}
+
+
+elev::buttons::ButtonMatrix* Elevator::Buttons() {
+    return &buttons_;
 }
 
 
@@ -141,22 +149,17 @@ void Elevator::SetFloorIndicator() {
 }
 
 
-int Elevator::GetBtnSignal(int floor, elev::common::BtnType btn) {
-    return elev::hardware::get_btn_signal(btn, floor);
-}
-
-
-int Elevator::GetFloorSensor() {
+int Elevator::FloorSensor() {
     return elev::hardware::get_floor_sensor();
 }
 
 
-int Elevator::GetStopSignal() {
+int Elevator::StopSignal() {
     return elev::hardware::get_stop_signal();
 }
 
 
-int Elevator::GetObsSignal() {
+int Elevator::ObsSignal() {
     return elev::hardware::get_obs_signal();
 }
 

@@ -5,6 +5,7 @@
 // Libs
 #include <common/config.hpp>
 #include <common/types.hpp>
+#include <buttons/button.hpp>
 
 namespace elev::elevator {
 
@@ -31,6 +32,7 @@ class Elevator {
         void SetStop(bool stop);
         
         // Get
+        elev::buttons::ButtonMatrix* Buttons();
         int ID();
         std::string IP();
         int Floor();
@@ -47,13 +49,13 @@ class Elevator {
         void SetBtnLamp(int floor, elev::common::BtnType btn, int value);
 
         // Get signals
-        int GetBtnSignal(int floor, elev::common::BtnType btn);
-        int GetFloorSensor(void);
-        int GetStopSignal(void);
-        int GetObsSignal(void);
+        int FloorSensor(void);
+        int StopSignal(void);
+        int ObsSignal(void);
 
     private:
         elev::common::ElevatorState state_;
+        elev::buttons::ButtonMatrix buttons_;
 
 };
 
