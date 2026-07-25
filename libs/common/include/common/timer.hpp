@@ -10,14 +10,14 @@ class DoorTimer {
         using TimePoint = std::chrono::time_point<Clock>;
         using Duration = std::chrono::milliseconds;
 
-        TimePoint endTime_;
+        TimePoint end_time_;
         bool active_{false};
 
     public:
         DoorTimer() = default;
 
         void Start(int duration_ms) {
-            endTime_ = Clock::now() + Duration(duration_ms);
+            end_time_ = Clock::now() + Duration(duration_ms);
             active_ = true;
         }
 
@@ -29,7 +29,7 @@ class DoorTimer {
         // Checks if the timer has reached its end time
         bool Expired() const {
             if (!active_) return false;
-            return Clock::now() >= endTime_;
+            return Clock::now() >= end_time_;
         }
 
         bool Active() const {

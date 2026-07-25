@@ -1,5 +1,5 @@
-#include "network/peers.hpp"
-#include "common/types.hpp"
+#include <network/peers.hpp>
+#include <common/types.hpp>
 
 namespace elev::network {
 

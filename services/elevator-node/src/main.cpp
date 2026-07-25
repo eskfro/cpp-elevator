@@ -1,5 +1,7 @@
 #include <iostream>
 #include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #include <elevator-node/elevator_node.hpp>
 
@@ -23,7 +25,18 @@ int main() {
     elev::hardware::init_hardware();
 
     elev::node::ElevatorNode node = elev::node::ElevatorNode(ID, IP);
-    
-    node.EventLoop();
+
+    // TODO: note start time with clock
+
+    constexpr auto kSampleTime = std::chrono::milliseconds(40);
+    auto next_tick = std::chrono::steady_clock::now();
+
+    while (node.Running()) {
+        
+        node.Step();
+
+        next_tick += kSampleTime;
+        std::this_thread::sleep_until(next_tick);
+    }
 
 };

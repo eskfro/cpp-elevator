@@ -1,4 +1,5 @@
 add_library(elevator
+    src/elevator_state.cpp
     src/elevator.cpp
 )
 target_include_directories(elevator PUBLIC include)

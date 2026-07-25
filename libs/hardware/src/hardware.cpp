@@ -99,7 +99,7 @@ void set_stop_lamp(int value) {
 }
 
 
-int get_btn_signal(elev::common::BtnType btn, int floor) {
+int get_button_signal(elev::common::BtnType btn, int floor) {
 
     int button = static_cast<int>(btn);
 
@@ -132,7 +132,7 @@ int get_stop_signal(void) {
 }
 
 
-int get_obs_signal(void) {
+int get_obstruction_signal(void) {
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {9}, 4, 0);
     char buf[4];

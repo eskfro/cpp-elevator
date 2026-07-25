@@ -12,7 +12,7 @@ elev::button::Button::Button(int floor, elev::common::BtnType btn) :
 
 bool elev::button::Button::Pressed() {
     bool button_pressed = false;
-    curr_press_ = elev::hardware::get_btn_signal(btn_, floor_);
+    curr_press_ = elev::hardware::get_button_signal(btn_, floor_);
 
     if (curr_press_ == true && prev_press_ == false) {
         button_pressed = true;

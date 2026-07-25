@@ -15,19 +15,23 @@ namespace elev::node {
 class ElevatorNode {
 
     public:
-        ElevatorNode();
-        ElevatorNode(int _ID, std::string _IP);
+        ElevatorNode() = default;
+        ElevatorNode(int ID, std::string IP);
 
-        void EventLoop();
+        void Step();
+        void InitElevator();
         void Event(ButtonFlags b2c);
 
-        // Polling shi
-        void CheckBtnSignals();
-        void CheckStopSignal();
-        void CheckObs();
+        // Getters
+        bool Running();
 
-        void SyncRequests();
-        void SetBtnLamps();
+        // Polling shi
+        void UpdateOrderMatrixFromButtonSignals();
+        void CheckStopSignal();
+
+        void SyncRequestTableFromOrderMatrix();
+        
+        void SetButtonLamps();
 
 
     private:

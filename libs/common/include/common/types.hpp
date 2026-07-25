@@ -64,21 +64,6 @@ enum class OrderStatus : std::uint8_t {
 };
 
 
-struct ElevatorState {
-    int ID;
-    int floor;
-
-    bool active;
-    bool obstruction;
-    bool fault;
-    bool door_open;
-    bool stop;
-
-    MotorDir motor_dir_;
-    MovingState moving_state_;
-    
-    std::string IP;
-};
 
 
 inline std::string btnTypeToStr(BtnType btn) {

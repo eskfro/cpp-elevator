@@ -6,6 +6,7 @@
 #include <common/config.hpp>
 #include <common/types.hpp>
 #include <ordersync/ordersync.hpp>
+#include <elevator/elevator.hpp>
 
 namespace elev::network {
 
@@ -13,7 +14,7 @@ class Peers {
     private:
         int num_elevs_;
         std::array<elev::ordersync::OrderMatrix, elev::config::N_ELEVS> all_matrices_;
-        std::array<elev::common::ElevatorState, elev::config::N_ELEVS> all_elev_states_;
+        std::array<elev::elevator::ElevatorState, elev::config::N_ELEVS> all_elev_states_;
 
     public:
         Peers();

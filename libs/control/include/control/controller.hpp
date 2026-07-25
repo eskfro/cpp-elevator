@@ -13,11 +13,6 @@ using namespace elev::common;
 namespace elev::control {
 
 class Controller {
-    private:
-        RequestTable requests_;
-        DoorTimer doortimer_;
-        Inertia inertia_;
-
     public:
         Controller();
 
@@ -41,6 +36,7 @@ class Controller {
         bool ShouldStop(int floor);
         bool ShouldClearImmediately(int floor, int btnFloor, BtnType btn);
         bool IsRequestsChanged(elev::control::RequestTable prev_requests);
+        bool RequestTableUpdated();
 
         DirMovPair ChooseDirection(int floor);
 
@@ -48,6 +44,11 @@ class Controller {
         RequestTable Requests();
         DoorTimer* Doortimer();
 
+    private:
+        RequestTable prev_requests_{};
+        RequestTable requests_{};
+        DoorTimer doortimer_;
+        Inertia inertia_;
 };
 
 } // namespace elev::control
