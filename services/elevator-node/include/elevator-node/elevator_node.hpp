@@ -15,7 +15,7 @@ namespace elev::node {
 class ElevatorNode {
 
     public:
-        ElevatorNode() = default;
+        ElevatorNode() = delete;
         ElevatorNode(int ID, std::string IP);
 
         void Step();
@@ -35,7 +35,7 @@ class ElevatorNode {
 
 
     private:
-        bool running_ = true;
+        bool running_;
         elev::elevator::Elevator elev_;
         elev::control::Controller controller_;
         elev::network::Peers peers_;

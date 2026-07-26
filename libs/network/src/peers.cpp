@@ -7,7 +7,7 @@ Peers::Peers() : num_elevs_{0} {}
 
 
 
-void Peers::SetNumElevs(int n) {
+void Peers::IncrementNumElevs(int n) {
      num_elevs_ = n;
 }
 

@@ -28,7 +28,7 @@ class ElevatorState {
         void SetStopped(bool stopped);
         void SetMotorDir(elev::common::MotorDir dir);
         void SetMovingState(elev::common::MovingState mov);
-        void SetObs(bool obs);
+        void SetObstruction(bool obs);
         void SetActivity(bool active);
         void SetDoorOpen(bool door_open);
 

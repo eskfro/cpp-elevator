@@ -1,7 +1,9 @@
+#include <thread>
+
+// Libs
 #include "common/types.hpp"
 #include "elevator/elevator.hpp"
 #include "ordersync/ordersync.hpp"
-#include <thread>
 
 // Service
 #include <elevator-node/elevator_node.hpp>
@@ -17,20 +19,18 @@ bool ElevatorNode::Running() {
 
 
 ElevatorNode::ElevatorNode(int ID, std::string IP) :
-    running_(true), 
-    elev_(ID, IP) { }   
+    running_(true),
+    elev_(ID, IP) {
+        InitElevator();
+    }   
 
 
 void ElevatorNode::Step() {
-
-    elev::control::RequestTable prev_requests{};
- 
     // TODO:
     // Queue of OrderMatrix's sent over the network from the other nodes
     //for (matrix : peers_.matrixQueue_) {
     //    peers_.MergeIncomingMatrix(int matr, elev::ordersync::OrderMatrix matrix)
     //}
-
     elev_.Step();
 
     UpdateOrderMatrixFromButtonSignals();
@@ -40,18 +40,13 @@ void ElevatorNode::Step() {
     if (elev_.StopSignal()) {
         Event(controller_._fsm_emergency_stop(&elev_));
     }
-
     if (elev_.HitNewFloor()) {
         Event(controller_._fsm_floor_arrival(&elev_));
     }
-
     if (controller_.RequestTableUpdated()) {
         Event(controller_._fsm_table_update(&elev_));
-        prev_requests = controller_.Requests();
     }
-
     if (controller_.Doortimer()->Expired()) {
-        controller_.Doortimer()->Stop();
         Event(controller_._fsm_door_timeout(&elev_));
     }
 
@@ -115,4 +110,4 @@ void ElevatorNode::SetButtonLamps() {
 }
 
 
-} // end namespace
+} // namespace elev::node

@@ -72,7 +72,7 @@ void ElevatorState::SetMovingState(elev::common::MovingState mov) {
     moving_state_ = mov;
 }
 
-void ElevatorState::SetObs(bool obs) {
+void ElevatorState::SetObstruction(bool obs) {
     obstruction_ = obs;
 }
 

@@ -58,7 +58,7 @@ void OrderMatrix::ClearMatrix() {
     
 std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> OrderTable::ToBoolTable(){
     using namespace elev::common;
-    std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> result{0};
+    std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> result{};
 
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {            

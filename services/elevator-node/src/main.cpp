@@ -14,9 +14,7 @@
 #include <network/udp_bcast.hpp>
 
 int main() {
-
-    std::cout << "=== MAIN THREAD ===" << std::endl;
-
+    elev::common::Print("=== ELEVATOR NODE ===");
     // TODO:
     // parse this from cmd line
     int ID = 0;
@@ -26,11 +24,8 @@ int main() {
 
     elev::node::ElevatorNode node = elev::node::ElevatorNode(ID, IP);
 
-    // TODO: note start time with clock
-
     constexpr auto kSampleTime = std::chrono::milliseconds(40);
     auto next_tick = std::chrono::steady_clock::now();
-
     while (node.Running()) {
         
         node.Step();

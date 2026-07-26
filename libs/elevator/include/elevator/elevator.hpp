@@ -12,7 +12,7 @@ namespace elev::elevator {
 
 class Elevator {
     public:
-        Elevator() = default;
+        Elevator() = delete;
         Elevator(int _ID, std::string _IP);
 
         bool HitNewFloor();

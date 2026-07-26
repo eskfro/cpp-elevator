@@ -136,8 +136,10 @@ ButtonFlags Controller::_fsm_door_timeout(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator "<< elev->State()->ID() << " ] - FSM: Door Timeout" << std::endl;
     using namespace elev::common;
     
+    doortimer_.Stop();
+    
     DirMovPair pair;
-    elev->State()->SetObs(elev->ObstructionSignal());
+    elev->State()->SetObstruction(elev->ObstructionSignal());
     ButtonFlags zero{};
     int floor = elev->State()->Floor();
 
@@ -284,11 +286,12 @@ ButtonFlags Controller::ClearCurrentFloor(int floor) {
 
 
 bool Controller::RequestTableUpdated() {
+    bool res = false;
     if (!requests_.is_equal(prev_requests_)) {
-        prev_requests_ = requests_;
-        return true;
+        res = true;
     }
-    return false;
+    prev_requests_ = requests_;
+    return res;
 }
 
 };

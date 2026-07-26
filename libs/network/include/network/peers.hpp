@@ -11,11 +11,6 @@
 namespace elev::network {
 
 class Peers {
-    private:
-        int num_elevs_;
-        std::array<elev::ordersync::OrderMatrix, elev::config::N_ELEVS> all_matrices_;
-        std::array<elev::elevator::ElevatorState, elev::config::N_ELEVS> all_elev_states_;
-
     public:
         Peers();
                 
@@ -23,9 +18,15 @@ class Peers {
         int NumElevs();
 
         void SetMatrix(int elevID, elev::ordersync::OrderMatrix matrix);
-        void SetNumElevs(int n);
+        void IncrementNumElevs();
+        void DecrementNumElevs();
         void MergeIncomingMatrix(int elevID, elev::ordersync::OrderMatrix matrix);
         void SetClearOrders(int elevID, int floor, ButtonFlags b2c);
+    
+    private:
+        int num_elevs_{};
+        std::array<elev::ordersync::OrderMatrix, elev::config::N_ELEVS> all_matrices_{};
+        std::array<elev::elevator::ElevatorState, elev::config::N_ELEVS> all_elev_states_{};
 
 };
 

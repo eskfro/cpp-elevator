@@ -14,17 +14,24 @@ Elevator::Elevator(int ID, std::string IP) {
     buttons_ = elev::buttons::ButtonMatrix();
     state_.SetID(ID);
     state_.SetIP(IP);
+    state_.SetFloor(FloorSensor());
+    state_.SetStopped(false);
+    state_.SetMotorDir(common::MotorDir::STOP);
+    state_.SetMovingState(common::MovingState::IDLE);
+    state_.SetObstruction(ObstructionSignal());
     state_.SetActivity(true);
+    state_.SetDoorOpen(false);
 }
 
 
 void Elevator::InitToFloor() {
-    state_.SetMotorDir(elev::common::MotorDir::DOWN);
+    SetMotorDir(elev::common::MotorDir::DOWN);
     while (FloorSensor() == BETWEEN_FLOORS) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
-    state_.SetMotorDir(elev::common::MotorDir::STOP);
+    SetMotorDir(elev::common::MotorDir::STOP);
     state_.SetFloor(FloorSensor());
+    state_.SetMotorDir(elev::common::MotorDir::STOP);
     SetFloorIndicator();
     std::cout << "[ Elevator " << state_.ID() << " ] - INIT to floor " << state_.Floor() << std::endl;
 }
@@ -32,17 +39,18 @@ void Elevator::InitToFloor() {
 
 void Elevator::Step() {
     state_.SetFloor(FloorSensor());
-    state_.SetObs(ObstructionSignal()); // Set Obs from sensor
+    state_.SetObstruction(ObstructionSignal()); // Set Obs from sensor
 
 }
 
 
 bool Elevator::HitNewFloor() {
+    bool res = false;
     if (state_.Floor() != prev_floor_ && state_.Floor() != BETWEEN_FLOORS) {
-        prev_floor_ = state_.Floor();
-        return true;
+        res = true;
     }
-    return false;
+    prev_floor_ = state_.Floor();
+    return res;
 }
 
 
