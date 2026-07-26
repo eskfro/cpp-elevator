@@ -7,13 +7,13 @@ Peers::Peers() : num_elevs_{0} {}
 
 
 
-void Peers::IncrementNumElevs(int n) {
-     num_elevs_ = n;
+int Peers::NumElevs() {
+     return num_elevs_;
 }
 
 
-int Peers::NumElevs() {
-     return num_elevs_;
+void Peers::SetNumElevs(int num_elevs) {
+     num_elevs_ = num_elevs;
 }
 
 

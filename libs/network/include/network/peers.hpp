@@ -18,8 +18,7 @@ class Peers {
         int NumElevs();
 
         void SetMatrix(int elevID, elev::ordersync::OrderMatrix matrix);
-        void IncrementNumElevs();
-        void DecrementNumElevs();
+        void SetNumElevs(int num_elevs);
         void MergeIncomingMatrix(int elevID, elev::ordersync::OrderMatrix matrix);
         void SetClearOrders(int elevID, int floor, ButtonFlags b2c);
     
