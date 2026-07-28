@@ -1,5 +1,5 @@
 # cpp-elevator
-### Info
+### About
 - TTK4145 Distributed Elevator Semester Project.
 - I have already done the project using the Go-language. I now want to do the project in C++.
 - The goal is learning modern C++ development and write good code.
@@ -8,8 +8,14 @@
 ### Build System
 - CMake
 ### Build and Run Elevator Node
-- make node
+```bash
+make node
+```
 ### Build Elevator Server
-- dmd -w -g src/sim_server.d src/timer_event.d -ofSimElevatorServer
+```bash
+dmd -w -g src/sim_server.d src/timer_event.d -ofSimElevatorServer
+```
 ### Start Elevator Server
-- make server
+```bash
+make server
+```
