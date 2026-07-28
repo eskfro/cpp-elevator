@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 project(cpp-elevator
     VERSION 0.1.0
     DESCRIPTION "Heislab 2"

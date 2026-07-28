@@ -1,8 +1,11 @@
 #pragma once
 
+#include "network/udp_bcast.hpp"
 #include <stdio.h>
 #include <string>
 #include <array>
+#include <mutex>
+#include <atomic>
 
 // Libs
 #include <control/controller.hpp>
@@ -19,11 +22,14 @@ class ElevatorNode {
         ElevatorNode(int ID, std::string IP);
 
         void Step();
+        void Stop();
         void InitElevator();
         void Event(ButtonFlags b2c);
 
         // Getters
         bool Running();
+        int NodeID();
+        elev::network::NetworkPacket TxPacketCopy();
 
         // Polling shi
         void UpdateOrderMatrixFromButtonSignals();
@@ -35,10 +41,12 @@ class ElevatorNode {
 
 
     private:
-        bool running_;
+        std::atomic<bool> running_{true};
         elev::elevator::Elevator elev_;
         elev::control::Controller controller_;
         elev::network::Peers peers_;
+        elev::network::NetworkPacket tx_packet_;
+        std::mutex tx_mutex_;
 };
 
 } //namespace elev::node

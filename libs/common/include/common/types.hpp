@@ -86,5 +86,10 @@ inline void PrintBtnPress(int elevID, int floor, BtnType btn) {
     " at floor " << floor << std::endl;
 }
 
+inline void PrintError(std::string_view msg) {
+    // Prints message in red
+    std::cerr << "\033[31m" << msg << "\033[0m\n";
+}
+
 
 }// namespace elev::common

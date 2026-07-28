@@ -1,8 +1,10 @@
+#include <mutex>
 #include <thread>
 
 // Libs
 #include "common/types.hpp"
 #include "elevator/elevator.hpp"
+#include "network/udp_bcast.hpp"
 #include "ordersync/ordersync.hpp"
 
 // Service
@@ -20,7 +22,7 @@ bool ElevatorNode::Running() {
 
 ElevatorNode::ElevatorNode(int ID, std::string IP) :
     running_(true),
-    elev_(ID, IP) {
+    elev_(ID, IP) { 
         InitElevator();
     }   
 
@@ -49,7 +51,11 @@ void ElevatorNode::Step() {
     if (controller_.Doortimer()->Expired()) {
         Event(controller_._fsm_door_timeout(&elev_));
     }
-
+    {
+        // Update tx packet safely
+        std::lock_guard<std::mutex> lock(tx_mutex_);
+        tx_packet_.Update(peers_.Matrix(NodeID()), elev_.State());
+    }   
 };
 
 
@@ -57,6 +63,17 @@ void ElevatorNode::InitElevator() {
     elev_.InitToFloor();
 }
 
+
+void ElevatorNode::Stop() {
+    running_ = false;
+}
+
+
+elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
+    std::lock_guard<std::mutex> lock(tx_mutex_);
+    return tx_packet_;
+
+}
 
 
 void ElevatorNode::Event(ButtonFlags b2c) {
@@ -67,7 +84,11 @@ void ElevatorNode::Event(ButtonFlags b2c) {
         peers_.SetClearOrders(elev_.State()->ID(), elev_.State()->Floor(), b2c);
         SyncRequestTableFromOrderMatrix();
     }
+}
 
+
+int ElevatorNode::NodeID() {
+   return elev_.State()->ID(); 
 }
 
 

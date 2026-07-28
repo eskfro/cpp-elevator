@@ -69,6 +69,7 @@ bool UdpBroadcaster::SendPacket(const NetworkPacket* packet) {
         return false;
     }
 
+
     return static_cast<size_t>(bytes_sent) == sizeof(NetworkPacket);
 
 }
