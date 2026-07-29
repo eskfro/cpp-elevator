@@ -14,6 +14,10 @@ int ElevatorState::Floor() {
     return floor_;
 }
 
+int ElevatorState::PrevFloor() {
+    return prev_floor_;
+}
+
 bool ElevatorState::Active() {
     return active_;
 }
@@ -60,6 +64,10 @@ void ElevatorState::SetFloor(int floor) {
     floor_ = floor;
 }
 
+void ElevatorState::SetPrevFloor(int prev_floor) {
+    prev_floor_ = prev_floor;
+}
+
 void ElevatorState::SetStopped(bool stopped) {
     stopped_ = stopped;
 }
@@ -82,6 +90,20 @@ void ElevatorState::SetActivity(bool active) {
 
 void ElevatorState::SetDoorOpen(bool door_open) {
     door_open_ = door_open;
+}
+
+void ElevatorState::CopyFrom(ElevatorState* rhs) {
+    ID_ = rhs->ID();
+    floor_ = rhs->Floor();
+    prev_floor_ = rhs->PrevFloor();
+    active_ = rhs->Active();
+    obstruction_ = rhs->Obstruction();
+    fault_ = rhs->Fault();
+    door_open_ = rhs->DoorOpen();
+    stopped_ = rhs->Stopped();
+    motor_dir_ = rhs->MotorDir();
+    moving_state_ = rhs->MovingState();
+    IP_ = rhs->IP();
 }
 
 } // namespace elev::elevator

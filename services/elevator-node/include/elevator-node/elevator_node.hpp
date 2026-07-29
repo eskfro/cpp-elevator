@@ -23,7 +23,7 @@ class ElevatorNode {
 
         void Step();
         void Stop();
-        void InitElevator();
+        void Init();
         void Event(ButtonFlags b2c);
 
         // Getters
@@ -32,6 +32,7 @@ class ElevatorNode {
         elev::network::NetworkPacket TxPacketCopy();
 
         // Polling shi
+        void UpdatePeerElevState();
         void UpdateOrderMatrixFromButtonSignals();
         void CheckStopSignal();
 
@@ -45,8 +46,7 @@ class ElevatorNode {
         elev::elevator::Elevator elev_;
         elev::control::Controller controller_;
         elev::network::Peers peers_;
-        elev::network::NetworkPacket tx_packet_;
-        std::mutex tx_mutex_;
+        std::mutex peers_mutex_;
 };
 
 } //namespace elev::node

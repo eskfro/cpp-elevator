@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <mutex>
 
 // Libs
 #include <elevator/elevator_state.hpp>
@@ -21,6 +22,7 @@ class Elevator {
 
         // Getters
         ElevatorState* State();
+        ElevatorState StateCopy();
         elev::buttons::ButtonMatrix* Buttons();
 
         // Door
@@ -40,7 +42,6 @@ class Elevator {
         int ObstructionSignal(void);
 
     private:
-        int prev_floor_{};
         ElevatorState state_;
         elev::buttons::ButtonMatrix buttons_;
 

@@ -12,6 +12,7 @@ class ElevatorState {
         // Getters
         int ID();
         int Floor();
+        int PrevFloor();
         bool Active();
         bool Obstruction();
         bool Fault();
@@ -25,12 +26,15 @@ class ElevatorState {
         void SetID(int ID);
         void SetIP(std::string IP);
         void SetFloor(int floor);
+        void SetPrevFloor(int prev_floor);
         void SetStopped(bool stopped);
         void SetMotorDir(elev::common::MotorDir dir);
         void SetMovingState(elev::common::MovingState mov);
         void SetObstruction(bool obs);
         void SetActivity(bool active);
         void SetDoorOpen(bool door_open);
+
+        void CopyFrom(ElevatorState* rhs);
 
 
     private:

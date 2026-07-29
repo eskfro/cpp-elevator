@@ -1,5 +1,6 @@
 #include "buttons/button.hpp"
 #include "common/types.hpp"
+#include <mutex>
 #include <thread>
 #include <chrono> 
 
@@ -30,26 +31,27 @@ void Elevator::InitToFloor() {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
     SetMotorDir(elev::common::MotorDir::STOP);
-    state_.SetFloor(FloorSensor());
-    state_.SetMotorDir(elev::common::MotorDir::STOP);
-    SetFloorIndicator();
     std::cout << "[ Elevator " << state_.ID() << " ] - INIT to floor " << state_.Floor() << std::endl;
 }
 
 
 void Elevator::Step() {
     state_.SetFloor(FloorSensor());
-    state_.SetObstruction(ObstructionSignal()); // Set Obs from sensor
+    state_.SetObstruction(ObstructionSignal());
+}
 
+
+ElevatorState Elevator::StateCopy() {
+    return state_;
 }
 
 
 bool Elevator::HitNewFloor() {
     bool res = false;
-    if (state_.Floor() != prev_floor_ && state_.Floor() != BETWEEN_FLOORS) {
+    if (state_.Floor() != state_.PrevFloor() && state_.Floor() != BETWEEN_FLOORS) {
         res = true;
     }
-    prev_floor_ = state_.Floor();
+    state_.SetPrevFloor(state_.Floor());
     return res;
 }
 
