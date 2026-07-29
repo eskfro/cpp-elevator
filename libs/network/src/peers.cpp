@@ -1,4 +1,5 @@
 #include "elevator/elevator_state.hpp"
+#include <cstdint>
 #include <network/peers.hpp>
 #include <common/types.hpp>
 
@@ -21,11 +22,13 @@ int Peers::NumElevs() {
      return num_elevs_;
 }
 
+uint64_t Peers::Version(int elev_id) {
+     return versions_[elev_id];
+}
 
 void Peers::SetNumElevs(int num_elevs) {
      num_elevs_ = num_elevs;
 }
-
 
 void Peers::SetMatrix(int elevID, elev::ordersync::OrderMatrix matrix) {
      all_matrices_[elevID] = matrix;
@@ -35,4 +38,9 @@ void Peers::SetClearOrders(int elevID, int floor, ButtonFlags b2c) {
     all_matrices_[elevID].Table(elevID)->SetFromButtonFlags(floor, b2c);
 }
 
+void Peers::IncrementVersion(int elev_id) {
+     versions_[elev_id]++;
 }
+
+} // namespace elev::network
+

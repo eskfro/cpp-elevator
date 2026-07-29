@@ -16,9 +16,10 @@ class Elevator {
         Elevator() = delete;
         Elevator(int _ID, std::string _IP);
 
+        void Step();
+        void Init();
         bool HitNewFloor();
         void InitToFloor();
-        void Step();
 
         // Getters
         ElevatorState* State();
@@ -36,7 +37,7 @@ class Elevator {
         void SetStopLamp(int value);
         void SetButtonLamp(int floor, elev::common::BtnType btn, int value);
 
-        // Get signals
+        // Hardware signals wrapper
         int FloorSensor(void);
         int StopSignal(void);
         int ObstructionSignal(void);

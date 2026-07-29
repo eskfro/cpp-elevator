@@ -31,13 +31,23 @@ void Elevator::InitToFloor() {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
     SetMotorDir(elev::common::MotorDir::STOP);
-    std::cout << "[ Elevator " << state_.ID() << " ] - INIT to floor " << state_.Floor() << std::endl;
 }
 
 
 void Elevator::Step() {
     state_.SetFloor(FloorSensor());
     state_.SetObstruction(ObstructionSignal());
+}
+
+
+void Elevator::Init() {
+    InitToFloor();
+    state_.SetMotorDir(elev::common::MotorDir::STOP);
+    state_.SetFloor(FloorSensor());
+    state_.SetPrevFloor(FloorSensor());
+    state_.SetStopped(StopSignal());
+    SetFloorIndicator();
+    std::cout << "[ Elevator " << state_.ID() << " ] - INIT to floor " << state_.Floor() << std::endl;
 }
 
 

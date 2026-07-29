@@ -31,17 +31,15 @@ class ElevatorNode {
         int NodeID();
         elev::network::NetworkPacket TxPacketCopy();
 
-        // Polling shi
+        // Sync modules
         void UpdatePeerElevState();
         void UpdateOrderMatrixFromButtonSignals();
-        void CheckStopSignal();
-
         void SyncRequestTableFromOrderMatrix();
-        
         void SetButtonLamps();
 
 
     private:
+        int node_id_;
         std::atomic<bool> running_{true};
         elev::elevator::Elevator elev_;
         elev::control::Controller controller_;

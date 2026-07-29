@@ -21,6 +21,7 @@ bool ElevatorNode::Running() {
 
 
 ElevatorNode::ElevatorNode(int ID, std::string IP) :
+    node_id_(ID),
     running_(true),
     elev_(ID, IP) { 
         Init();
@@ -28,7 +29,6 @@ ElevatorNode::ElevatorNode(int ID, std::string IP) :
 
 
 void ElevatorNode::Step() {
-    std::lock_guard<std::mutex> lock(peers_mutex_);
     // TODO:
     // Queue of OrderMatrix's sent over the network from the other nodes
     //for (matrix : peers_.matrixQueue_) {
@@ -40,26 +40,36 @@ void ElevatorNode::Step() {
     SyncRequestTableFromOrderMatrix();
     SetButtonLamps();
     
-    if (elev_.StopSignal()) Event(controller_._fsm_emergency_stop(&elev_));
-    if (elev_.HitNewFloor()) Event(controller_._fsm_floor_arrival(&elev_));
-    if (controller_.RequestTableUpdated()) Event(controller_._fsm_table_update(&elev_));
-    if (controller_.Doortimer()->Expired()) Event(controller_._fsm_door_timeout(&elev_));
+    if (elev_.StopSignal()) {
+        Event(controller_._fsm_emergency_stop(&elev_));
+        SyncRequestTableFromOrderMatrix();
+    }
+    if (elev_.HitNewFloor()) {
+        Event(controller_._fsm_floor_arrival(&elev_));
+        SyncRequestTableFromOrderMatrix();
+    }
+    if (controller_.RequestTableUpdated()) { 
+        Event(controller_._fsm_table_update(&elev_));
+        SyncRequestTableFromOrderMatrix();
+    }
+    if (controller_.Doortimer()->Expired()) {
+        Event(controller_._fsm_door_timeout(&elev_));
+        SyncRequestTableFromOrderMatrix();
+    }
 
     UpdatePeerElevState();
 };
 
 
 void ElevatorNode::UpdatePeerElevState() {
+    std::lock_guard<std::mutex> lock(peers_mutex_);
+    
     peers_.State(NodeID())->CopyFrom(elev_.State());
 }
 
 
 void ElevatorNode::Init() {
-    elev_.InitToFloor();
-    elev_.State()->SetMotorDir(elev::common::MotorDir::STOP);
-    elev_.State()->SetFloor(elev_.FloorSensor());
-    elev_.State()->SetPrevFloor(elev_.FloorSensor());
-    elev_.SetFloorIndicator();
+    elev_.Init();
 }
 
 
@@ -70,37 +80,44 @@ void ElevatorNode::Stop() {
 
 elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
-
     elev::network::NetworkPacket packet;
-    packet.Update(peers_.Matrix(NodeID()), peers_.State(NodeID()));
 
+    peers_.IncrementVersion(NodeID());
+    packet.Update(peers_.Matrix(NodeID()), peers_.State(NodeID()));
+    packet.SetVersion(peers_.Version(NodeID()));
+    
     return packet;
 
 }
 
 
 void ElevatorNode::Event(ButtonFlags b2c) {
+    std::lock_guard<std::mutex> lock(peers_mutex_);
+
     ButtonFlags zeros{};
     if (b2c != zeros) {
-        peers_.SetClearOrders(elev_.State()->ID(), elev_.State()->Floor(), b2c);
-        SyncRequestTableFromOrderMatrix();
+        peers_.SetClearOrders(NodeID(), elev_.State()->Floor(), b2c);
     }
 }
 
 
 int ElevatorNode::NodeID() {
-   return elev_.State()->ID(); 
+   return node_id_;
 }
 
 
 // Sets the controller request-table according to the synced OrderMatrix orders
 void ElevatorNode::SyncRequestTableFromOrderMatrix() {
-    int e = elev_.State()->ID();
+    std::lock_guard<std::mutex> lock(peers_mutex_);
+
+    int e = NodeID();
     controller_.UpdateRequests(peers_.Matrix(e)->Table(e)->ToBoolTable());
 }
 
 // Polls BtnSignals and set status at OrderMatrix orders
 void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
+    std::lock_guard<std::mutex> lock(peers_mutex_);
+
     using namespace elev::common;
     int e = elev_.State()->ID();
 

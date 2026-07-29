@@ -17,7 +17,6 @@ void NetworkPacket::Update(const elev::ordersync::OrderMatrix* matrix,
                         const elev::elevator::ElevatorState* state) {
     if (matrix) matrix_ = *matrix;
     if (state) state_ = *state;
-    IncrementVersion();
 }
 
 UdpBroadcaster::UdpBroadcaster(uint16_t port, const std::string& bcast_ip) {
