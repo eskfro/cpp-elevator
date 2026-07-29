@@ -16,7 +16,7 @@ namespace elev::node {
 
 
 bool ElevatorNode::Running() {
-    return running_;
+    return running_.load();
 }
 
 
@@ -64,7 +64,7 @@ void ElevatorNode::Init() {
 
 
 void ElevatorNode::Stop() {
-    running_ = false;
+    running_.store(false);
 }
 
 
@@ -72,7 +72,7 @@ elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
 
     elev::network::NetworkPacket packet;
-    packet.Update(peers_.Matrix(NodeID()), elev_.State());
+    packet.Update(peers_.Matrix(NodeID()), peers_.State(NodeID()));
 
     return packet;
 
