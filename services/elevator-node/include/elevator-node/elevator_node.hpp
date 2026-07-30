@@ -36,6 +36,7 @@ class ElevatorNode {
         void UpdateOrderMatrixFromButtonSignals();
         void SyncRequestTableFromOrderMatrix();
         void SetButtonLamps();
+        void SyncPeers();
 
 
     private:

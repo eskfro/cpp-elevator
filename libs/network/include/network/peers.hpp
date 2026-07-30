@@ -11,6 +11,13 @@
 
 namespace elev::network {
 
+struct CostPenalties {
+    int floor_diff = 3;
+    int num_orders = 3;
+    int wrong_dir = 10;
+    int obstruction = 100;
+};
+
 class Peers {
     /*
     This is the world object.
@@ -19,24 +26,34 @@ class Peers {
     public:
         Peers();
 
-        // Getters
+        void Step(int elev_id);
+        void UpdateAllCosts(int elev_id);
+
+        // Get
         elev::ordersync::OrderMatrix* Matrix(int elev_id);
         elev::elevator::ElevatorState* State(int elev_id);
         int NumElevs();
         uint64_t Version(int elev_id);
 
+        // Set
         void SetMatrix(int elevID, elev::ordersync::OrderMatrix matrix);
         void SetNumElevs(int num_elevs);
-        void MergeIncomingMatrix(int elevID, elev::ordersync::OrderMatrix matrix);
         void SetClearOrders(int elevID, int floor, ButtonFlags b2c);
         void IncrementVersion(int elev_id);
+
+        // Sync
+        void SyncMatrix(int elev_id);
+        void AcceptPotentialOrders(int elev_id);
+        int ElevatorWithLowestCost();
+        bool RequestedByAll(int elev_id, int floor, elev::common::BtnType btn);
+
     
     private:
         int num_elevs_{};
         uint64_t versions_[elev::config::N_ELEVS]{};
         std::array<elev::ordersync::OrderMatrix, elev::config::N_ELEVS> all_matrices_{};
         std::array<elev::elevator::ElevatorState, elev::config::N_ELEVS> all_states_{};
-
+        std::array<int, elev::config::N_ELEVS> all_costs_{};
 };
 
 } // namespace elev::network

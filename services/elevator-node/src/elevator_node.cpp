@@ -34,12 +34,16 @@ void ElevatorNode::Step() {
     //for (matrix : peers_.matrixQueue_) {
     //    peers_.MergeIncomingMatrix(int matr, elev::ordersync::OrderMatrix matrix)
     //}
+
     elev_.Step();
 
     UpdateOrderMatrixFromButtonSignals();
     SyncRequestTableFromOrderMatrix();
     SetButtonLamps();
-    
+    SyncPeers();
+
+
+    // 
     if (elev_.StopSignal()) {
         Event(controller_._fsm_emergency_stop(&elev_));
         SyncRequestTableFromOrderMatrix();
@@ -59,6 +63,14 @@ void ElevatorNode::Step() {
 
     UpdatePeerElevState();
 };
+
+
+void ElevatorNode::SyncPeers() {
+    std::lock_guard<std::mutex> lock(peers_mutex_);
+    
+    peers_.Step(node_id_);
+    
+}
 
 
 void ElevatorNode::UpdatePeerElevState() {
