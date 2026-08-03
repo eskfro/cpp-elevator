@@ -27,6 +27,11 @@ void Peers::Step(int elev_id) {
 }
 
 
+void Peers::SyncMatrix(int elev_id) {
+     
+}
+
+
 void Peers::AcceptPotentialOrders(int elev_id) {
 
      // Iterate over all orders (f, b)

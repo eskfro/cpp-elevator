@@ -34,7 +34,6 @@ class ElevatorNode {
         // Sync modules
         void UpdatePeerElevState();
         void UpdateOrderMatrixFromButtonSignals();
-        void SyncRequestTableFromOrderMatrix();
         void SetButtonLamps();
         void SyncPeers();
 

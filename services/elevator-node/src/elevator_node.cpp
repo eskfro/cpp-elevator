@@ -38,30 +38,22 @@ void ElevatorNode::Step() {
     elev_.Step();
 
     UpdateOrderMatrixFromButtonSignals();
-    SyncRequestTableFromOrderMatrix();
     SetButtonLamps();
     SyncPeers();
 
-
-    // 
     if (elev_.StopSignal()) {
         Event(controller_._fsm_emergency_stop(&elev_));
-        SyncRequestTableFromOrderMatrix();
     }
     if (elev_.HitNewFloor()) {
         Event(controller_._fsm_floor_arrival(&elev_));
-        SyncRequestTableFromOrderMatrix();
     }
     if (controller_.RequestTableUpdated()) { 
         Event(controller_._fsm_table_update(&elev_));
-        SyncRequestTableFromOrderMatrix();
     }
     if (controller_.Doortimer()->Expired()) {
         Event(controller_._fsm_door_timeout(&elev_));
-        SyncRequestTableFromOrderMatrix();
     }
 
-    UpdatePeerElevState();
 };
 
 
@@ -76,7 +68,6 @@ void ElevatorNode::SyncPeers() {
 void ElevatorNode::UpdatePeerElevState() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
     
-    peers_.State(NodeID())->CopyFrom(elev_.State());
 }
 
 
@@ -106,10 +97,16 @@ elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
 void ElevatorNode::Event(ButtonFlags b2c) {
     std::lock_guard<std::mutex> lock(peers_mutex_);
 
+    // Set clear orders
     ButtonFlags zeros{};
     if (b2c != zeros) {
         peers_.SetClearOrders(NodeID(), elev_.State()->Floor(), b2c);
     }
+
+    int e = node_id_;
+    controller_.UpdateRequests(peers_.Matrix(e)->Table(e)->ToBoolTable());
+    peers_.State(NodeID())->CopyFrom(elev_.State());
+
 }
 
 
@@ -118,20 +115,12 @@ int ElevatorNode::NodeID() {
 }
 
 
-// Sets the controller request-table according to the synced OrderMatrix orders
-void ElevatorNode::SyncRequestTableFromOrderMatrix() {
-    std::lock_guard<std::mutex> lock(peers_mutex_);
-
-    int e = NodeID();
-    controller_.UpdateRequests(peers_.Matrix(e)->Table(e)->ToBoolTable());
-}
-
 // Polls BtnSignals and set status at OrderMatrix orders
 void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
 
     using namespace elev::common;
-    int e = elev_.State()->ID();
+    const int e = node_id_;
 
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
@@ -144,6 +133,8 @@ void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
             }
         }
     }
+
+    controller_.UpdateRequests(peers_.Matrix(e)->Table(e)->ToBoolTable());
 }
 
 
