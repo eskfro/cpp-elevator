@@ -57,6 +57,26 @@ void ElevatorNode::Step() {
 };
 
 
+void ElevatorNode::ProcessNetworkPacket(network::NetworkPacket packet) {
+    // p : recieved networkpacket 
+
+    // Only accept a packet with a larger version
+    if (packet.Version() <= peers_.Version(packet.ID())) return;
+    peers_.SetVersion(packet.ID(), packet.Version());
+
+    // Update this nodes belief according to incoming packet
+    peers_.SetMatrix(packet.ID(), *packet.Matrix());
+    peers_.SetState(packet.ID(), *packet.State());
+
+    // Update this nodes OrderMatrix->Table of incoming packet.ID()
+    // where node_id_ is this nodes id.
+    elev::ordersync::OrderTable packet_table = *packet.Matrix()->Table(packet.ID());
+    peers_.Matrix(node_id_)->Table(packet.ID())->Join(packet_table);
+    
+
+}
+
+
 void ElevatorNode::SyncPeers() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
     

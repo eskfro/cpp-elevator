@@ -6,6 +6,7 @@
 // Libs
 #include <common/config.hpp>
 #include <common/types.hpp>
+#include <cstdint>
 #include <ordersync/ordersync.hpp>
 #include <elevator/elevator.hpp>
 
@@ -36,10 +37,12 @@ class Peers {
         uint64_t Version(int elev_id);
 
         // Set
-        void SetMatrix(int elevID, elev::ordersync::OrderMatrix matrix);
+        void SetMatrix(int elev_id, elev::ordersync::OrderMatrix matrix);
+        void SetState(int elev_id, elev::elevator::ElevatorState state);
         void SetNumElevs(int num_elevs);
-        void SetClearOrders(int elevID, int floor, ButtonFlags b2c);
+        void SetClearOrders(int elev_id, int floor, ButtonFlags b2c);
         void IncrementVersion(int elev_id);
+        void SetVersion(int elev_id, uint64_t version);
 
         // Sync
         void SyncMatrix(int elev_id);

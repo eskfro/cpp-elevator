@@ -15,8 +15,8 @@ OrderTable* OrderMatrix::Table(int elevID) {
 }
 
 
-OrderStatus OrderTable::Status(int floor, BtnType btn) {
-    return table_[floor][(int)btn];
+OrderStatus OrderTable::Status(int floor, int btn) {
+    return table_[floor][btn];
 }
 
 
@@ -66,6 +66,36 @@ std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> OrderTab
         }
     }
     return result;
+}
+
+constexpr OrderStatus CabOrderTransition[4][4] {
+
+// rcv:      NONE            REQUESTED               CONFIRMED               CLEAR                  this:
+    {OrderStatus::NONE,      OrderStatus::REQUESTED, OrderStatus::CONFIRMED, OrderStatus::NONE}, // NONE
+    {OrderStatus::REQUESTED, OrderStatus::REQUESTED, OrderStatus::CONFIRMED, OrderStatus::NONE}, // REQUESTED
+    {OrderStatus::CONFIRMED, OrderStatus::CONFIRMED, OrderStatus::CONFIRMED, OrderStatus::NONE}, // CONFIRMED
+    {OrderStatus::CLEAR,     OrderStatus::CLEAR,     OrderStatus::CLEAR,     OrderStatus::CLEAR} // CLEAR
+};
+
+void OrderTable::Join(OrderTable rcv) {
+    // p2p schema for distributing orders
+    // OrderStatus: NONE, REQUESTED, CONFIRMED, CLEAR
+    for (int f = 0; f < N_FLOORS; f++) {
+        for (int b = 0; b < N_BUTTONS; b++) {
+            OrderStatus status = table_[f][b];
+
+            // We dont control the incoming nodes cab orders
+            if ((BtnType)b == BtnType::CAB) {
+                table_[f][b] = rcv.Status(f, b);
+                continue;
+            }
+
+
+            // Will add CabOrderTransition here ...
+            
+
+        }
+    }
 }
 
 

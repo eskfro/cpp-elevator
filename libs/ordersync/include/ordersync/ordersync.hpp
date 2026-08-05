@@ -14,11 +14,17 @@ namespace elev::ordersync {
 class OrderTable {
     public:
         OrderTable() = default;
-        OrderStatus Status(int floor, BtnType btn);
+
+        // Get
+        OrderStatus Status(int floor, int btn);
+        std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> ToBoolTable();
+
+        // Set
         void SetStatus(int floor, BtnType btn, OrderStatus status);
         void SetFromButtonFlags(int floor, ButtonFlags b2c);
+        void Join(OrderTable rcv);
+
         void ClearTable();
-        std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> ToBoolTable();
 
     private:
         OrderStatus table_[N_FLOORS][N_BUTTONS];

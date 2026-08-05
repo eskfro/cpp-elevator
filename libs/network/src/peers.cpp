@@ -77,16 +77,24 @@ void Peers::SetNumElevs(int num_elevs) {
      num_elevs_ = num_elevs;
 }
 
-void Peers::SetMatrix(int elevID, elev::ordersync::OrderMatrix matrix) {
-     all_matrices_[elevID] = matrix;
+void Peers::SetMatrix(int elev_id, elev::ordersync::OrderMatrix matrix) {
+     all_matrices_[elev_id] = matrix;
 }
 
-void Peers::SetClearOrders(int elevID, int floor, ButtonFlags b2c) {
-    all_matrices_[elevID].Table(elevID)->SetFromButtonFlags(floor, b2c);
+void Peers::SetClearOrders(int elev_id, int floor, ButtonFlags b2c) {
+    all_matrices_[elev_id].Table(elev_id)->SetFromButtonFlags(floor, b2c);
 }
 
 void Peers::IncrementVersion(int elev_id) {
      versions_[elev_id]++;
+}
+
+void Peers::SetVersion(int elev_id, uint64_t version) {
+     versions_[elev_id] = version;
+}
+
+void Peers::SetState(int elev_id, elev::elevator::ElevatorState state) {
+     all_states_[elev_id] = state;
 }
 
 } // namespace elev::network

@@ -57,10 +57,10 @@ enum class BtnType : std::uint8_t {
 
 
 enum class OrderStatus : std::uint8_t {
-    NONE,
-    REQUESTED,
-    CONFIRMED,
-    CLEAR,
+    NONE = 0,
+    REQUESTED = 1,
+    CONFIRMED = 2,
+    CLEAR = 3,
 };
 
 

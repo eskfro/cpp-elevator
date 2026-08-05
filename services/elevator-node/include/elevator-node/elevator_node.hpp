@@ -36,6 +36,7 @@ class ElevatorNode {
         void UpdateOrderMatrixFromButtonSignals();
         void SetButtonLamps();
         void SyncPeers();
+        void ProcessNetworkPacket(network::NetworkPacket packet);
 
 
     private:
