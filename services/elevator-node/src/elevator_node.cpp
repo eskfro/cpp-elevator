@@ -2,6 +2,7 @@
 #include <thread>
 
 // Libs
+#include "common/config.hpp"
 #include "common/types.hpp"
 #include "elevator/elevator.hpp"
 #include "network/udp_bcast.hpp"
@@ -56,24 +57,26 @@ void ElevatorNode::Step() {
 
 };
 
+void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
+    /*
+    Do things when the node rcv's an udp packet
+    */
+    using namespace elev::ordersync;
+    OrderTable packet_table = *packet.Matrix()->Table(packet.ID());
 
-void ElevatorNode::ProcessNetworkPacket(network::NetworkPacket packet) {
-    // p : recieved networkpacket 
+    // all_states_ update
+    peers_.State(packet.ID())->OnUpdate(*packet.State());
 
-    // Only accept a packet with a larger version
-    if (packet.Version() <= peers_.Version(packet.ID())) return;
-    peers_.SetVersion(packet.ID(), packet.Version());
-
-    // Update this nodes belief according to incoming packet
-    peers_.SetMatrix(packet.ID(), *packet.Matrix());
-    peers_.SetState(packet.ID(), *packet.State());
-
-    // Update this nodes OrderMatrix->Table of incoming packet.ID()
-    // where node_id_ is this nodes id.
-    elev::ordersync::OrderTable packet_table = *packet.Matrix()->Table(packet.ID());
+    // all_matrices_ updates
+    // update this nodes matrix
     peers_.Matrix(node_id_)->Table(packet.ID())->Join(packet_table);
-    
 
+    // update what I think packet.ID() table looks like
+    for (int e = 0; e < N_ELEVS; e++) {
+        OrderTable packet_table = *packet.Matrix()->Table(e);
+        peers_.Matrix(packet.ID())->Table(e)->Join(packet_table);
+    }
+    
 }
 
 
@@ -105,12 +108,9 @@ elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
     elev::network::NetworkPacket packet;
 
-    peers_.IncrementVersion(NodeID());
     packet.Update(peers_.Matrix(NodeID()), peers_.State(NodeID()));
-    packet.SetVersion(peers_.Version(NodeID()));
-    
-    return packet;
 
+    return packet; 
 }
 
 
@@ -123,9 +123,10 @@ void ElevatorNode::Event(ButtonFlags b2c) {
         peers_.SetClearOrders(NodeID(), elev_.State()->Floor(), b2c);
     }
 
-    int e = node_id_;
-    controller_.UpdateRequests(peers_.Matrix(e)->Table(e)->ToBoolTable());
-    peers_.State(NodeID())->CopyFrom(elev_.State());
+    int n = node_id_;
+    controller_.UpdateRequests(peers_.Matrix(n)->Table(n)->ToBoolTable());
+    peers_.State(n)->CopyFrom(elev_.State());
+    peers_.State(n)->IncrementVersion();
 
 }
 
@@ -145,11 +146,8 @@ void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
             if (elev_.Buttons()->Button(f, (BtnType)b)->Pressed()) {
-    
                 PrintBtnPress(e, f, (BtnType)b);
-
-                // TODO: set to requested when distr logic is inplace
-                peers_.Matrix(e)->Table(e)->SetStatus(f, (BtnType)b, OrderStatus::CONFIRMED);
+                peers_.Matrix(e)->Table(e)->Order(f, b).OnRequest();
             }
         }
     }
@@ -162,7 +160,7 @@ void ElevatorNode::SetButtonLamps() {
     using namespace elev::common;
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
-            if (controller_.Requests().Value(f, (BtnType)b)) {
+            if (controller_.Requests().Value(f, b)) {
                 elev_.SetButtonLamp(f, (BtnType)b, true);
             } else {
                 elev_.SetButtonLamp(f, (BtnType)b, false);

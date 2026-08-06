@@ -13,16 +13,16 @@ class RequestTable {
     public:
         RequestTable();
 
-        void SetValue(int floor, elev::common::BtnType btn, bool value);
-        bool Value(int floor, elev::common::BtnType btn);
+        void SetValue(int floor, int btn, bool value);
+        bool Value(int floor, int btn);
 
         bool IsRequestAbove(int floor);
         bool IsRequestBelow(int floor);
         bool IsRequestHere(int floor);
 
         // Operator overloading lol
-        RequestTable set_equal(RequestTable rhs);
-        bool is_equal(RequestTable rhs);
+        RequestTable CopyFrom(RequestTable rhs);
+        bool Equals(RequestTable rhs);
 
 };
 

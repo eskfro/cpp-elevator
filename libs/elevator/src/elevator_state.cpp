@@ -1,4 +1,5 @@
 
+#include <cstdint>
 #include <elevator/elevator_state.hpp>
 #include <common/types.hpp>
 
@@ -50,6 +51,10 @@ std::string ElevatorState::IP() {
     return IP_;
 }
 
+uint64_t ElevatorState::Version() {
+    return version_;
+}
+
 // --- Setters --- 
 
 void ElevatorState::SetID(int ID) {
@@ -92,6 +97,10 @@ void ElevatorState::SetDoorOpen(bool door_open) {
     door_open_ = door_open;
 }
 
+void ElevatorState::SetVersion(uint64_t version) {
+    version_ = version;
+}
+
 void ElevatorState::CopyFrom(ElevatorState* rhs) {
     ID_ = rhs->ID();
     floor_ = rhs->Floor();
@@ -104,6 +113,13 @@ void ElevatorState::CopyFrom(ElevatorState* rhs) {
     motor_dir_ = rhs->MotorDir();
     moving_state_ = rhs->MovingState();
     IP_ = rhs->IP();
+    version_ = rhs->Version();
+}
+
+void ElevatorState::OnUpdate(ElevatorState rcv) {
+    if (rcv.Version() <= version_) return;
+
+    CopyFrom(&rcv);
 }
 
 } // namespace elev::elevator

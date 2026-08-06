@@ -29,14 +29,16 @@ class ElevatorNode {
         // Getters
         bool Running();
         int NodeID();
-        elev::network::NetworkPacket TxPacketCopy();
-
+        
         // Sync modules
         void UpdatePeerElevState();
         void UpdateOrderMatrixFromButtonSignals();
         void SetButtonLamps();
         void SyncPeers();
-        void ProcessNetworkPacket(network::NetworkPacket packet);
+
+        // Network
+        elev::network::NetworkPacket TxPacketCopy();
+        void RxPacketProcessing(network::NetworkPacket packet);
 
 
     private:

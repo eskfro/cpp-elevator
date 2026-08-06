@@ -11,9 +11,6 @@ Peers::Peers() :
      num_elevs_(0) {}
 
 void Peers::Step(int elev_id) {
-     // TODO: Sync all_matrices_[NodeID] matrix according to OrderStatus transitions
-     // When a button is pressed on one elevator it becomes OrderStatus::REQUESTED
-     SyncMatrix(elev_id);
 
      // All elevators should also say requested for that order: (e, f, b).
      // Each elevator has their own copy of all the OrderTables for each elevator, and 
@@ -25,12 +22,6 @@ void Peers::Step(int elev_id) {
      //      take the order again if somehow the order disappears because of a network failure etc...
      AcceptPotentialOrders(elev_id);
 }
-
-
-void Peers::SyncMatrix(int elev_id) {
-     
-}
-
 
 void Peers::AcceptPotentialOrders(int elev_id) {
 
@@ -50,16 +41,13 @@ void Peers::AcceptPotentialOrders(int elev_id) {
      }
 }
 
-
 bool Peers::RequestedByAll(int elev_id, int floor, elev::common::BtnType btn) {
      return false;
 }
 
-
 elev::elevator::ElevatorState* Peers::State(int elev_id) {
      return &all_states_[elev_id];
 }
-
 
 elev::ordersync::OrderMatrix* Peers::Matrix(int elev_id) {
      return &all_matrices_[elev_id];
@@ -67,10 +55,6 @@ elev::ordersync::OrderMatrix* Peers::Matrix(int elev_id) {
 
 int Peers::NumElevs() {
      return num_elevs_;
-}
-
-uint64_t Peers::Version(int elev_id) {
-     return versions_[elev_id];
 }
 
 void Peers::SetNumElevs(int num_elevs) {
@@ -83,14 +67,6 @@ void Peers::SetMatrix(int elev_id, elev::ordersync::OrderMatrix matrix) {
 
 void Peers::SetClearOrders(int elev_id, int floor, ButtonFlags b2c) {
     all_matrices_[elev_id].Table(elev_id)->SetFromButtonFlags(floor, b2c);
-}
-
-void Peers::IncrementVersion(int elev_id) {
-     versions_[elev_id]++;
-}
-
-void Peers::SetVersion(int elev_id, uint64_t version) {
-     versions_[elev_id] = version;
 }
 
 void Peers::SetState(int elev_id, elev::elevator::ElevatorState state) {

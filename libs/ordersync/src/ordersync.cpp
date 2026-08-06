@@ -2,6 +2,7 @@
 #include "common/types.hpp"
 #include <array>
 
+#include <cstdint>
 #include <ordersync/ordersync.hpp>
 
 using namespace elev::common;
@@ -15,46 +16,26 @@ OrderTable* OrderMatrix::Table(int elevID) {
 }
 
 
-OrderStatus OrderTable::Status(int floor, int btn) {
+ordersync::Order OrderTable::Order(int floor, int btn) {
     return table_[floor][btn];
 }
 
 
-void OrderTable::SetStatus(int floor, BtnType btn, OrderStatus status) {
-    table_[floor][(int)btn] = status;
+void OrderTable::SetOrder(int floor, int btn, ordersync::Order order) {
+    table_[floor][(int)btn].SetStatus(order.Status());
+    table_[floor][(int)btn].SetVersion(order.Version());
 }
 
 
 void OrderTable::SetFromButtonFlags(int floor, ButtonFlags b2c) {
     for (int b = 0; b < N_BUTTONS; b++) {
         if (b2c.at(b)) {
-            // TODO:
-            // Distributed logic
-            table_[floor][b] = OrderStatus::NONE; 
+            table_[floor][b].OnClear();
         }
     }
-}
+}   
 
 
-void OrderTable::ClearTable() {
-    for (int f = 0; f < N_FLOORS; f++) {
-        for (int b = 0; b < N_BUTTONS; b++) {
-            table_[f][b] = OrderStatus::NONE;
-        }
-    }
-}
-
-    
-OrderMatrix::OrderMatrix() {
-    ClearMatrix();
-}
-
-
-void OrderMatrix::ClearMatrix() {
-    for (int e = 0; e < N_ELEVS; e++) {
-        matrix_[e].ClearTable();
-    }
-}
     
 std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> OrderTable::ToBoolTable(){
     using namespace elev::common;
@@ -62,39 +43,66 @@ std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> OrderTab
 
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {            
-            result[f][b] = (table_[f][b] == OrderStatus::CONFIRMED) ? true : false;
+            result[f][b] = (table_[f][b].Status() == OrderStatus::CONFIRMED) ? true : false;
         }
     }
     return result;
 }
 
-constexpr OrderStatus CabOrderTransition[4][4] {
-
-// rcv:      NONE            REQUESTED               CONFIRMED               CLEAR                  this:
-    {OrderStatus::NONE,      OrderStatus::REQUESTED, OrderStatus::CONFIRMED, OrderStatus::NONE}, // NONE
-    {OrderStatus::REQUESTED, OrderStatus::REQUESTED, OrderStatus::CONFIRMED, OrderStatus::NONE}, // REQUESTED
-    {OrderStatus::CONFIRMED, OrderStatus::CONFIRMED, OrderStatus::CONFIRMED, OrderStatus::NONE}, // CONFIRMED
-    {OrderStatus::CLEAR,     OrderStatus::CLEAR,     OrderStatus::CLEAR,     OrderStatus::CLEAR} // CLEAR
-};
 
 void OrderTable::Join(OrderTable rcv) {
     // p2p schema for distributing orders
     // OrderStatus: NONE, REQUESTED, CONFIRMED, CLEAR
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
-            OrderStatus status = table_[f][b];
 
             // We dont control the incoming nodes cab orders
             if ((BtnType)b == BtnType::CAB) {
-                table_[f][b] = rcv.Status(f, b);
+                table_[f][b] = rcv.Order(f, b);
                 continue;
             }
-
-
-            // Will add CabOrderTransition here ...
-            
-
+            table_[f][b].OnUpdate(rcv.Order(f, b));
         }
+    }
+}
+
+void Order::OnUpdate(Order rcv) {
+    if (rcv.Version() > version_) {
+        version_ = rcv.Version();
+        status_  = rcv.Status();
+    } 
+    else if (rcv.Version() == version_ && (uint8_t)(rcv.Status()) > (uint8_t)(status_)) {
+        // Adopt status and bump version so the state advancement is explicit
+        version_ = rcv.Version() + 1; 
+        status_  = rcv.Status();
+    }
+}
+
+void Order::OnRequest() {
+    if (status_ == OrderStatus::NONE) {
+        status_ = OrderStatus::REQUESTED;
+        version_++;
+    }
+}
+
+void Order::OnConfirm() {
+    if (status_ == OrderStatus::REQUESTED) {
+        status_ = OrderStatus::CONFIRMED;
+        version_++;
+    }
+}
+
+void Order::OnClear() {
+    if (status_ == OrderStatus::CONFIRMED || status_ == OrderStatus::REQUESTED) {
+        status_ = OrderStatus::CLEAR;
+        version_++;
+    }
+}
+
+void Order::OnReset() {
+    if (status_ == OrderStatus::CLEAR) {
+        status_ = OrderStatus::NONE;
+        version_++;
     }
 }
 

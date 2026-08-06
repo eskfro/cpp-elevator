@@ -27,18 +27,15 @@ RequestTable Controller::Requests() {
 
 
 bool Controller::IsRequestsChanged(elev::control::RequestTable prev_requests) {
-    if (requests_.is_equal(prev_requests)) return false;
+    if (requests_.Equals(prev_requests)) return false;
     else return true;
 }
 
 
 void Controller::UpdateRequests(std::array<std::array<bool, N_BUTTONS>, N_FLOORS> bool_table) {
     using namespace elev::common;
-    for (int f = 0; f < N_FLOORS; f++) {
-        for (int b = 0; b < N_BUTTONS; b++) {
-            requests_.SetValue(f, (BtnType)b, bool_table[f][b]);
-        }
-    }
+    // yup
+    for (int f = 0; f < N_FLOORS; f++) for (int b = 0; b < N_BUTTONS; b++) requests_.SetValue(f, b, bool_table[f][b]);
 }
 
 
@@ -230,9 +227,9 @@ bool Controller::ShouldStop(int floor) {
     using namespace elev::common;
     switch (inertia_) {
     case(Inertia::DOWN):
-        return requests_.Value(floor, BtnType::HALL_DOWN) || requests_.Value(floor, BtnType::CAB) || !requests_.IsRequestBelow(floor);
+        return requests_.Value(floor, (int)BtnType::HALL_DOWN) || requests_.Value(floor, (int)BtnType::CAB) || !requests_.IsRequestBelow(floor);
     case(Inertia::UP):
-        return requests_.Value(floor, BtnType::HALL_UP) || requests_.Value(floor, BtnType::CAB) || !requests_.IsRequestAbove(floor);
+        return requests_.Value(floor, (int)BtnType::HALL_UP) || requests_.Value(floor, (int)BtnType::CAB) || !requests_.IsRequestAbove(floor);
     case(Inertia::NONE):
     default:
         return true;
@@ -264,14 +261,14 @@ ButtonFlags Controller::ClearCurrentFloor(int floor) {
     // Clearing hall calls
     switch(inertia_) {
         case Inertia::UP:
-            if (!requests_.IsRequestAbove(floor) && !requests_.Value(floor, BtnType::HALL_UP)) {
+            if (!requests_.IsRequestAbove(floor) && !requests_.Value(floor, (int)BtnType::HALL_UP)) {
                 b2c[(int)BtnType::HALL_DOWN] = true;
             }
             b2c[(int)BtnType::HALL_UP] = true;
             return b2c;
 
         case Inertia::DOWN:
-            if (!requests_.IsRequestBelow(floor) && !requests_.Value(floor, BtnType::HALL_DOWN)) {
+            if (!requests_.IsRequestBelow(floor) && !requests_.Value(floor, (int)BtnType::HALL_DOWN)) {
                 b2c[(int)BtnType::HALL_UP] = true;
             }
             b2c[(int)BtnType::HALL_DOWN] = true;
@@ -287,7 +284,7 @@ ButtonFlags Controller::ClearCurrentFloor(int floor) {
 
 bool Controller::RequestTableUpdated() {
     bool res = false;
-    if (!requests_.is_equal(prev_requests_)) {
+    if (!requests_.Equals(prev_requests_)) {
         res = true;
     }
     prev_requests_ = requests_;

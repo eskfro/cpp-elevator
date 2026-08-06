@@ -14,7 +14,7 @@ namespace elev::elevator {
 class Elevator {
     public:
         Elevator() = delete;
-        Elevator(int _ID, std::string _IP);
+        Elevator(int id, std::string ip);
 
         void Step();
         void Init();

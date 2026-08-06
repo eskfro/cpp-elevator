@@ -21,6 +21,7 @@ class ElevatorState {
         elev::common::MotorDir MotorDir();
         elev::common::MovingState MovingState();
         std::string IP();
+        uint64_t Version();
 
         // Setters
         void SetID(int ID);
@@ -33,8 +34,12 @@ class ElevatorState {
         void SetObstruction(bool obs);
         void SetActivity(bool active);
         void SetDoorOpen(bool door_open);
+        void SetVersion(uint64_t version);
 
+        // things
         void CopyFrom(ElevatorState* rhs);
+        void OnUpdate(ElevatorState state);
+        void IncrementVersion() { version_++; }
 
 
     private:
@@ -49,6 +54,7 @@ class ElevatorState {
         elev::common::MotorDir motor_dir_;
         elev::common::MovingState moving_state_;
         std::string IP_;
+        uint64_t version_{};
 
 };
 

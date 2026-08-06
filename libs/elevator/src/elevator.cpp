@@ -11,10 +11,10 @@
 namespace elev::elevator {
 
 
-Elevator::Elevator(int ID, std::string IP) {
+Elevator::Elevator(int id, std::string ip) {
     buttons_ = elev::buttons::ButtonMatrix();
-    state_.SetID(ID);
-    state_.SetIP(IP);
+    state_.SetID(id);
+    state_.SetIP(ip);
     state_.SetFloor(FloorSensor());
     state_.SetStopped(false);
     state_.SetMotorDir(common::MotorDir::STOP);

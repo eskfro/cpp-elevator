@@ -17,16 +17,13 @@ class NetworkPacket {
         void Update(const elev::ordersync::OrderMatrix* matrix, const elev::elevator::ElevatorState* state);    
 
         void SetID(int id) { id_ = id; }
-        void SetVersion(uint64_t version) { version_ = version; }
     
         int ID() { return id_; }
-        uint64_t Version() const { return version_; }
         elev::ordersync::OrderMatrix* Matrix() { return &matrix_; } 
         elev::elevator::ElevatorState* State() { return &state_; }
 
     private:
         int id_;
-        uint64_t version_{};
         elev::ordersync::OrderMatrix matrix_;
         elev::elevator::ElevatorState state_;
 

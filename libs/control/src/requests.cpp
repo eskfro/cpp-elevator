@@ -3,13 +3,13 @@
 namespace elev::control {
 
 
-bool RequestTable::is_equal(RequestTable rhs) {
+bool RequestTable::Equals(RequestTable rhs) {
     using namespace elev::config;
     using namespace elev::common;
    
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
-            if (table_[f][b] != rhs.Value(f, (BtnType)b)) {
+            if (table_[f][b] != rhs.Value(f, b)) {
                 return false;
             }
         }
@@ -19,13 +19,13 @@ bool RequestTable::is_equal(RequestTable rhs) {
 }
 
 
-RequestTable RequestTable::set_equal(RequestTable rhs) {
+RequestTable RequestTable::CopyFrom(RequestTable rhs) {
     using namespace elev::config;
     using namespace elev::common;
     RequestTable res{};
     for (int f = 0; f < N_FLOORS; f++) {
         for (int b = 0; b < N_BUTTONS; b++) {
-            res.SetValue(f, (BtnType)b, rhs.Value(f, (BtnType)b));  
+            res.SetValue(f, b, rhs.Value(f, b));  
         }
     }
     return res;
@@ -43,13 +43,13 @@ RequestTable::RequestTable() {
 }
 
 
-void RequestTable::SetValue(int floor, elev::common::BtnType btn, bool value) {
-    this->table_[floor][(int)btn] = value;
+void RequestTable::SetValue(int floor, int btn, bool value) {
+    this->table_[floor][btn] = value;
 }
 
 
-bool RequestTable::Value(int floor, elev::common::BtnType btn) {
-    return table_[floor][(int)btn];
+bool RequestTable::Value(int floor, int btn) {
+    return table_[floor][btn];
 }
 
 

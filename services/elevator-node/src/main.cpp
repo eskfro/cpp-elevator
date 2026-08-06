@@ -67,8 +67,6 @@ void TxThreadLoop(
     while (g_running && node.Running()) {
         elev::network::NetworkPacket packet = node.TxPacketCopy();
 
-        std::cout << packet.Version() << std::endl;
-
         if (!bcaster.SendPacket(&packet)) elev::common::PrintError("[TX thread] Failed to send packet");
         
         next_tx += kTxPeriod;
