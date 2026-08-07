@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <common/types.hpp>
 #include <common/config.hpp>
 
@@ -23,6 +24,8 @@ class RequestTable {
         // Operator overloading lol
         RequestTable CopyFrom(RequestTable rhs);
         bool Equals(RequestTable rhs);
+
+        std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> Table();
 
 };
 

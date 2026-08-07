@@ -1,3 +1,5 @@
+#include "common/config.hpp"
+#include <array>
 #include <control/requests.hpp>
 
 namespace elev::control {
@@ -40,6 +42,18 @@ RequestTable::RequestTable() {
             table_[f][b] = false;
         }
     }
+}
+
+
+std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> RequestTable::Table() {
+    std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> res{};
+
+    for (int f = 0; f < config::N_FLOORS; f++) {
+        for (int b = 0; b < config::N_BUTTONS; b++) {
+            res[f][b] = table_[f][b];
+        }
+    }
+    return res;
 }
 
 

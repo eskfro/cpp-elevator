@@ -10,14 +10,20 @@
 #include <ordersync/ordersync.hpp>
 #include <elevator/elevator.hpp>
 
-namespace elev::network {
+namespace {
 
-struct CostPenalties {
-    int floor_diff = 3;
-    int num_orders = 3;
-    int wrong_dir = 10;
-    int obstruction = 100;
-};
+
+static constexpr int kPenaltyDoorOpen = 2;
+static constexpr int kPenaltyFloorDiff = 3;
+static constexpr int kPenaltyPerOrder = 3;
+static constexpr int kPenaltyWrongDir = 10;
+static constexpr int kPenaltyObstruction = 100;
+
+} //namespace
+
+
+
+namespace elev::network {
 
 class Peers {
     /*
@@ -42,16 +48,15 @@ class Peers {
         void IncrementVersion(int elev_id);
 
         // Sync
-        void AcceptPotentialOrders(int elev_id);
-        int ElevatorWithLowestCost();
-        bool RequestedByAll(int elev_id, int floor, elev::common::BtnType btn);
+        void ConfirmOrders(int node_id);
+        int ElevatorWithLowestCost(int floor, int btn);
+        bool RequestedByAll(int node_id, int floor, int btn);
 
     
     private:
         int num_elevs_{};
         std::array<elev::ordersync::OrderMatrix, elev::config::N_ELEVS> all_matrices_{};
         std::array<elev::elevator::ElevatorState, elev::config::N_ELEVS> all_states_{};
-        std::array<int, elev::config::N_ELEVS> all_costs_{};
 };
 
 } // namespace elev::network

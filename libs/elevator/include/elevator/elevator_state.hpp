@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/config.hpp"
+#include <array>
 #include <common/types.hpp>
 
 namespace elev::elevator {
@@ -22,6 +24,7 @@ class ElevatorState {
         elev::common::MovingState MovingState();
         std::string IP();
         uint64_t Version();
+        std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> Requests();
 
         // Setters
         void SetID(int ID);
@@ -35,6 +38,8 @@ class ElevatorState {
         void SetActivity(bool active);
         void SetDoorOpen(bool door_open);
         void SetVersion(uint64_t version);
+        void SetRequests(std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> requests);
+
 
         // things
         void CopyFrom(ElevatorState* rhs);
@@ -55,6 +60,7 @@ class ElevatorState {
         elev::common::MovingState moving_state_;
         std::string IP_;
         uint64_t version_{};
+        std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> requests_;
 
 };
 

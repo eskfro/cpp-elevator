@@ -125,6 +125,7 @@ void ElevatorNode::Event(ButtonFlags b2c) {
 
     int n = node_id_;
     controller_.UpdateRequests(peers_.Matrix(n)->Table(n)->ToBoolTable());
+    elev_.State()->SetRequests(controller_.Requests().Table());
     peers_.State(n)->CopyFrom(elev_.State());
     peers_.State(n)->IncrementVersion();
 
@@ -147,7 +148,7 @@ void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
         for (int b = 0; b < N_BUTTONS; b++) {
             if (elev_.Buttons()->Button(f, (BtnType)b)->Pressed()) {
                 PrintBtnPress(e, f, (BtnType)b);
-                peers_.Matrix(e)->Table(e)->Order(f, b).OnRequest();
+                peers_.Matrix(e)->Table(e)->Order(f, b)->OnRequest();
             }
         }
     }

@@ -55,6 +55,10 @@ uint64_t ElevatorState::Version() {
     return version_;
 }
 
+std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> ElevatorState::Requests() {
+    return requests_;
+}
+
 // --- Setters --- 
 
 void ElevatorState::SetID(int ID) {
@@ -120,6 +124,10 @@ void ElevatorState::OnUpdate(ElevatorState rcv) {
     if (rcv.Version() <= version_) return;
 
     CopyFrom(&rcv);
+}
+
+void ElevatorState::SetRequests(std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> requests) {
+    requests_ = requests;
 }
 
 } // namespace elev::elevator

@@ -16,8 +16,8 @@ OrderTable* OrderMatrix::Table(int elevID) {
 }
 
 
-ordersync::Order OrderTable::Order(int floor, int btn) {
-    return table_[floor][btn];
+ordersync::Order* OrderTable::Order(int floor, int btn) {
+    return &table_[floor][btn];
 }
 
 
@@ -58,10 +58,10 @@ void OrderTable::Join(OrderTable rcv) {
 
             // We dont control the incoming nodes cab orders
             if ((BtnType)b == BtnType::CAB) {
-                table_[f][b] = rcv.Order(f, b);
+                table_[f][b] = *rcv.Order(f, b);
                 continue;
             }
-            table_[f][b].OnUpdate(rcv.Order(f, b));
+            table_[f][b].OnUpdate(*rcv.Order(f, b));
         }
     }
 }

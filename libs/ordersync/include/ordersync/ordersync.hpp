@@ -26,7 +26,7 @@ class Order {
         void OnConfirm();
         void OnClear();
         void OnReset();
-
+        
     private:
         OrderStatus status_{};
         uint64_t version_{};
@@ -38,7 +38,7 @@ class OrderTable {
         OrderTable() = default;
 
         // Get
-        ordersync::Order Order(int floor, int btn);
+        ordersync::Order* Order(int floor, int btn);
         std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> ToBoolTable();
 
         // Set
