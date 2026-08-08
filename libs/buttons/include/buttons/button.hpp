@@ -14,7 +14,7 @@ class Button {
         Button() = default;
         Button(int floor, elev::common::BtnType btn);
         bool Pressed();
-        void ConfigureButton(int floor, elev::common::BtnType btn);
+        void Init(int floor, elev::common::BtnType btn);
 
     private:
         int floor_{};
@@ -27,9 +27,9 @@ class Button {
 
 namespace elev::buttons {
 
-class ButtonMatrix {
+class ButtonTable {
     public:
-        ButtonMatrix();
+        ButtonTable();
         elev::button::Button* Button(int floor, elev::common::BtnType btn);
     private:
         std::array<std::array<elev::button::Button, kButtons>, kFloors> matrix_{};

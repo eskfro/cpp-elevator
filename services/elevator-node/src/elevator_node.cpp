@@ -36,24 +36,33 @@ void ElevatorNode::Step() {
 
     elev_.Step();
 
-    UpdateOrderMatrixFromButtonSignals();
+    {
+        std::lock_guard<std::mutex> lock(peers_mutex_);
+        StepPeers();
+    }
+
     SetButtonLamps();
-    SyncPeers();
 
     if (elev_.StopSignal()) {
-        Event(controller_._fsm_emergency_stop(&elev_));
+        Event(controller_.FsmEmergencyStop(&elev_));
     }
     if (elev_.HitNewFloor()) {
-        Event(controller_._fsm_floor_arrival(&elev_));
+        Event(controller_.FsmFloorArrival(&elev_));
     }
     if (controller_.RequestTableUpdated()) { 
-        Event(controller_._fsm_table_update(&elev_));
+        Event(controller_.FsmTableUpdate(&elev_));
     }
-    if (controller_.Doortimer()->Expired()) {
-        Event(controller_._fsm_door_timeout(&elev_));
+    if (controller_.DoorTimer()->Expired()) {
+        Event(controller_.FsmDoorTimeout(&elev_));
     }
 
 };
+
+void ElevatorNode::StepPeers() {
+    UpdateOrderMatrixFromButtonSignals();
+    peers_.State(node_id_)->CopyFrom(elev_.State());
+    peers_.Step(node_id_);
+}
 
 void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
     /*
@@ -66,21 +75,6 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
 
     // OrderMatrix join
     peers_.Orders()->Join(*packet.Orders());
-}
-
-
-void ElevatorNode::SyncPeers() {
-    std::lock_guard<std::mutex> lock(peers_mutex_);
-    
-    peers_.State(node_id_)->CopyFrom(elev_.State());
-
-    peers_.Step(node_id_);
-    
-}
-
-void ElevatorNode::UpdatePeerElevState() {
-    std::lock_guard<std::mutex> lock(peers_mutex_);
-    
 }
 
 void ElevatorNode::Init() {
@@ -111,7 +105,7 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     }
 
     const int n = node_id_;
-    controller_.UpdateRequests(peers_.Orders()->Table(n)->ToBoolTable());
+    controller_.SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
     elev_.State()->SetRequests(controller_.Requests().Table());
     peers_.State(n)->CopyFrom(elev_.State());
     peers_.State(n)->IncrementVersion();
@@ -123,8 +117,6 @@ int ElevatorNode::NodeID() {
 
 // Polls BtnSignals and set status at OrderMatrix orders
 void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
-    std::lock_guard<std::mutex> lock(peers_mutex_);
-
     using namespace elev::common;
     const int n = node_id_;
 
@@ -136,9 +128,8 @@ void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
             }
         }
     }
-    controller_.UpdateRequests(peers_.Orders()->Table(n)->ToBoolTable());
+    controller_.SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
 }
-
 
 void ElevatorNode::SetButtonLamps() {
     using namespace elev::common;
@@ -152,6 +143,5 @@ void ElevatorNode::SetButtonLamps() {
         }
     }
 }
-
 
 } // namespace elev::node

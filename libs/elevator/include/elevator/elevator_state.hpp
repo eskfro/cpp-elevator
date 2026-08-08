@@ -44,8 +44,7 @@ class ElevatorState {
         void SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests);
         void SetIntertia(common::Inertia inertia);
 
-
-        // things
+        // Things
         void CopyFrom(ElevatorState* rhs);
         void OnUpdate(ElevatorState state);
         void IncrementVersion() { version_++; }
@@ -65,7 +64,7 @@ class ElevatorState {
         std::string IP_{""};
         uint64_t version_{0};
         std::array<std::array<bool, config::kButtons>, config::kFloors> requests_{};
-        elev::common::Inertia inertia_{common::Inertia::NONE};
+        elev::common::Inertia inertia_{common::Inertia::None};
 
 };
 

@@ -24,22 +24,22 @@ bool elev::button::Button::Pressed() {
 }
 
 
-void elev::button::Button::ConfigureButton(int floor, elev::common::BtnType btn) {
+void elev::button::Button::Init(int floor, elev::common::BtnType btn) {
     floor_ = floor;
     btn_ = btn;
 }
 
 
-elev::buttons::ButtonMatrix::ButtonMatrix() {
+elev::buttons::ButtonTable::ButtonTable() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
-            matrix_[f][b].ConfigureButton(f, (elev::common::BtnType)b);
+            matrix_[f][b].Init(f, (elev::common::BtnType)b);
         }
     }
 }
 
 
-elev::button::Button* elev::buttons::ButtonMatrix::Button(int floor, elev::common::BtnType btn) {
+elev::button::Button* elev::buttons::ButtonTable::Button(int floor, elev::common::BtnType btn) {
     return &matrix_[floor][static_cast<std::size_t>(btn)];
 }
 

@@ -21,10 +21,10 @@ class Elevator {
         bool HitNewFloor();
         void InitToFloor();
 
-        // Getters
+        // Get
         ElevatorState* State();
         ElevatorState StateCopy();
-        elev::buttons::ButtonMatrix* Buttons();
+        elev::buttons::ButtonTable* Buttons();
 
         // Door
         void OpenDoor();
@@ -44,7 +44,7 @@ class Elevator {
 
     private:
         ElevatorState state_;
-        elev::buttons::ButtonMatrix buttons_;
+        elev::buttons::ButtonTable buttons_;
 
 };
 

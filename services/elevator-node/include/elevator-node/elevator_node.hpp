@@ -14,32 +14,28 @@
 
 namespace elev::node {
 
-// The node connecting things
 class ElevatorNode {
-
     public:
         ElevatorNode() = delete;
         ElevatorNode(int ID, std::string IP);
 
         void Step();
+        void StepPeers();
         void Stop();
         void Init();
         void Event(ButtonFlags b2c);
 
-        // Getters
+        // Get
         bool Running();
         int NodeID();
         
         // Sync modules
-        void UpdatePeerElevState();
         void UpdateOrderMatrixFromButtonSignals();
         void SetButtonLamps();
-        void SyncPeers();
 
         // Network
         elev::network::NetworkPacket TxPacketCopy();
         void RxPacketProcessing(network::NetworkPacket packet);
-
 
     private:
         int node_id_;

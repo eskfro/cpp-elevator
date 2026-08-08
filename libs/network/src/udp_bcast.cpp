@@ -46,13 +46,11 @@ UdpBroadcaster::UdpBroadcaster(uint16_t port, const std::string& bcast_ip) {
     }
 }
 
-
 UdpBroadcaster::~UdpBroadcaster() {
     if (socket_fd_ > 0) {
         close(socket_fd_);
     }
 }
-
 
 bool UdpBroadcaster::SendPacket(const NetworkPacket* packet) {
     if (socket_fd_ < 0 || !packet) {
@@ -67,12 +65,8 @@ bool UdpBroadcaster::SendPacket(const NetworkPacket* packet) {
         std::cerr << "[UDP] Broadcast send failed: " << strerror(errno) << std::endl;
         return false;
     }
-
-
     return static_cast<size_t>(bytes_sent) == sizeof(NetworkPacket);
 
 }
-
-
 
 } // namespace elev::network

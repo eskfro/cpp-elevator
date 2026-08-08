@@ -12,7 +12,6 @@
 
 namespace {
 
-
 static constexpr int kPenaltyDoorOpen = 2;
 static constexpr int kPenaltyFloorDiff = 3;
 static constexpr int kPenaltyPerOrder = 3;
@@ -21,8 +20,6 @@ static constexpr int kPenaltyObstruction = 100;
 
 } //namespace
 
-
-
 namespace elev::network {
 
 class Peers {
@@ -30,27 +27,26 @@ class Peers {
     This is the world object.
     */
     public:
-        Peers();
-
+        Peers() = default;
         void Step(int node_id);
+
+        // Set
+        void SetNumElevs(int num_elevs);
+        void SetClearOrders(int node_id, int floor, ButtonFlags b2c);
 
         // Get
         elev::ordersync::OrderMatrix* Orders();
         elev::elevator::ElevatorState* State(int elev_id);
         int NumElevs();
 
-        // Set
-        void SetNumElevs(int num_elevs);
-        void SetClearOrders(int node_id, int floor, ButtonFlags b2c);
-
         void ConfirmOrders(int node_id);
         void ResetOrders(int node_id);
+        void UpdateNumElevs();
+
         int ElevatorWithLowestCost(int floor, int btn);
         bool RequestedByAll(int floor, int btn);
 
-        void UpdateNumElevs();
 
-    
     private:
         int num_elevs_{};
         ordersync::OrderMatrix orders_{};

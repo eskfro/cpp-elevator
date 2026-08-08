@@ -12,9 +12,6 @@
 
 namespace elev::network {
 
-Peers::Peers() :
-     num_elevs_(0) {}
-
 void Peers::Step(int node_id) {
      UpdateNumElevs();
      ConfirmOrders(node_id);
@@ -31,7 +28,7 @@ void Peers::ConfirmOrders(int node_id) {
           for (int b = 0; b < kButtons; b++) {
 
                // Cab
-               if ((BtnType)b == BtnType::CAB) {
+               if ((BtnType)b == BtnType::Cab) {
                     orders_.Table(n)->Order(f, b)->OnConfirm();
                     continue;
                }
@@ -54,7 +51,7 @@ bool Peers::RequestedByAll(int floor, int btn) {
           if (all_states_[e].Active() == false) continue;
 
           OrderStatus status = orders_.Table(e)->Order(floor, btn)->Status();
-          if (status != OrderStatus::REQUESTED) {
+          if (status != OrderStatus::Requested) {
                return false;
           }
      }
@@ -99,8 +96,8 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
           bool order_below = floor < state.Floor();
           bool order_above = floor > state.Floor();
           bool wrong_dir = 
-               (order_below && state.Inertia() == Inertia::UP) || 
-               (order_above && state.Inertia() == Inertia::DOWN);
+               (order_below && state.Inertia() == Inertia::Up) || 
+               (order_above && state.Inertia() == Inertia::Down);
           if (wrong_dir) cost += kPenaltyWrongDir;
 
           if (cost < lowest_cost) {

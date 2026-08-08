@@ -8,20 +8,19 @@ namespace elev::control {
 
 class RequestTable {
     public:
-        RequestTable();
+        RequestTable() = default;
 
+        // Set
         void SetValue(int floor, int btn, bool value);
+
+        // Get
         bool Value(int floor, int btn);
+        std::array<std::array<bool, config::kButtons>, config::kFloors> Table();
 
         bool IsRequestAbove(int floor);
         bool IsRequestBelow(int floor);
         bool IsRequestHere(int floor);
 
-        // Operator overloading lol
-        RequestTable CopyFrom(RequestTable rhs);
-        bool Equals(RequestTable rhs);
-
-        std::array<std::array<bool, config::kButtons>, config::kFloors> Table();
     
     private:
         std::array<std::array<bool, config::kButtons>, config::kFloors> table_{};

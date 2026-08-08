@@ -15,17 +15,14 @@ OrderTable* OrderMatrix::Table(int elevID) {
     return &matrix_[elevID];
 }
 
-
 ordersync::Order* OrderTable::Order(int floor, int btn) {
     return &table_[floor][btn];
 }
-
 
 void OrderTable::SetOrder(int floor, int btn, ordersync::Order order) {
     table_[floor][(int)btn].SetStatus(order.Status());
     table_[floor][(int)btn].SetVersion(order.Version());
 }
-
 
 void OrderTable::ClearOrders(int floor, ButtonFlags b2c) {
     for (int b = 0; b < kButtons; b++) {
@@ -39,7 +36,7 @@ std::array<std::array<bool, elev::config::kButtons>, config::kFloors> OrderTable
 
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {            
-            result[f][b] = (table_[f][b].Status() == OrderStatus::CONFIRMED) ? true : false;
+            result[f][b] = (table_[f][b].Status() == OrderStatus::Confirmed) ? true : false;
         }
     }
     return result;
@@ -74,32 +71,31 @@ void Order::OnUpdate(Order rcv) {
 }
 
 void Order::OnRequest() {
-    if (status_ == OrderStatus::NONE) {
-        status_ = OrderStatus::REQUESTED;
+    if (status_ == OrderStatus::None) {
+        status_ = OrderStatus::Requested;
         version_++;
     }
 }
 
 void Order::OnConfirm() {
-    if (status_ == OrderStatus::REQUESTED) {
-        status_ = OrderStatus::CONFIRMED;
+    if (status_ == OrderStatus::Requested) {
+        status_ = OrderStatus::Confirmed;
         version_++;
     }
 }
 
 void Order::OnClear() {
-    if (status_ == OrderStatus::CONFIRMED) {
-        status_ = OrderStatus::CLEAR;
+    if (status_ == OrderStatus::Confirmed) {
+        status_ = OrderStatus::Clear;
         version_++;
     }
 }
 
 void Order::OnReset() {
-    if (status_ == OrderStatus::CLEAR) {
-        status_ = OrderStatus::NONE;
+    if (status_ == OrderStatus::Clear) {
+        status_ = OrderStatus::None;
         version_++;
     }
 }
 
-
-}
+} // namespace elev::ordersync

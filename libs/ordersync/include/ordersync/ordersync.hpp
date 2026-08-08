@@ -15,13 +15,13 @@ class Order {
     public:
         Order() = default;
 
-        // Get
-        uint64_t Version() { return version_; }
-        OrderStatus Status() { return status_; }
-
         // Set
         void SetStatus(OrderStatus status) { status_ = status; }
         void SetVersion(uint64_t version) { version_ = version; }
+
+        // Get
+        uint64_t Version() { return version_; }
+        OrderStatus Status() { return status_; }
 
         // State machine
         void OnUpdate(Order rcv);
@@ -35,28 +35,27 @@ class Order {
         uint64_t version_{};
 };
 
-
 class OrderTable {
     public:
         OrderTable() = default;
-
-        // Get
-        ordersync::Order* Order(int floor, int btn);
-        std::array<std::array<bool, kButtons>, kFloors> ToBoolTable();
 
         // Set
         void SetOrder(int floor, int btn, ordersync::Order order);
         void ClearOrders(int floor, ButtonFlags b2c);
         void Join(OrderTable rcv);
 
+        // Get
+        ordersync::Order* Order(int floor, int btn);
+        std::array<std::array<bool, kButtons>, kFloors> ToBoolTable();
+
     private:
         std::array<std::array<ordersync::Order, kButtons>, kFloors> table_{};
 };
 
-
 class OrderMatrix {
     public:
         OrderMatrix() = default;
+        
         OrderTable* Table(int elevID);
 
         void Join(OrderMatrix rcv);

@@ -16,38 +16,38 @@ class Controller {
     public:
         Controller();
 
-        void UpdateRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table);
-
+        // Set
+        void SetRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table);
         void SetInertia(MotorDir dir);
+
         void ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair);
         void StopAndOpenDoor(elev::elevator::Elevator* elev);
         int TryCloseDoor(elev::elevator::Elevator* elev);
 
         // Event driven FSM
-        ButtonFlags _fsm_table_update(elev::elevator::Elevator* elev);
-        ButtonFlags _fsm_floor_arrival(elev::elevator::Elevator* elev);
-        ButtonFlags _fsm_door_timeout(elev::elevator::Elevator* elev);
-        ButtonFlags _fsm_emergency_stop(elev::elevator::Elevator* elev);
+        ButtonFlags FsmTableUpdate(elev::elevator::Elevator* elev);
+        ButtonFlags FsmFloorArrival(elev::elevator::Elevator* elev);
+        ButtonFlags FsmDoorTimeout(elev::elevator::Elevator* elev);
+        ButtonFlags FsmEmergencyStop(elev::elevator::Elevator* elev);
 
         // Change values on table 
         ButtonFlags ClearCurrentFloor(int floor);
 
         // Decisions
         bool ShouldStop(int floor);
-        bool ShouldClearImmediately(int floor, int btnFloor, BtnType btn);
+        bool ShouldClearImmediately(int floor, int btn_floor, BtnType btn);
         bool IsRequestsChanged(elev::control::RequestTable prev_requests);
         bool RequestTableUpdated();
-
         DirMovPair ChooseDirection(int floor);
 
-        // get
+        // Get
         RequestTable Requests();
-        DoorTimer* Doortimer();
+        common::DoorTimer* DoorTimer();
 
     private:
         RequestTable prev_requests_{};
         RequestTable requests_{};
-        DoorTimer doortimer_;
+        common::DoorTimer doortimer_;
         Inertia inertia_;
 };
 
