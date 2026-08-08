@@ -32,7 +32,7 @@ class ButtonMatrix {
         ButtonMatrix();
         elev::button::Button* Button(int floor, elev::common::BtnType btn);
     private:
-        std::array<std::array<elev::button::Button, N_BUTTONS>, N_FLOORS> matrix_{};
+        std::array<std::array<elev::button::Button, kButtons>, kFloors> matrix_{};
 };
 
 } // namespace elev::buttons

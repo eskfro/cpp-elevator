@@ -20,10 +20,10 @@ void init_hardware() {
     char ip[16]; 
     char port[8]; 
 
-    strncpy(ip, elev::config::IP_HW, sizeof(ip)-1);
-    strncpy(port, elev::config::PORT_HW, sizeof(port)-1);
+    strncpy(ip, elev::config::kIpHw, sizeof(ip)-1);
+    strncpy(port, elev::config::kPortHw, sizeof(port)-1);
 
-    con_load(elev::config::CONFIG_FILE,
+    con_load(elev::config::kConfigPath,
         con_val("com_ip",   ip,   "%s")
         con_val("com_port", port, "%s")
     )

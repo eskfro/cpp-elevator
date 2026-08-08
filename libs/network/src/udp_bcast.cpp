@@ -13,9 +13,9 @@
 
 namespace elev::network {
 
-void NetworkPacket::Update(const elev::ordersync::OrderMatrix* matrix,
+void NetworkPacket::Init(const elev::ordersync::OrderMatrix* matrix,
                         const elev::elevator::ElevatorState* state) {
-    if (matrix) matrix_ = *matrix;
+    if (matrix) orders_ = *matrix;
     if (state) state_ = *state;
 }
 

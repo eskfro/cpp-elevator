@@ -5,6 +5,12 @@
 
 namespace elev::elevator {
 
+void ElevatorState::Init() {
+    active_ = true;
+    fault_ = false;
+    stopped_ = false;
+}
+
 // --- Getters ---
 
 int ElevatorState::ID() {
@@ -55,8 +61,12 @@ uint64_t ElevatorState::Version() {
     return version_;
 }
 
-std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> ElevatorState::Requests() {
+std::array<std::array<bool, config::kButtons>, config::kFloors> ElevatorState::Requests() {
     return requests_;
+}
+
+common::Inertia ElevatorState::Inertia() {
+    return inertia_;
 }
 
 // --- Setters --- 
@@ -118,6 +128,8 @@ void ElevatorState::CopyFrom(ElevatorState* rhs) {
     moving_state_ = rhs->MovingState();
     IP_ = rhs->IP();
     version_ = rhs->Version();
+    requests_ = rhs->Requests();
+    inertia_ = rhs->Inertia();
 }
 
 void ElevatorState::OnUpdate(ElevatorState rcv) {
@@ -126,8 +138,12 @@ void ElevatorState::OnUpdate(ElevatorState rcv) {
     CopyFrom(&rcv);
 }
 
-void ElevatorState::SetRequests(std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> requests) {
+void ElevatorState::SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests) {
     requests_ = requests;
+}
+
+void ElevatorState::SetIntertia(common::Inertia inertia) {
+    inertia_ = inertia;
 }
 
 } // namespace elev::elevator

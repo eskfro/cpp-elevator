@@ -42,6 +42,7 @@ void Elevator::Step() {
 
 void Elevator::Init() {
     InitToFloor();
+    state_.Init();
     state_.SetMotorDir(elev::common::MotorDir::STOP);
     state_.SetFloor(FloorSensor());
     state_.SetPrevFloor(FloorSensor());

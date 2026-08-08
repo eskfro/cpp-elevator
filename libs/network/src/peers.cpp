@@ -8,58 +8,52 @@
 #include <network/peers.hpp>
 #include <common/types.hpp>
 #include <limits.h>
+#include <stdatomic.h>
 
 namespace elev::network {
 
 Peers::Peers() :
      num_elevs_(0) {}
 
-void Peers::Step(int elev_id) {
-
-     // All elevators should also say requested for that order: (e, f, b).
-     // Each elevator has their own copy of all the OrderTables for each elevator, and 
-     //      also a copy of what all the other elevator think about eachother. Therefore  
-     //      this function need to use all that data to determine if it should set 
-     //      OrderStatus::CONFIRMED indicating that i take the order. The plan is to make
-     //      it so that the original order (e, f, b) is still marked OrderStatus::REQUESTED
-     //      and then use a IsRequestedByAll(f, b) function and then decide if someone should
-     //      take the order again if somehow the order disappears because of a network failure etc...
-     ConfirmOrders(elev_id);
+void Peers::Step(int node_id) {
+     UpdateNumElevs();
+     ConfirmOrders(node_id);
+     ResetOrders(node_id);
 }
 
 // Confirm orders using the node's table
 void Peers::ConfirmOrders(int node_id) {
      using namespace elev::common;
-     int n = node_id;
-
-     ordersync::OrderMatrix* matrix = &all_matrices_[node_id];
+     const int n = node_id;
 
      // Iterate over all orders (f, b)
-     for (int f = 0; f < N_FLOORS; f++) {
-          for (int b = 0; b < N_BUTTONS; b++) {
+     for (int f = 0; f < kFloors; f++) {
+          for (int b = 0; b < kButtons; b++) {
 
                // Cab
                if ((BtnType)b == BtnType::CAB) {
-                    matrix->Table(n)->Order(f, b)->OnConfirm();
+                    orders_.Table(n)->Order(f, b)->OnConfirm();
                     continue;
                }
 
                // Hall
-               if (!RequestedByAll(n, f, b)) continue;
+               if (!RequestedByAll(f, b)) continue;
                int best_elev_id = ElevatorWithLowestCost(f, b);
-               matrix->Table(best_elev_id)->Order(f, b)->OnConfirm();
+               if (best_elev_id == -1) {
+                    common::PrintError("[Peers] No active elevators in all_elevs_");
+                    return;
+               }
+               orders_.Table(best_elev_id)->Order(f, b)->OnConfirm();
           }
      }
 }
 
-// Checks only this node's table
-// We might have one dimension too many, but we keep it for now
-// might be useful later? 
-bool Peers::RequestedByAll(int node_id, int floor, int btn) {
-     int n = node_id;
+bool Peers::RequestedByAll(int floor, int btn) {
      using namespace elev::common;
-     for (int e = 0; e < N_ELEVS; e++) {
-          OrderStatus status = all_matrices_[n].Table(e)->Order(floor, btn)->Status();
+     for (int e = 0; e < kElevs; e++) {
+          if (all_states_[e].Active() == false) continue;
+
+          OrderStatus status = orders_.Table(e)->Order(floor, btn)->Status();
           if (status != OrderStatus::REQUESTED) {
                return false;
           }
@@ -67,12 +61,21 @@ bool Peers::RequestedByAll(int node_id, int floor, int btn) {
      return true;
 }
 
+void Peers::ResetOrders(int node_id) {
+     const int n = node_id;
+     for (int f = 0; f < kFloors; f++) {
+          for (int b = 0; b < kButtons; b++) {
+               orders_.Table(n)->Order(f, b)->OnReset();
+          }
+     }
+}
+
 int Peers::ElevatorWithLowestCost(int floor, int btn) {
      using namespace elev::common;
-     int best_elev_id = 0;
+     int best_elev_id = -1;
      int lowest_cost = std::numeric_limits<int>::max();
 
-     for (int e = 0; e < N_ELEVS; e++) {
+     for (int e = 0; e < kElevs; e++) {
           elevator::ElevatorState state = all_states_[e];
           int cost = 0;
 
@@ -82,8 +85,8 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
 
           if (state.Obstruction()) cost += kPenaltyObstruction;
 
-          for (int f = 0; f < N_FLOORS; f++) {
-               for (int b=0; b<N_BUTTONS; b++) { 
+          for (int f = 0; f < kFloors; f++) {
+               for (int b=0; b<kButtons; b++) { 
                     if (state.Requests().at(f).at(b)) {
                          cost += kPenaltyPerOrder;
                     }
@@ -91,8 +94,14 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
           }
 
           if (state.DoorOpen()) cost += kPenaltyDoorOpen;
-
-          // TODO: direction penalty
+          
+          // Very simple directional penalty
+          bool order_below = floor < state.Floor();
+          bool order_above = floor > state.Floor();
+          bool wrong_dir = 
+               (order_below && state.Inertia() == Inertia::UP) || 
+               (order_above && state.Inertia() == Inertia::DOWN);
+          if (wrong_dir) cost += kPenaltyWrongDir;
 
           if (cost < lowest_cost) {
                lowest_cost = cost;
@@ -106,8 +115,8 @@ elev::elevator::ElevatorState* Peers::State(int elev_id) {
      return &all_states_[elev_id];
 }
 
-elev::ordersync::OrderMatrix* Peers::Matrix(int elev_id) {
-     return &all_matrices_[elev_id];
+elev::ordersync::OrderMatrix* Peers::Orders() {
+     return &orders_;
 }
 
 int Peers::NumElevs() {
@@ -118,16 +127,16 @@ void Peers::SetNumElevs(int num_elevs) {
      num_elevs_ = num_elevs;
 }
 
-void Peers::SetMatrix(int elev_id, elev::ordersync::OrderMatrix matrix) {
-     all_matrices_[elev_id] = matrix;
+void Peers::SetClearOrders(int node_id, int floor, ButtonFlags b2c) {
+    orders_.Table(node_id)->ClearOrders(floor, b2c);
 }
 
-void Peers::SetClearOrders(int elev_id, int floor, ButtonFlags b2c) {
-    all_matrices_[elev_id].Table(elev_id)->SetFromButtonFlags(floor, b2c);
-}
-
-void Peers::SetState(int elev_id, elev::elevator::ElevatorState state) {
-     all_states_[elev_id] = state;
+void Peers::UpdateNumElevs() {
+     int count = 0;
+     for (int e = 0; e < kElevs; e++) {
+          count += (int)all_states_[e].Active();
+     }
+     num_elevs_ = count;
 }
 
 } // namespace elev::network

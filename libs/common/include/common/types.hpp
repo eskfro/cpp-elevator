@@ -11,7 +11,7 @@ namespace elev::common {
 
 #define BETWEEN_FLOORS -1
 
-using ButtonFlags = std::array<bool, elev::config::N_BUTTONS>;
+using ButtonFlags = std::array<bool, elev::config::kButtons>;
 
 
 enum class DoorState : bool {

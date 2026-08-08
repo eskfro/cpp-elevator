@@ -14,17 +14,17 @@ class NetworkPacket {
     public:
         NetworkPacket() = default;
 
-        void Update(const elev::ordersync::OrderMatrix* matrix, const elev::elevator::ElevatorState* state);    
+        void Init(const elev::ordersync::OrderMatrix* matrix, const elev::elevator::ElevatorState* state);    
 
         void SetID(int id) { id_ = id; }
     
         int ID() { return id_; }
-        elev::ordersync::OrderMatrix* Matrix() { return &matrix_; } 
+        elev::ordersync::OrderMatrix* Orders() { return &orders_; } 
         elev::elevator::ElevatorState* State() { return &state_; }
 
     private:
         int id_;
-        elev::ordersync::OrderMatrix matrix_;
+        elev::ordersync::OrderMatrix orders_;
         elev::elevator::ElevatorState state_;
 
 };

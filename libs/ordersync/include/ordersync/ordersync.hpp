@@ -15,12 +15,15 @@ class Order {
     public:
         Order() = default;
 
+        // Get
         uint64_t Version() { return version_; }
         OrderStatus Status() { return status_; }
 
+        // Set
         void SetStatus(OrderStatus status) { status_ = status; }
         void SetVersion(uint64_t version) { version_ = version; }
 
+        // State machine
         void OnUpdate(Order rcv);
         void OnRequest();
         void OnConfirm();
@@ -39,15 +42,15 @@ class OrderTable {
 
         // Get
         ordersync::Order* Order(int floor, int btn);
-        std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> ToBoolTable();
+        std::array<std::array<bool, kButtons>, kFloors> ToBoolTable();
 
         // Set
         void SetOrder(int floor, int btn, ordersync::Order order);
-        void SetFromButtonFlags(int floor, ButtonFlags b2c);
+        void ClearOrders(int floor, ButtonFlags b2c);
         void Join(OrderTable rcv);
 
     private:
-        ordersync::Order table_[N_FLOORS][N_BUTTONS];
+        std::array<std::array<ordersync::Order, kButtons>, kFloors> table_{};
 };
 
 
@@ -56,8 +59,10 @@ class OrderMatrix {
         OrderMatrix() = default;
         OrderTable* Table(int elevID);
 
+        void Join(OrderMatrix rcv);
+
     private:
-        OrderTable matrix_[N_ELEVS];
+        std::array<OrderTable, kElevs> matrix_{};
 };
 
 } // namespace elev::ordersync

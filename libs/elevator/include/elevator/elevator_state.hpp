@@ -11,6 +11,8 @@ class ElevatorState {
     public:
         ElevatorState() = default;
 
+        void Init();
+
         // Getters
         int ID();
         int Floor();
@@ -24,7 +26,8 @@ class ElevatorState {
         elev::common::MovingState MovingState();
         std::string IP();
         uint64_t Version();
-        std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> Requests();
+        std::array<std::array<bool, config::kButtons>, config::kFloors> Requests();
+        common::Inertia Inertia();
 
         // Setters
         void SetID(int ID);
@@ -38,7 +41,8 @@ class ElevatorState {
         void SetActivity(bool active);
         void SetDoorOpen(bool door_open);
         void SetVersion(uint64_t version);
-        void SetRequests(std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> requests);
+        void SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests);
+        void SetIntertia(common::Inertia inertia);
 
 
         // things
@@ -48,19 +52,20 @@ class ElevatorState {
 
 
     private:
-        int ID_;
-        int floor_;
-        int prev_floor_;
-        bool active_;
-        bool obstruction_;
-        bool fault_;
-        bool door_open_;
-        bool stopped_;
-        elev::common::MotorDir motor_dir_;
-        elev::common::MovingState moving_state_;
-        std::string IP_;
-        uint64_t version_{};
-        std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> requests_;
+        int ID_{-1};
+        int floor_{-1};
+        int prev_floor_{-1};
+        bool active_{false};
+        bool obstruction_{true};
+        bool fault_{false};
+        bool door_open_{false};
+        bool stopped_{false};
+        elev::common::MotorDir motor_dir_{0};
+        elev::common::MovingState moving_state_{0};
+        std::string IP_{""};
+        uint64_t version_{0};
+        std::array<std::array<bool, config::kButtons>, config::kFloors> requests_{};
+        elev::common::Inertia inertia_{common::Inertia::NONE};
 
 };
 

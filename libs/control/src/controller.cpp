@@ -32,10 +32,10 @@ bool Controller::IsRequestsChanged(elev::control::RequestTable prev_requests) {
 }
 
 
-void Controller::UpdateRequests(std::array<std::array<bool, N_BUTTONS>, N_FLOORS> bool_table) {
+void Controller::UpdateRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table) {
     using namespace elev::common;
     // yup
-    for (int f = 0; f < N_FLOORS; f++) for (int b = 0; b < N_BUTTONS; b++) requests_.SetValue(f, b, bool_table[f][b]);
+    for (int f = 0; f < kFloors; f++) for (int b = 0; b < kButtons; b++) requests_.SetValue(f, b, bool_table[f][b]);
 }
 
 
@@ -50,7 +50,7 @@ ButtonFlags Controller::_fsm_emergency_stop(elev::elevator::Elevator* elev) {
 
     if (elev->FloorSensor() != BETWEEN_FLOORS) {
         if (!elev->State()->DoorOpen()) elev->OpenDoor();
-        doortimer_.Start(DOOR_OPEN_TIME_MS);
+        doortimer_.Start(kDoorOpenTimeMs);
     }
 
     inertia_ = Inertia::NONE;
@@ -72,7 +72,7 @@ ButtonFlags Controller::_fsm_table_update(elev::elevator::Elevator* elev) {
     switch (elev->State()->MovingState()) {
         case MovingState::DOOR_OPEN:
             if (ShouldStop(floor)) {
-                doortimer_.Start(DOOR_OPEN_TIME_MS);
+                doortimer_.Start(kDoorOpenTimeMs);
                 return ClearCurrentFloor(floor);
             }
             return zero;
@@ -86,7 +86,7 @@ ButtonFlags Controller::_fsm_table_update(elev::elevator::Elevator* elev) {
                     if (elev->State()->Floor() != BETWEEN_FLOORS) {
                         elev->OpenDoor();
                     }
-                    doortimer_.Start(DOOR_OPEN_TIME_MS);
+                    doortimer_.Start(kDoorOpenTimeMs);
                     ExecuteDecision(elev, pair);
                     return ClearCurrentFloor(floor);
                 case MovingState::MOVING:
@@ -142,7 +142,7 @@ ButtonFlags Controller::_fsm_door_timeout(elev::elevator::Elevator* elev) {
 
     if (elev->State()->Obstruction()) {
         std::cout << "OBS!" << std::endl;
-        doortimer_.Start(DOOR_OPEN_TIME_MS);
+        doortimer_.Start(kDoorOpenTimeMs);
         return zero;
     }
     switch(elev->State()->MovingState()) {
@@ -151,7 +151,7 @@ ButtonFlags Controller::_fsm_door_timeout(elev::elevator::Elevator* elev) {
             switch (pair.moving_state) {
                 case MovingState::DOOR_OPEN:
                     ExecuteDecision(elev, pair);
-                    doortimer_.Start(DOOR_OPEN_TIME_MS);
+                    doortimer_.Start(kDoorOpenTimeMs);
                     return ClearCurrentFloor(elev->State()->Floor());
                 case MovingState::MOVING:
                 case MovingState::IDLE:
@@ -171,7 +171,7 @@ ButtonFlags Controller::_fsm_door_timeout(elev::elevator::Elevator* elev) {
 void Controller::StopAndOpenDoor(elev::elevator::Elevator* elev) {
     elev->SetMotorDir(MotorDir::STOP);
     elev->OpenDoor();
-    doortimer_.Start(DOOR_OPEN_TIME_MS);
+    doortimer_.Start(kDoorOpenTimeMs);
 }
 
 
@@ -187,7 +187,7 @@ void Controller::ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair
 
 int Controller::TryCloseDoor(elev::elevator::Elevator* elev) {
     if (elev->State()->Obstruction()) {
-        if (doortimer_.Expired()) doortimer_.Start(DOOR_OPEN_TIME_MS);
+        if (doortimer_.Expired()) doortimer_.Start(kDoorOpenTimeMs);
         return 0;
     } else {
         elev->CloseDoor();

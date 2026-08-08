@@ -7,10 +7,6 @@
 namespace elev::control {
 
 class RequestTable {
-    private:
-        //Table used by single elevator
-        bool table_[elev::config::N_FLOORS][elev::config::N_BUTTONS]; 
-    
     public:
         RequestTable();
 
@@ -25,7 +21,10 @@ class RequestTable {
         RequestTable CopyFrom(RequestTable rhs);
         bool Equals(RequestTable rhs);
 
-        std::array<std::array<bool, config::N_BUTTONS>, config::N_FLOORS> Table();
+        std::array<std::array<bool, config::kButtons>, config::kFloors> Table();
+    
+    private:
+        std::array<std::array<bool, config::kButtons>, config::kFloors> table_{};
 
 };
 

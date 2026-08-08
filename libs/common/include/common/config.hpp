@@ -3,14 +3,14 @@
 namespace elev::config {
 
     // Hardware config
-    constexpr char IP_HW[] = "localhost";
-    constexpr char PORT_HW[] = "15657";
-    constexpr char CONFIG_FILE[] = "/home/eskfro/cpp-elevator/libs/hardware/config/elevator_hardware.con";
+    constexpr char kIpHw[] = "localhost";
+    constexpr char kPortHw[] = "15657";
+    constexpr char kConfigPath[] = "/home/eskfro/cpp-elevator/libs/hardware/config/elevator_hardware.con";
 
     // Elevator config
-    constexpr int N_ELEVS = 4;
-    constexpr int N_FLOORS = 4;
-    constexpr int N_BUTTONS = 3;
-    constexpr int DOOR_OPEN_TIME_MS = 3000;
+    constexpr int kElevs = 4;
+    constexpr int kFloors = 4;
+    constexpr int kButtons = 3;
+    constexpr int kDoorOpenTimeMs = 3000;
 
 } // namespace elev::config

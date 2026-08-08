@@ -16,7 +16,7 @@ class Controller {
     public:
         Controller();
 
-        void UpdateRequests(std::array<std::array<bool, N_BUTTONS>, N_FLOORS> bool_table);
+        void UpdateRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table);
 
         void SetInertia(MotorDir dir);
         void ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair);

@@ -27,43 +27,38 @@ void OrderTable::SetOrder(int floor, int btn, ordersync::Order order) {
 }
 
 
-void OrderTable::SetFromButtonFlags(int floor, ButtonFlags b2c) {
-    for (int b = 0; b < N_BUTTONS; b++) {
-        if (b2c.at(b)) {
-            table_[floor][b].OnClear();
-        }
+void OrderTable::ClearOrders(int floor, ButtonFlags b2c) {
+    for (int b = 0; b < kButtons; b++) {
+        if (b2c.at(b)) table_[floor][b].OnClear();
     }
 }   
-
-
     
-std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> OrderTable::ToBoolTable(){
+std::array<std::array<bool, elev::config::kButtons>, config::kFloors> OrderTable::ToBoolTable(){
     using namespace elev::common;
-    std::array<std::array<bool, elev::config::N_BUTTONS>, config::N_FLOORS> result{};
+    std::array<std::array<bool, elev::config::kButtons>, config::kFloors> result{};
 
-    for (int f = 0; f < N_FLOORS; f++) {
-        for (int b = 0; b < N_BUTTONS; b++) {            
+    for (int f = 0; f < kFloors; f++) {
+        for (int b = 0; b < kButtons; b++) {            
             result[f][b] = (table_[f][b].Status() == OrderStatus::CONFIRMED) ? true : false;
         }
     }
     return result;
 }
 
-
 void OrderTable::Join(OrderTable rcv) {
     // p2p schema for distributing orders
     // OrderStatus: NONE, REQUESTED, CONFIRMED, CLEAR
-    for (int f = 0; f < N_FLOORS; f++) {
-        for (int b = 0; b < N_BUTTONS; b++) {
-
-            // We dont control the incoming nodes cab orders
-            if ((BtnType)b == BtnType::CAB) {
-                table_[f][b] = *rcv.Order(f, b);
-                continue;
-            }
+    for (int f = 0; f < kFloors; f++) {
+        for (int b = 0; b < kButtons; b++) {
             table_[f][b].OnUpdate(*rcv.Order(f, b));
         }
     }
+}
+
+void OrderMatrix::Join(OrderMatrix rcv) {
+    for (int e = 0; e < kElevs; e++) {
+        matrix_[e].Join(*rcv.Table(e));
+    } 
 }
 
 void Order::OnUpdate(Order rcv) {
@@ -93,7 +88,7 @@ void Order::OnConfirm() {
 }
 
 void Order::OnClear() {
-    if (status_ == OrderStatus::CONFIRMED || status_ == OrderStatus::REQUESTED) {
+    if (status_ == OrderStatus::CONFIRMED) {
         status_ = OrderStatus::CLEAR;
         version_++;
     }

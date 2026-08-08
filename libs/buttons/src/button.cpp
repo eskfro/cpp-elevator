@@ -31,8 +31,8 @@ void elev::button::Button::ConfigureButton(int floor, elev::common::BtnType btn)
 
 
 elev::buttons::ButtonMatrix::ButtonMatrix() {
-    for (int f = 0; f < N_FLOORS; f++) {
-        for (int b = 0; b < N_BUTTONS; b++) {
+    for (int f = 0; f < kFloors; f++) {
+        for (int b = 0; b < kButtons; b++) {
             matrix_[f][b].ConfigureButton(f, (elev::common::BtnType)b);
         }
     }

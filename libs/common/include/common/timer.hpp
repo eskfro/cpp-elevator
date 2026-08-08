@@ -5,14 +5,6 @@
 namespace elev::common {
 
 class DoorTimer {
-    private:
-        using Clock = std::chrono::steady_clock;
-        using TimePoint = std::chrono::time_point<Clock>;
-        using Duration = std::chrono::milliseconds;
-
-        TimePoint end_time_;
-        bool active_{false};
-
     public:
         DoorTimer() = default;
 
@@ -35,6 +27,13 @@ class DoorTimer {
         bool Active() const {
             return active_;
         }
+    private:
+        using Clock = std::chrono::steady_clock;
+        using TimePoint = std::chrono::time_point<Clock>;
+        using Duration = std::chrono::milliseconds;
+
+        TimePoint end_time_;
+        bool active_{false};
 };
 
 } // namespace elev::common

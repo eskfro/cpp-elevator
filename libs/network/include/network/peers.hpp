@@ -32,31 +32,29 @@ class Peers {
     public:
         Peers();
 
-        void Step(int elev_id);
-        void UpdateAllCosts(int elev_id);
+        void Step(int node_id);
 
         // Get
-        elev::ordersync::OrderMatrix* Matrix(int elev_id);
+        elev::ordersync::OrderMatrix* Orders();
         elev::elevator::ElevatorState* State(int elev_id);
         int NumElevs();
 
         // Set
-        void SetMatrix(int elev_id, elev::ordersync::OrderMatrix matrix);
-        void SetState(int elev_id, elev::elevator::ElevatorState state);
         void SetNumElevs(int num_elevs);
-        void SetClearOrders(int elev_id, int floor, ButtonFlags b2c);
-        void IncrementVersion(int elev_id);
+        void SetClearOrders(int node_id, int floor, ButtonFlags b2c);
 
-        // Sync
         void ConfirmOrders(int node_id);
+        void ResetOrders(int node_id);
         int ElevatorWithLowestCost(int floor, int btn);
-        bool RequestedByAll(int node_id, int floor, int btn);
+        bool RequestedByAll(int floor, int btn);
+
+        void UpdateNumElevs();
 
     
     private:
         int num_elevs_{};
-        std::array<elev::ordersync::OrderMatrix, elev::config::N_ELEVS> all_matrices_{};
-        std::array<elev::elevator::ElevatorState, elev::config::N_ELEVS> all_states_{};
+        ordersync::OrderMatrix orders_{};
+        std::array<elev::elevator::ElevatorState, elev::config::kElevs> all_states_{};
 };
 
 } // namespace elev::network
