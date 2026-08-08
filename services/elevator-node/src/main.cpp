@@ -1,5 +1,7 @@
+#include <exception>
 #include <functional>
 #include <iostream>
+#include <string>
 #include <unistd.h>
 #include <chrono>
 #include <thread>
@@ -17,25 +19,38 @@
 #include <network/udp_bcast.hpp>
 
 void TxThreadLoop(elev::node::ElevatorNode& node, elev::network::UdpBroadcaster& bcaster, const std::atomic<bool>& g_running);
+void RxThreadLoop(elev::node::ElevatorNode& node, elev::network::UdpReciever& reciever, const std::atomic<bool>& g_running);
+
+static constexpr uint16_t kPort = 3435;
 
 std::atomic<bool> g_running{true};
 void SigHandler(int) {
     g_running = false;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     std::signal(SIGINT, SigHandler);
     std::signal(SIGTERM, SigHandler);
     elev::common::Print("=== ELEVATOR NODE ===");
     
     // Init
-    int ID = 0;
-    std::string IP = "localhost";
-    elev::hardware::init_hardware();
-    elev::node::ElevatorNode node = elev::node::ElevatorNode(ID, IP);
-    elev::network::UdpBroadcaster bcaster = elev::network::UdpBroadcaster(3435, "255.255.255.255");
+    int id = 0;
+    int sim = 0;
+    
+    try { id = std::stoi(argv[1]); } catch (const std::exception& e) { elev::common::PrintError(e.what()); return 1; };
+    try { sim = std::stoi(argv[2]); } catch (const std::exception& e) { elev::common::PrintError(e.what()); return 1; };
 
-    // Tx thread
+    const int port = sim ? kPort + id : kPort; 
+
+    std::string ip = "localhost";
+    elev::hardware::init_hardware(id);
+
+    elev::node::ElevatorNode node = elev::node::ElevatorNode(id, ip);
+    elev::network::UdpBroadcaster bcaster = elev::network::UdpBroadcaster(port, "255.255.255.255");
+    elev::network::UdpReciever reciever = elev::network::UdpReciever(port);
+
+    // Tx and Rx threads
+    std::thread rx_thread(RxThreadLoop, std::ref(node), std::ref(reciever), std::cref(g_running));
     std::thread tx_thread(TxThreadLoop, std::ref(node), std::ref(bcaster), std::cref(g_running));
 
     // Control loop
@@ -48,13 +63,32 @@ int main() {
     }
 
     // Shutdown
-    elev::common::Print("=== SHUTTING DOWN ===");
     node.Stop();
+    elev::common::Print("=== SHUTTING DOWN ===");
+    if (rx_thread.joinable()) rx_thread.join();
     if (tx_thread.joinable()) tx_thread.join();
     
     return 0;
 };
 
+void RxThreadLoop(
+    elev::node::ElevatorNode& node,
+    elev::network::UdpReciever& reciever,
+    const std::atomic<bool>& g_running
+) {
+    elev::network::NetworkPacket packet;
+
+    while (g_running && node.Running()) {
+        // Blocks until network frame arrives
+        if (reciever.RecievePacket(&packet)) {
+        
+            if (packet.ID() == node.ID()) continue;
+
+            // Update peers
+            node.RxPacketProcessing(packet);
+        }
+    }
+}
 
 void TxThreadLoop(
     elev::node::ElevatorNode& node,

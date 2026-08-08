@@ -16,7 +16,7 @@ namespace elev::hardware {
 static int sockfd;
 static pthread_mutex_t sockmtx;
 
-void init_hardware() {
+void init_hardware(int id) {
     char ip[16]; 
     char port[8]; 
 
@@ -27,6 +27,12 @@ void init_hardware() {
         con_val("com_ip",   ip,   "%s")
         con_val("com_port", port, "%s")
     )
+
+    {
+        int base = atoi(port);
+        int computed = base + id;
+        snprintf(port, sizeof(port), "%d", computed);
+    }
     
     pthread_mutex_init(&sockmtx, NULL);
     

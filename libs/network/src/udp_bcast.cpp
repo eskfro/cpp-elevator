@@ -1,8 +1,10 @@
 #include "network/udp_bcast.hpp"
 
 #include <asm-generic/socket.h>
+#include <cstddef>
 #include <iostream>
 #include <cstring>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -67,6 +69,50 @@ bool UdpBroadcaster::SendPacket(const NetworkPacket* packet) {
     }
     return static_cast<size_t>(bytes_sent) == sizeof(NetworkPacket);
 
+}
+
+UdpReciever::UdpReciever(uint16_t port) {
+    socket_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
+    if (socket_fd_ < 0) {
+        std::cerr << "[UDP RX] Error creating socket: " << strerror(errno) << std::endl;
+        return;
+    }
+
+    int reuse = 1;
+    setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+
+    struct sockaddr_in rx_addr{};
+    std::memset(&rx_addr, 0, sizeof(rx_addr));
+    rx_addr.sin_family = AF_INET;
+    rx_addr.sin_port = htons(port);
+    rx_addr.sin_addr.s_addr = INADDR_ANY; // all network interfaces
+
+    if (bind(socket_fd_, reinterpret_cast<struct sockaddr*>(&rx_addr), sizeof(rx_addr)) < 0) {
+        std::cerr << "[UDP Rx] Error binding socket to port " << port << ": " << strerror(errno) << std::endl;
+        close(socket_fd_);
+        socket_fd_ = -1;
+    }
+}
+
+UdpReciever::~UdpReciever() {
+    if (socket_fd_ >= 0) {
+        close(socket_fd_);
+    }
+}
+
+bool UdpReciever::RecievePacket(NetworkPacket* packet) {
+    if (socket_fd_ < 0 || !packet) return false;
+
+    struct sockaddr_in src_addr{};
+    socklen_t addr_len = sizeof(src_addr);
+
+    ssize_t bytes_rcvd = recvfrom(socket_fd_, packet, sizeof(NetworkPacket),
+        0, reinterpret_cast<struct sockaddr*>(&src_addr), &addr_len);
+    
+    if (bytes_rcvd < 0) {
+        return false;
+    }
+    return static_cast<size_t>(bytes_rcvd) == sizeof(NetworkPacket);
 }
 
 } // namespace elev::network

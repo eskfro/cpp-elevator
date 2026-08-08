@@ -45,5 +45,15 @@ class UdpBroadcaster {
         struct sockaddr_in bcast_addr_{};
 };
 
+class UdpReciever {
+    public:
+        UdpReciever(uint16_t port);
+        ~UdpReciever();
+
+        bool RecievePacket(NetworkPacket* packet);
+
+    private:
+        int socket_fd_{-1};
+};
 
 } // namespace elev::network

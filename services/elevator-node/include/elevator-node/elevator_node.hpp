@@ -27,7 +27,7 @@ class ElevatorNode {
 
         // Get
         bool Running();
-        int NodeID();
+        int ID();
         
         // Sync modules
         void UpdateOrderMatrixFromButtonSignals();

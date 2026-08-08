@@ -65,15 +65,10 @@ void ElevatorNode::StepPeers() {
 }
 
 void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
-    /*
-    Do things when the node rcv's an udp packet
-    */
+    std::lock_guard<std::mutex> lock(peers_mutex_);
     using namespace elev::ordersync;
-
-    // all_states_ update
+    
     peers_.State(packet.ID())->OnUpdate(*packet.State());
-
-    // OrderMatrix join
     peers_.Orders()->Join(*packet.Orders());
 }
 
@@ -89,7 +84,7 @@ elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
 
     elev::network::NetworkPacket packet;
-    packet.Init(peers_.Orders(), peers_.State(NodeID()));
+    packet.Init(peers_.Orders(), peers_.State(ID()));
 
     return packet; 
 }
@@ -101,7 +96,7 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     // Set clear orders
     ButtonFlags zeros{};
     if (b2c != zeros) {
-        peers_.SetClearOrders(NodeID(), elev_.State()->Floor(), b2c);
+        peers_.SetClearOrders(ID(), elev_.State()->Floor(), b2c);
     }
 
     const int n = node_id_;
@@ -111,7 +106,7 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     peers_.State(n)->IncrementVersion();
 }
 
-int ElevatorNode::NodeID() {
+int ElevatorNode::ID() {
    return node_id_;
 }
 
