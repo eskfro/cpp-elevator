@@ -17,7 +17,7 @@ namespace elev::node {
 class ElevatorNode {
     public:
         ElevatorNode() = delete;
-        ElevatorNode(int ID, std::string IP);
+        ElevatorNode(int id, std::string ip);
 
         void Step();
         void StepPeers();
@@ -27,7 +27,7 @@ class ElevatorNode {
 
         // Get
         bool Running();
-        int ID();
+        int Id();
         
         // Sync modules
         void UpdateOrderMatrixFromButtonSignals();

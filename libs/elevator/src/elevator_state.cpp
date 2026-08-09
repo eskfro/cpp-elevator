@@ -9,6 +9,7 @@ void ElevatorState::Init() {
     active_ = true;
     fault_ = false;
     stopped_ = false;
+    door_open_ = false;
 }
 
 // --- Getters ---
@@ -142,7 +143,7 @@ void ElevatorState::SetRequests(std::array<std::array<bool, config::kButtons>, c
     requests_ = requests;
 }
 
-void ElevatorState::SetIntertia(common::Inertia inertia) {
+void ElevatorState::SetInertia(common::Inertia inertia) {
     inertia_ = inertia;
 }
 

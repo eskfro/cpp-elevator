@@ -18,7 +18,7 @@ class Controller {
 
         // Set
         void SetRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table);
-        void SetInertia(MotorDir dir);
+        void SetInertia(elev::elevator::Elevator* elev, MotorDir dir);
 
         void ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair);
         void StopAndOpenDoor(elev::elevator::Elevator* elev);

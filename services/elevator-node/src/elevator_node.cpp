@@ -15,25 +15,19 @@ using namespace std::chrono_literals;
 
 namespace elev::node {
 
-
 bool ElevatorNode::Running() {
     return running_.load();
 }
 
-ElevatorNode::ElevatorNode(int ID, std::string IP) :
-    node_id_(ID),
+ElevatorNode::ElevatorNode(int id, std::string ip) :
+    node_id_(id),
     running_(true),
-    elev_(ID, IP) { 
+    elev_(id, ip) { 
         Init();
     }   
 
 void ElevatorNode::Step() {
-    // TODO:
-    // Queue of OrderMatrix's sent over the network from the other nodes
-    //for (matrix : peers_.matrixQueue_) {
-    //    peers_.MergeIncomingMatrix(int matr, elev::ordersync::OrderMatrix matrix)
-    //}
-
+    
     elev_.Step();
 
     {
@@ -45,23 +39,31 @@ void ElevatorNode::Step() {
 
     if (elev_.StopSignal()) {
         Event(controller_.FsmEmergencyStop(&elev_));
+        return;
     }
     if (elev_.HitNewFloor()) {
         Event(controller_.FsmFloorArrival(&elev_));
+        return;
     }
     if (controller_.RequestTableUpdated()) { 
         Event(controller_.FsmTableUpdate(&elev_));
+        return;
     }
     if (controller_.DoorTimer()->Expired()) {
         Event(controller_.FsmDoorTimeout(&elev_));
+        return;
     }
 
 };
 
 void ElevatorNode::StepPeers() {
+    const int n = node_id_;
+
     UpdateOrderMatrixFromButtonSignals();
-    peers_.State(node_id_)->CopyFrom(elev_.State());
-    peers_.Step(node_id_);
+    controller_.SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
+    peers_.State(n)->CopyFrom(elev_.State());
+
+    peers_.Step(n);
 }
 
 void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
@@ -69,6 +71,7 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
     using namespace elev::ordersync;
     
     peers_.State(packet.ID())->OnUpdate(*packet.State());
+
     peers_.Orders()->Join(*packet.Orders());
 }
 
@@ -82,9 +85,10 @@ void ElevatorNode::Stop() {
 
 elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
+    const int n = node_id_;
 
     elev::network::NetworkPacket packet;
-    packet.Init(peers_.Orders(), peers_.State(ID()));
+    packet.Init(peers_.Orders(), peers_.State(n));
 
     return packet; 
 }
@@ -92,21 +96,26 @@ elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
 
 void ElevatorNode::Event(ButtonFlags b2c) {
     std::lock_guard<std::mutex> lock(peers_mutex_);
+    const int n = node_id_;
 
-    // Set clear orders
+    // Increment state after fsm event
+    elev_.State()->IncrementVersion();
+
+    // Set clear orders on peers
     ButtonFlags zeros{};
     if (b2c != zeros) {
-        peers_.SetClearOrders(ID(), elev_.State()->Floor(), b2c);
+        peers_.SetClearOrders(n, elev_.State()->Floor(), b2c);
     }
 
-    const int n = node_id_;
+    // Sync requests
     controller_.SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
-    elev_.State()->SetRequests(controller_.Requests().Table());
+    elev_.State()->SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
+
+    // Sync ElevatorState
     peers_.State(n)->CopyFrom(elev_.State());
-    peers_.State(n)->IncrementVersion();
 }
 
-int ElevatorNode::ID() {
+int ElevatorNode::Id() {
    return node_id_;
 }
 
@@ -123,18 +132,14 @@ void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
             }
         }
     }
-    controller_.SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
 }
 
 void ElevatorNode::SetButtonLamps() {
     using namespace elev::common;
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
-            if (controller_.Requests().Value(f, b)) {
-                elev_.SetButtonLamp(f, (BtnType)b, true);
-            } else {
-                elev_.SetButtonLamp(f, (BtnType)b, false);
-            }
+            bool light = controller_.Requests().Value(f, b);
+            elev_.SetButtonLamp(f, (BtnType)b, light);
         }
     }
 }

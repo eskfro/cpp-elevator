@@ -13,13 +13,15 @@ DoorTimer* Controller::DoorTimer() {
     return &doortimer_;
 }
 
-void Controller::SetInertia(MotorDir dir) {
+void Controller::SetInertia(elev::elevator::Elevator* elev, MotorDir dir) {
     if (dir == MotorDir::Up) inertia_ = Inertia::Up;
     if (dir == MotorDir::Down) inertia_ = Inertia::Down;
+
+    elev->State()->SetInertia(inertia_);
 }
 
 RequestTable Controller::Requests() {
-    return this->requests_;
+    return requests_;
 }
 
 bool Controller::IsRequestsChanged(elev::control::RequestTable prev_requests) {
@@ -48,7 +50,10 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
     }
 
     inertia_ = Inertia::None;
+    elev->State()->SetInertia(Inertia::None);
+
     elev->State()->SetMovingState(MovingState::Idle);
+
     return zero;
 }
 
@@ -104,6 +109,7 @@ ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
 
     ButtonFlags zero{};
     int floor = elev->State()->Floor();
+
     elev->SetFloorIndicator();
 
     switch (elev->State()->MovingState()) {
@@ -126,9 +132,10 @@ ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
     doortimer_.Stop();
     
     DirMovPair pair;
-    elev->State()->SetObstruction(elev->ObstructionSignal());
     ButtonFlags zero{};
     int floor = elev->State()->Floor();
+
+    elev->State()->SetObstruction(elev->ObstructionSignal());
 
     if (elev->State()->Obstruction()) {
         common::PrintError("[FSM] Obs!");
@@ -169,7 +176,8 @@ void Controller::ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair
 
     elev->SetMotorDir(pair.motor_dir);
     elev->State()->SetMovingState(pair.moving_state);
-    SetInertia(pair.motor_dir);       
+
+    SetInertia(elev, pair.motor_dir);       
 }
 
 int Controller::TryCloseDoor(elev::elevator::Elevator* elev) {

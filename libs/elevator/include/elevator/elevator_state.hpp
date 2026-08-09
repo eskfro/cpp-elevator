@@ -42,7 +42,7 @@ class ElevatorState {
         void SetDoorOpen(bool door_open);
         void SetVersion(uint64_t version);
         void SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests);
-        void SetIntertia(common::Inertia inertia);
+        void SetInertia(common::Inertia inertia);
 
         // Things
         void CopyFrom(ElevatorState* rhs);

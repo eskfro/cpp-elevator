@@ -22,10 +22,10 @@ static constexpr int kPenaltyObstruction = 100;
 
 namespace elev::network {
 
+/*
+This is the world object.
+*/
 class Peers {
-    /*
-    This is the world object.
-    */
     public:
         Peers() = default;
         void Step(int node_id);

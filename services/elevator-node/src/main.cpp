@@ -33,7 +33,6 @@ int main(int argc, char* argv[]) {
     std::signal(SIGTERM, SigHandler);
     elev::common::Print("=== ELEVATOR NODE ===");
     
-    // Init
     int id = 0;
     int sim = 0;
     
@@ -45,9 +44,9 @@ int main(int argc, char* argv[]) {
     std::string ip = "localhost";
     elev::hardware::init_hardware(id);
 
-    elev::node::ElevatorNode node = elev::node::ElevatorNode(id, ip);
-    elev::network::UdpBroadcaster bcaster = elev::network::UdpBroadcaster(port, "255.255.255.255");
-    elev::network::UdpReciever reciever = elev::network::UdpReciever(port);
+    auto node = elev::node::ElevatorNode(id, ip);
+    auto bcaster = elev::network::UdpBroadcaster(port, "255.255.255.255");
+    auto reciever = elev::network::UdpReciever(port);
 
     // Tx and Rx threads
     std::thread rx_thread(RxThreadLoop, std::ref(node), std::ref(reciever), std::cref(g_running));
@@ -82,10 +81,11 @@ void RxThreadLoop(
         // Blocks until network frame arrives
         if (reciever.RecievePacket(&packet)) {
         
-            if (packet.ID() == node.ID()) continue;
+            if (packet.ID() == node.Id()) continue;
 
             // Update peers
             node.RxPacketProcessing(packet);
+            std::cout << "[RX] Processed package " << packet.ID() << std::endl;
         }
     }
 }

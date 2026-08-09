@@ -1,4 +1,5 @@
 #include "buttons/button.hpp"
+#include "common/config.hpp"
 #include "common/types.hpp"
 #include <mutex>
 #include <thread>
@@ -14,13 +15,8 @@ Elevator::Elevator(int id, std::string ip) {
     buttons_ = elev::buttons::ButtonTable();
     state_.SetID(id);
     state_.SetIP(ip);
-    state_.SetFloor(FloorSensor());
-    state_.SetStopped(false);
     state_.SetMotorDir(common::MotorDir::Stop);
     state_.SetMovingState(common::MovingState::Idle);
-    state_.SetObstruction(ObstructionSignal());
-    state_.SetActivity(true);
-    state_.SetDoorOpen(false);
 }
 
 void Elevator::InitToFloor() {
@@ -43,6 +39,7 @@ void Elevator::Init() {
     state_.SetFloor(FloorSensor());
     state_.SetPrevFloor(FloorSensor());
     state_.SetStopped(StopSignal());
+    state_.SetObstruction(ObstructionSignal());
     SetFloorIndicator();
     std::cout << "[ Elevator " << state_.ID() << " ] - INIT to floor " << state_.Floor() << std::endl;
 }
@@ -71,13 +68,11 @@ elev::buttons::ButtonTable* Elevator::Buttons() {
 void Elevator::SetMotorDir(elev::common::MotorDir dir) {
     using namespace elev::common;
     enum MotorDir new_dir;
-
     if (state_.Stopped()) {
         new_dir = MotorDir::Stop;
     } else {
         new_dir = dir;
     }
-
     elev::hardware::set_motor_dir(new_dir);
     state_.SetMotorDir(new_dir);
 };

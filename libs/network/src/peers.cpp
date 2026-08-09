@@ -35,6 +35,7 @@ void Peers::ConfirmOrders(int node_id) {
 
                // Hall
                if (!RequestedByAll(f, b)) continue;
+
                int best_elev_id = ElevatorWithLowestCost(f, b);
                if (best_elev_id == -1) {
                     common::PrintError("[Peers] No active elevators in all_elevs_");
@@ -77,6 +78,8 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
           int cost = 0;
 
           if (!state.Active()) continue;
+
+          if (num_elevs_ == 1) return e;
 
           cost += std::abs(state.Floor() - floor) * kPenaltyFloorDiff;
 
