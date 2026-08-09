@@ -14,7 +14,7 @@ class NetworkPacket {
     public:
         NetworkPacket() = default;
 
-        void Init(const elev::ordersync::OrderMatrix* matrix, const elev::elevator::ElevatorState* state);    
+        void Init(elev::ordersync::OrderMatrix* matrix, elev::elevator::ElevatorState* state);    
 
         void SetID(int id) { id_ = id; }
     
@@ -38,7 +38,7 @@ class UdpBroadcaster {
         UdpBroadcaster(const UdpBroadcaster&) = delete;
         UdpBroadcaster& operator=(const UdpBroadcaster&) = delete;
 
-        bool SendPacket(const NetworkPacket* packet);
+        bool SendPacket(NetworkPacket* packet);
 
     private:
         int socket_fd_{-1};

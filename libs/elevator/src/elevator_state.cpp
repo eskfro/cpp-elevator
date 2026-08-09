@@ -1,4 +1,5 @@
 
+#include "common/config.hpp"
 #include <cstdint>
 #include <elevator/elevator_state.hpp>
 #include <common/types.hpp>
@@ -81,10 +82,12 @@ void ElevatorState::SetIP(std::string IP) {
 }
 
 void ElevatorState::SetFloor(int floor) {
+    if (floor < 0 || floor >= config::kFloors) return;
     floor_ = floor;
 }
 
 void ElevatorState::SetPrevFloor(int prev_floor) {
+    if (prev_floor < 0 || prev_floor >= config::kFloors) return;
     prev_floor_ = prev_floor;
 }
 

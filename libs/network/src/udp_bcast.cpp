@@ -10,15 +10,19 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#include "common/config.hpp"
 #include "elevator/elevator_state.hpp"
 #include "ordersync/ordersync.hpp"
 
 namespace elev::network {
 
-void NetworkPacket::Init(const elev::ordersync::OrderMatrix* matrix,
-                        const elev::elevator::ElevatorState* state) {
+void NetworkPacket::Init(elev::ordersync::OrderMatrix* matrix,
+                        elev::elevator::ElevatorState* state) {
     if (matrix) orders_ = *matrix;
-    if (state) state_ = *state;
+    if (state) {
+        id_ = state->ID();
+        state_ = *state;
+    }
 }
 
 UdpBroadcaster::UdpBroadcaster(uint16_t port, const std::string& bcast_ip) {
@@ -54,7 +58,10 @@ UdpBroadcaster::~UdpBroadcaster() {
     }
 }
 
-bool UdpBroadcaster::SendPacket(const NetworkPacket* packet) {
+bool UdpBroadcaster::SendPacket(NetworkPacket* packet) {
+
+    if (packet->ID() < 0 || packet->ID() >= kElevs) return false;
+
     if (socket_fd_ < 0 || !packet) {
         return false;
     }
@@ -101,6 +108,9 @@ UdpReciever::~UdpReciever() {
 }
 
 bool UdpReciever::RecievePacket(NetworkPacket* packet) {
+
+    if (packet->ID() < 0 || packet->ID() >= kElevs) return false;
+
     if (socket_fd_ < 0 || !packet) return false;
 
     struct sockaddr_in src_addr{};

@@ -28,6 +28,7 @@ This is the world object.
 class Peers {
     public:
         Peers() = default;
+        
         void Step(int node_id);
 
         // Set

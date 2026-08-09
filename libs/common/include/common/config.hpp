@@ -6,6 +6,7 @@ namespace elev::config {
     constexpr char kIpHw[] = "localhost";
     constexpr char kPortHw[] = "15657";
     constexpr char kConfigPath[] = "/home/eskfro/cpp-elevator/libs/hardware/config/elevator_hardware.con";
+    constexpr int kBetweenFloors = -1;
 
     // Elevator config
     constexpr int kElevs = 4;

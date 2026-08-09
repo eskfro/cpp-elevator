@@ -9,6 +9,7 @@
 #include <common/types.hpp>
 #include <limits.h>
 #include <stdatomic.h>
+#include <assert.h>
 
 namespace elev::network {
 
@@ -112,6 +113,8 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
 }
 
 elev::elevator::ElevatorState* Peers::State(int elev_id) {
+     assert(elev_id >= 0 && elev_id < kElevs);
+
      return &all_states_[elev_id];
 }
 

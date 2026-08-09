@@ -44,7 +44,7 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
     elev->SetMotorDir(MotorDir::Stop);
     elev->SetStopLamp(1);
 
-    if (elev->FloorSensor() != BETWEEN_FLOORS) {
+    if (elev->FloorSensor() != kBetweenFloors) {
         if (!elev->State()->DoorOpen()) elev->OpenDoor();
         doortimer_.Start(kDoorOpenTimeMs);
     }
@@ -81,7 +81,7 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
             pair = ChooseDirection(floor);
             switch (elev->State()->MovingState()) {
                 case MovingState::DoorOpen:
-                    if (elev->State()->Floor() != BETWEEN_FLOORS) {
+                    if (elev->State()->Floor() != kBetweenFloors) {
                         elev->OpenDoor();
                     }
                     doortimer_.Start(kDoorOpenTimeMs);

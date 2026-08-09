@@ -21,7 +21,7 @@ Elevator::Elevator(int id, std::string ip) {
 
 void Elevator::InitToFloor() {
     SetMotorDir(elev::common::MotorDir::Down);
-    while (FloorSensor() == BETWEEN_FLOORS) {
+    while (FloorSensor() == kBetweenFloors) {
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
     SetMotorDir(elev::common::MotorDir::Stop);
@@ -50,7 +50,7 @@ ElevatorState Elevator::StateCopy() {
 
 bool Elevator::HitNewFloor() {
     bool res = false;
-    if (state_.Floor() != state_.PrevFloor() && state_.Floor() != BETWEEN_FLOORS) {
+    if (state_.Floor() != state_.PrevFloor() && state_.Floor() != kBetweenFloors) {
         res = true;
     }
     state_.SetPrevFloor(state_.Floor());
@@ -101,7 +101,7 @@ void Elevator::SetButtonLamp(int floor, elev::common::BtnType btn, int value) {
 }
 
 void Elevator::SetFloorIndicator() {
-    if (state_.Floor() == BETWEEN_FLOORS) return;
+    if (state_.Floor() == kBetweenFloors) return;
     elev::hardware::set_floor_indicator(state_.Floor());
 }
 

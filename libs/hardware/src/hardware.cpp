@@ -16,7 +16,7 @@ namespace elev::hardware {
 static int sockfd;
 static pthread_mutex_t sockmtx;
 
-void init_hardware(int id) {
+void init_hardware(int id, int sim) {
     char ip[16]; 
     char port[8]; 
 
@@ -28,7 +28,8 @@ void init_hardware(int id) {
         con_val("com_port", port, "%s")
     )
 
-    {
+    if (sim == 1) {
+        // Different hardware port in sim mode
         int base = atoi(port);
         int computed = base + id;
         snprintf(port, sizeof(port), "%d", computed);
@@ -71,9 +72,9 @@ void set_btn_lamp(elev::common::BtnType btn, int floor, int value) {
     int button = static_cast<int>(btn);
 
     assert(floor >= 0);
-    assert(floor < elev::config::N_FLOORS);
+    assert(floor < config::kFloors);
     assert(button >= 0);
-    assert(button < elev::config::N_BUTTONS);
+    assert(button < config::kButtons);
 
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {2, button, floor, value}, 4, 0);
@@ -83,7 +84,7 @@ void set_btn_lamp(elev::common::BtnType btn, int floor, int value) {
 
 void set_floor_indicator(int floor) {
     assert(floor >= 0);
-    assert(floor < elev::config::N_FLOORS);
+    assert(floor < elev::config::kFloors);
 
     pthread_mutex_lock(&sockmtx);
     send(sockfd, (char[4]) {3, floor}, 4, 0);
