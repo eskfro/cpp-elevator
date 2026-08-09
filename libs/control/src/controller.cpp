@@ -24,11 +24,6 @@ RequestTable Controller::Requests() {
     return requests_;
 }
 
-bool Controller::IsRequestsChanged(elev::control::RequestTable prev_requests) {
-    if (requests_.Table() == prev_requests.Table()) return false;
-    else return true;
-}
-
 void Controller::SetRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table) {
     using namespace elev::common;
     // yup
@@ -37,7 +32,7 @@ void Controller::SetRequests(std::array<std::array<bool, kButtons>, kFloors> boo
 
 // FSM Emergency Stop
 ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator "<< elev->State()->ID() << " ] - FSM: Emergency Stop" << std::endl;
+    std::cout << "[ Elevator "<< elev->State()->Id() << " ] - FSM: Emergency Stop" << std::endl;
     ButtonFlags zero{};
 
     elev->State()->SetStopped(true);
@@ -59,7 +54,7 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
 
 // FSM Table Update
 ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator "<< elev->State()->ID() << " ] - FSM: Table Update" << std::endl;
+    std::cout << "[ Elevator "<< elev->State()->Id() << " ] - FSM: Table Update" << std::endl;
 
     using namespace elev::common;
 
@@ -79,7 +74,8 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
             return zero;
         case MovingState::Idle:
             pair = ChooseDirection(floor);
-            switch (elev->State()->MovingState()) {
+            // switch (elev->State()->MovingState()) {
+            switch (pair.moving_state) {
                 case MovingState::DoorOpen:
                     if (elev->State()->Floor() != kBetweenFloors) {
                         elev->OpenDoor();
@@ -104,7 +100,7 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
 
 // FSM Floor Arrival
 ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
-     std::cout << "[ Elevator "<< elev->State()->ID() << " ] - FSM: Arrived @ Floor " << elev->State()->Floor() << std::endl; 
+     std::cout << "[ Elevator "<< elev->State()->Id() << " ] - FSM: Arrived @ Floor " << elev->State()->Floor() << std::endl; 
     using namespace elev::common;
 
     ButtonFlags zero{};
@@ -126,7 +122,7 @@ ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
 
 // FSM Door Timeout
 ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator "<< elev->State()->ID() << " ] - FSM: Door Timeout" << std::endl;
+    std::cout << "[ Elevator "<< elev->State()->Id() << " ] - FSM: Door Timeout" << std::endl;
     using namespace elev::common;
     
     doortimer_.Stop();

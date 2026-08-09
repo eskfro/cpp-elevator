@@ -14,7 +14,7 @@ class ElevatorState {
         void Init();
 
         // Getters
-        int ID();
+        int Id();
         int Floor();
         int PrevFloor();
         bool Active();
@@ -24,14 +24,12 @@ class ElevatorState {
         bool Stopped();
         elev::common::MotorDir MotorDir();
         elev::common::MovingState MovingState();
-        std::string IP();
         uint64_t Version();
         std::array<std::array<bool, config::kButtons>, config::kFloors> Requests();
         common::Inertia Inertia();
 
         // Setters
-        void SetID(int ID);
-        void SetIP(std::string IP);
+        void SetId(int id);
         void SetFloor(int floor);
         void SetPrevFloor(int prev_floor);
         void SetStopped(bool stopped);
@@ -51,7 +49,7 @@ class ElevatorState {
 
 
     private:
-        int ID_{-1};
+        int id_{-1};
         int floor_{-1};
         int prev_floor_{-1};
         bool active_{false};
@@ -61,7 +59,6 @@ class ElevatorState {
         bool stopped_{false};
         elev::common::MotorDir motor_dir_{0};
         elev::common::MovingState moving_state_{0};
-        std::string IP_{""};
         uint64_t version_{0};
         std::array<std::array<bool, config::kButtons>, config::kFloors> requests_{};
         elev::common::Inertia inertia_{common::Inertia::None};

@@ -20,7 +20,7 @@ void NetworkPacket::Init(elev::ordersync::OrderMatrix* matrix,
                         elev::elevator::ElevatorState* state) {
     if (matrix) orders_ = *matrix;
     if (state) {
-        id_ = state->ID();
+        id_ = state->Id();
         state_ = *state;
     }
 }

@@ -12,11 +12,7 @@
 namespace elev::elevator {
 
 Elevator::Elevator(int id, std::string ip) {
-    buttons_ = elev::buttons::ButtonTable();
-    state_.SetID(id);
-    state_.SetIP(ip);
-    state_.SetMotorDir(common::MotorDir::Stop);
-    state_.SetMovingState(common::MovingState::Idle);
+    state_.SetId(id);
 }
 
 void Elevator::InitToFloor() {
@@ -35,13 +31,16 @@ void Elevator::Step() {
 void Elevator::Init() {
     InitToFloor();
     state_.Init();
-    state_.SetMotorDir(elev::common::MotorDir::Stop);
+
+    // Read signals
     state_.SetFloor(FloorSensor());
     state_.SetPrevFloor(FloorSensor());
     state_.SetStopped(StopSignal());
     state_.SetObstruction(ObstructionSignal());
+
     SetFloorIndicator();
-    std::cout << "[ Elevator " << state_.ID() << " ] - INIT to floor " << state_.Floor() << std::endl;
+    
+    std::cout << "[ Elevator " << state_.Id() << " ] Initialized at floor " << state_.Floor() << std::endl;
 }
 
 ElevatorState Elevator::StateCopy() {

@@ -43,9 +43,8 @@ int main(int argc, char* argv[]) {
     elev::hardware::init_hardware(id, sim);
 
     auto node = elev::node::ElevatorNode(id, ip);
-
-    elev::common::Print("[MAIN] Delay TX and RX threads for HW to init ...");
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    node.Init();
+    node.Step();
 
     auto bcaster = elev::network::UdpBroadcaster(kPort, "255.255.255.255");
     auto reciever = elev::network::UdpReciever(kPort);
@@ -53,8 +52,6 @@ int main(int argc, char* argv[]) {
     // Tx and Rx threads
     std::thread rx_thread(RxThreadLoop, std::ref(node), std::ref(reciever), std::cref(g_running));
     std::thread tx_thread(TxThreadLoop, std::ref(node), std::ref(bcaster), std::cref(g_running));
-
-    elev::common::Print("[MAIN] Ready");
 
     // Control loop
     constexpr auto kSampleTime = std::chrono::milliseconds(40);
@@ -84,7 +81,6 @@ void RxThreadLoop(
     while (g_running && node.Running()) {
         // Blocks until network frame arrives
         if (reciever.RecievePacket(&packet)) {
-        
             if (packet.ID() == node.Id()) continue;
             if (packet.ID() < 0 || packet.ID() >= kElevs) {
                 elev::common::PrintError("[RX] Packet ID out of range");

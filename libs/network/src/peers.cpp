@@ -40,7 +40,7 @@ void Peers::ConfirmOrders(int node_id) {
                int best_elev_id = ElevatorWithLowestCost(f, b);
                if (best_elev_id == -1) {
                     common::PrintError("[Peers] No active elevators in all_elevs_");
-                    return;
+                    continue;
                }
                orders_.Table(best_elev_id)->Order(f, b)->OnConfirm();
           }

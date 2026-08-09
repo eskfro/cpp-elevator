@@ -19,10 +19,11 @@ class ElevatorNode {
         ElevatorNode() = delete;
         ElevatorNode(int id, std::string ip);
 
+        void Init();
+        
         void Step();
         void StepPeers();
         void Stop();
-        void Init();
         void Event(ButtonFlags b2c);
 
         // Get

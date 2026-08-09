@@ -36,7 +36,6 @@ class Controller {
         // Decisions
         bool ShouldStop(int floor);
         bool ShouldClearImmediately(int floor, int btn_floor, BtnType btn);
-        bool IsRequestsChanged(elev::control::RequestTable prev_requests);
         bool RequestTableUpdated();
         DirMovPair ChooseDirection(int floor);
 

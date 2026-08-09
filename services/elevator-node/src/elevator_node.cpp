@@ -22,9 +22,7 @@ bool ElevatorNode::Running() {
 ElevatorNode::ElevatorNode(int id, std::string ip) :
     node_id_(id),
     running_(true),
-    elev_(id, ip) { 
-        Init();
-    }   
+    elev_(id, ip) {}   
 
 void ElevatorNode::Step() {
     
@@ -77,6 +75,7 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
 
 void ElevatorNode::Init() {
     elev_.Init();
+    elev::common::Print("[NODE] Intitialized");
 }
 
 void ElevatorNode::Stop() {

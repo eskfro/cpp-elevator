@@ -10,13 +10,20 @@ void ElevatorState::Init() {
     active_ = true;
     fault_ = false;
     stopped_ = false;
+
     door_open_ = false;
+
+    motor_dir_ = common::MotorDir::Stop;
+    moving_state_ = common::MovingState::Idle;
+    inertia_ = common::Inertia::None;
+
+    version_ = 1;
 }
 
 // --- Getters ---
 
-int ElevatorState::ID() {
-    return ID_;
+int ElevatorState::Id() {
+    return id_;
 }
 
 int ElevatorState::Floor() {
@@ -55,10 +62,6 @@ elev::common::MovingState ElevatorState::MovingState() {
     return moving_state_;
 }
 
-std::string ElevatorState::IP() {
-    return IP_;
-}
-
 uint64_t ElevatorState::Version() {
     return version_;
 }
@@ -73,12 +76,8 @@ common::Inertia ElevatorState::Inertia() {
 
 // --- Setters --- 
 
-void ElevatorState::SetID(int ID) {
-    ID_ = ID;
-}
-
-void ElevatorState::SetIP(std::string IP) {
-    IP_ = IP;
+void ElevatorState::SetId(int id) {
+    id_ = id;
 }
 
 void ElevatorState::SetFloor(int floor) {
@@ -120,7 +119,7 @@ void ElevatorState::SetVersion(uint64_t version) {
 }
 
 void ElevatorState::CopyFrom(ElevatorState* rhs) {
-    ID_ = rhs->ID();
+    id_ = rhs->Id();
     floor_ = rhs->Floor();
     prev_floor_ = rhs->PrevFloor();
     active_ = rhs->Active();
@@ -130,7 +129,6 @@ void ElevatorState::CopyFrom(ElevatorState* rhs) {
     stopped_ = rhs->Stopped();
     motor_dir_ = rhs->MotorDir();
     moving_state_ = rhs->MovingState();
-    IP_ = rhs->IP();
     version_ = rhs->Version();
     requests_ = rhs->Requests();
     inertia_ = rhs->Inertia();
