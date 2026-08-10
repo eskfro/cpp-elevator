@@ -60,10 +60,25 @@ bool Peers::RequestedByAll(int floor, int btn) {
      return true;
 }
 
+bool Peers::ClearedByAll(int floor, int btn) {
+     using namespace elev::common;
+     for (int e = 0; e < kElevs; e++) {
+          if (all_states_[e].Active() == false) continue;
+
+          OrderStatus status = orders_.Table(e)->Order(floor, btn)->Status();
+          if (status != OrderStatus::Clear) {
+               return false;
+          }
+     }
+     return true;
+}
+
 void Peers::ResetOrders(int node_id) {
      const int n = node_id;
      for (int f = 0; f < kFloors; f++) {
           for (int b = 0; b < kButtons; b++) {
+               if (!ClearedByAll(f, b)) continue;
+
                orders_.Table(n)->Order(f, b)->OnReset();
           }
      }
@@ -130,8 +145,15 @@ void Peers::SetNumElevs(int num_elevs) {
      num_elevs_ = num_elevs;
 }
 
-void Peers::SetClearOrders(int node_id, int floor, ButtonFlags b2c) {
-    orders_.Table(node_id)->ClearOrders(floor, b2c);
+void Peers::ClearOrders(int node_id, int floor, ButtonFlags b2c) {
+     for (int e = 0; e < kElevs; e++) {
+          if (all_states_[e].Active() == false) continue;
+          for (int b = 0; b < kButtons; b++) {
+               if (b2c.at(b)) {
+                    orders_.Table(e)->Order(floor, b)->OnClear();
+               }
+          }
+     }
 }
 
 void Peers::UpdateNumElevs() {

@@ -23,12 +23,6 @@ void OrderTable::SetOrder(int floor, int btn, ordersync::Order order) {
     table_[floor][(int)btn].SetStatus(order.Status());
     table_[floor][(int)btn].SetVersion(order.Version());
 }
-
-void OrderTable::ClearOrders(int floor, ButtonFlags b2c) {
-    for (int b = 0; b < kButtons; b++) {
-        if (b2c.at(b)) table_[floor][b].OnClear();
-    }
-}   
     
 std::array<std::array<bool, elev::config::kButtons>, config::kFloors> OrderTable::ToBoolTable(){
     using namespace elev::common;
@@ -62,16 +56,14 @@ void Order::OnUpdate(Order rcv) {
     if (rcv.Version() > version_) {
         version_ = rcv.Version();
         status_  = rcv.Status();
-    } 
+    }
     else if (rcv.Version() == version_ && (uint8_t)(rcv.Status()) > (uint8_t)(status_)) {
-        // Adopt status and bump version so the state advancement is explicit
-        version_ = rcv.Version() + 1; 
         status_  = rcv.Status();
     }
 }
 
 void Order::OnRequest() {
-    if (status_ == OrderStatus::None) {
+    if (status_ == OrderStatus::None || status_ == OrderStatus::Clear) {
         status_ = OrderStatus::Requested;
         version_++;
     }
@@ -94,6 +86,13 @@ void Order::OnClear() {
 void Order::OnReset() {
     if (status_ == OrderStatus::Clear) {
         status_ = OrderStatus::None;
+        version_++;
+    }
+}
+
+void Order::OnRevoke() {
+    if (status_ == OrderStatus::Confirmed) {
+        status_ = OrderStatus::Requested;
         version_++;
     }
 }

@@ -191,13 +191,13 @@ elev::common::DirMovPair Controller::ChooseDirection(int floor) {
     switch (inertia_) {
         case Inertia::Up:
         if (requests_.IsRequestAbove(floor)) return {MotorDir::Up,   MovingState::Moving};
-        if (requests_.IsRequestHere(floor))  return {MotorDir::Down, MovingState::DoorOpen};
+        if (requests_.IsRequestHere(floor))  return {MotorDir::Stop, MovingState::DoorOpen};
         if (requests_.IsRequestBelow(floor)) return {MotorDir::Down, MovingState::Moving};
         else return {MotorDir::Stop, MovingState::Idle};
         
         case Inertia::Down:
         if (requests_.IsRequestBelow(floor)) return {MotorDir::Down, MovingState::Moving};
-            if (requests_.IsRequestHere(floor))  return {MotorDir::Up,   MovingState::DoorOpen};
+            if (requests_.IsRequestHere(floor))  return {MotorDir::Stop,   MovingState::DoorOpen};
             if (requests_.IsRequestAbove(floor)) return {MotorDir::Up,   MovingState::Moving};
             else return {MotorDir::Stop, MovingState::Idle};
             

@@ -33,20 +33,22 @@ class Peers {
 
         // Set
         void SetNumElevs(int num_elevs);
-        void SetClearOrders(int node_id, int floor, ButtonFlags b2c);
-
+        
         // Get
         elev::ordersync::OrderMatrix* Orders();
         elev::elevator::ElevatorState* State(int elev_id);
         int NumElevs();
-
+        
+        // Orders
         void ConfirmOrders(int node_id);
         void ResetOrders(int node_id);
+        void ClearOrders(int node_id, int floor, ButtonFlags b2c);
+
         void UpdateNumElevs();
 
         int ElevatorWithLowestCost(int floor, int btn);
         bool RequestedByAll(int floor, int btn);
-
+        bool ClearedByAll(int floor, int btn);
 
     private:
         int num_elevs_{};

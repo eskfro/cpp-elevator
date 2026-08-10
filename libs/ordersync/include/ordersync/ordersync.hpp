@@ -29,6 +29,7 @@ class Order {
         void OnConfirm();
         void OnClear();
         void OnReset();
+        void OnRevoke();
         
     private:
         OrderStatus status_{};
@@ -41,7 +42,6 @@ class OrderTable {
 
         // Set
         void SetOrder(int floor, int btn, ordersync::Order order);
-        void ClearOrders(int floor, ButtonFlags b2c);
         void Join(OrderTable rcv);
 
         // Get

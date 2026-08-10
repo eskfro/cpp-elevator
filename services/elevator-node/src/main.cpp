@@ -82,10 +82,6 @@ void RxThreadLoop(
         // Blocks until network frame arrives
         if (reciever.RecievePacket(&packet)) {
             if (packet.ID() == node.Id()) continue;
-            if (packet.ID() < 0 || packet.ID() >= kElevs) {
-                elev::common::PrintError("[RX] Packet ID out of range");
-                continue;
-            }
             // Update peers
             node.RxPacketProcessing(packet);
             std::cout << "[RX] Processed package " << packet.ID() << std::endl;

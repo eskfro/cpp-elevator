@@ -108,9 +108,6 @@ UdpReciever::~UdpReciever() {
 }
 
 bool UdpReciever::RecievePacket(NetworkPacket* packet) {
-
-    if (packet->ID() < 0 || packet->ID() >= kElevs) return false;
-
     if (socket_fd_ < 0 || !packet) return false;
 
     struct sockaddr_in src_addr{};
@@ -119,10 +116,12 @@ bool UdpReciever::RecievePacket(NetworkPacket* packet) {
     ssize_t bytes_rcvd = recvfrom(socket_fd_, packet, sizeof(NetworkPacket),
         0, reinterpret_cast<struct sockaddr*>(&src_addr), &addr_len);
     
-    if (bytes_rcvd < 0) {
+    if (bytes_rcvd < 0 || static_cast<size_t>(bytes_rcvd) != sizeof(NetworkPacket)) {
         return false;
     }
-    return static_cast<size_t>(bytes_rcvd) == sizeof(NetworkPacket);
+    if (packet->ID() < 0 || packet->ID() >= kElevs) return false;
+
+    return true;
 }
 
 } // namespace elev::network

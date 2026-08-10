@@ -103,7 +103,7 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     // Set clear orders on peers
     ButtonFlags zeros{};
     if (b2c != zeros) {
-        peers_.SetClearOrders(n, elev_.State()->Floor(), b2c);
+        peers_.ClearOrders(n, elev_.State()->Floor(), b2c);
     }
 
     // Sync requests
