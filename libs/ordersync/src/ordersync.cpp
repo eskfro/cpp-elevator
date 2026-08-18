@@ -10,27 +10,19 @@ using namespace elev::config;
 
 
 namespace elev::ordersync {
-    
-OrderTable* OrderMatrix::Table(int elevID) {
-    return &matrix_[elevID];
-}
 
 ordersync::Order* OrderTable::Order(int floor, int btn) {
     return &table_[floor][btn];
 }
-
-void OrderTable::SetOrder(int floor, int btn, ordersync::Order order) {
-    table_[floor][(int)btn].SetStatus(order.Status());
-    table_[floor][(int)btn].SetVersion(order.Version());
-}
     
-std::array<std::array<bool, elev::config::kButtons>, config::kFloors> OrderTable::ToBoolTable(){
+std::array<std::array<bool, elev::config::kButtons>, config::kFloors> OrderTable::ToBoolTable(int elev_id){
     using namespace elev::common;
     std::array<std::array<bool, elev::config::kButtons>, config::kFloors> result{};
 
     for (int f = 0; f < kFloors; f++) {
-        for (int b = 0; b < kButtons; b++) {            
-            result[f][b] = (table_[f][b].Status() == OrderStatus::Confirmed) ? true : false;
+        for (int b = 0; b < kButtons; b++) {
+            result[f][b] = (table_[f][b].Status() == OrderStatus::Confirmed) &&
+                           (table_[f][b].AssignedId() == elev_id);
         }
     }
     return result;
@@ -41,37 +33,59 @@ void OrderTable::Join(OrderTable rcv) {
     // OrderStatus: NONE, REQUESTED, CONFIRMED, CLEAR
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
+
+            // Cab buttons are local
+            if ((BtnType)b == BtnType::Cab) continue;
+
             table_[f][b].OnUpdate(*rcv.Order(f, b));
         }
     }
 }
 
-void OrderMatrix::Join(OrderMatrix rcv) {
-    for (int e = 0; e < kElevs; e++) {
-        matrix_[e].Join(*rcv.Table(e));
-    } 
-}
-
 void Order::OnUpdate(Order rcv) {
     if (rcv.Version() > version_) {
-        version_ = rcv.Version();
-        status_  = rcv.Status();
+        version_     = rcv.Version();
+        status_      = rcv.Status();
+        assigned_id_ = rcv.AssignedId();
+        observed_mask_ = rcv.ObservedMask();
     }
-    else if (rcv.Version() == version_ && (uint8_t)(rcv.Status()) > (uint8_t)(status_)) {
-        status_  = rcv.Status();
+    else if (rcv.Version() == version_) {
+        observed_mask_ |= rcv.ObservedMask();
+
+        if ((uint8_t)(rcv.Status()) > (uint8_t)(status_)) {
+            status_      = rcv.Status();
+            assigned_id_ = rcv.AssignedId();
+        }
+        // Both sides confirmed the same order concurrently
+        else if (status_ == OrderStatus::Confirmed && 
+                 rcv.Status() == OrderStatus::Confirmed &&
+                 rcv.AssignedId() < assigned_id_) {
+            assigned_id_ = rcv.AssignedId();
+        }
     }
 }
 
-void Order::OnRequest() {
+void Order::Observe(int elev_id) {
+    observed_mask_ |= (1u << elev_id);
+}
+
+bool Order::ObservedBy(int elev_id) {
+    return observed_mask_ & (1u << elev_id);
+}
+
+void Order::OnRequest(int elev_id) {
     if (status_ == OrderStatus::None || status_ == OrderStatus::Clear) {
         status_ = OrderStatus::Requested;
         version_++;
+        observed_mask_ = 0;
+        Observe(elev_id);
     }
 }
 
-void Order::OnConfirm() {
+void Order::OnConfirm(int elev_id) {
     if (status_ == OrderStatus::Requested) {
-        status_ = OrderStatus::Confirmed;
+        status_      = OrderStatus::Confirmed;
+        assigned_id_ = elev_id;
         version_++;
     }
 }

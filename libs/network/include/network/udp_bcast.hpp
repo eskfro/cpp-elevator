@@ -2,6 +2,7 @@
 
 // TODO: code to bcast orders and elev state
 
+#include "common/config.hpp"
 #include "elevator/elevator_state.hpp"
 #include "ordersync/ordersync.hpp"
 #include <netinet/in.h>
@@ -14,19 +15,19 @@ class NetworkPacket {
     public:
         NetworkPacket() = default;
 
-        void Init(elev::ordersync::OrderMatrix* matrix, elev::elevator::ElevatorState* state);    
+        void Init(elev::ordersync::OrderTable* orders,
+                  elev::elevator::ElevatorState* state,
+                  std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* cab_button_orders);    
 
-        void SetID(int id) { id_ = id; }
-    
         int ID() { return id_; }
-        elev::ordersync::OrderMatrix* Orders() { return &orders_; } 
+        elev::ordersync::OrderTable* Orders() { return &orders_; } 
         elev::elevator::ElevatorState* State() { return &state_; }
 
     private:
         int id_;
-        elev::ordersync::OrderMatrix orders_;
+        elev::ordersync::OrderTable orders_;
         elev::elevator::ElevatorState state_;
-
+        std::array<std::array<elev::ordersync::Order, kFloors>, kElevs> cab_button_orders_;
 };
 #pragma pack(pop)
 

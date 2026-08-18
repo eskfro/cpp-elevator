@@ -38,7 +38,6 @@ class ElevatorState {
         void SetObstruction(bool obs);
         void SetActivity(bool active);
         void SetDoorOpen(bool door_open);
-        void SetVersion(uint64_t version);
         void SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests);
         void SetInertia(common::Inertia inertia);
 

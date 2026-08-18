@@ -15,8 +15,26 @@ namespace elev::network {
 
 void Peers::Step(int node_id) {
      UpdateNumElevs();
+     ObserveOrders(node_id);
      ConfirmOrders(node_id);
      ResetOrders(node_id);
+}
+
+// Mark this node as having seen a hall order, so ObservedByAll can converge
+void Peers::ObserveOrders(int node_id) {
+     using namespace elev::common;
+     const int n = node_id;
+
+     for (int f = 0; f < kFloors; f++) {
+          for (int b = 0; b < kButtons; b++) {
+               if ((BtnType)b == BtnType::Cab) continue;
+
+               ordersync::Order* order = orders_.Order(f, b);
+               if (order->Status() == OrderStatus::Requested && !order->ObservedBy(n)) {
+                    order->Observe(n);
+               }
+          }
+     }
 }
 
 // Confirm orders using the node's table
@@ -30,58 +48,39 @@ void Peers::ConfirmOrders(int node_id) {
 
                // Cab
                if ((BtnType)b == BtnType::Cab) {
-                    orders_.Table(n)->Order(f, b)->OnConfirm();
+                    orders_.Order(f, b)->OnConfirm(n);
                     continue;
                }
 
-               // Hall
-               if (!RequestedByAll(f, b)) continue;
+               if (!ObservedByAll(f, b)) continue;
 
                int best_elev_id = ElevatorWithLowestCost(f, b);
                if (best_elev_id == -1) {
                     common::PrintError("[Peers] No active elevators in all_elevs_");
                     continue;
                }
-               orders_.Table(best_elev_id)->Order(f, b)->OnConfirm();
+
+               orders_.Order(f, b)->OnConfirm(best_elev_id);
           }
      }
-}
-
-bool Peers::RequestedByAll(int floor, int btn) {
-     using namespace elev::common;
-     for (int e = 0; e < kElevs; e++) {
-          if (all_states_[e].Active() == false) continue;
-
-          OrderStatus status = orders_.Table(e)->Order(floor, btn)->Status();
-          if (status != OrderStatus::Requested) {
-               return false;
-          }
-     }
-     return true;
-}
-
-bool Peers::ClearedByAll(int floor, int btn) {
-     using namespace elev::common;
-     for (int e = 0; e < kElevs; e++) {
-          if (all_states_[e].Active() == false) continue;
-
-          OrderStatus status = orders_.Table(e)->Order(floor, btn)->Status();
-          if (status != OrderStatus::Clear) {
-               return false;
-          }
-     }
-     return true;
 }
 
 void Peers::ResetOrders(int node_id) {
-     const int n = node_id;
      for (int f = 0; f < kFloors; f++) {
           for (int b = 0; b < kButtons; b++) {
-               if (!ClearedByAll(f, b)) continue;
-
-               orders_.Table(n)->Order(f, b)->OnReset();
+               orders_.Order(f, b)->OnReset();
           }
      }
+}
+
+bool Peers::ObservedByAll(int floor, int btn) {
+     for (int e = 0; e < kElevs; e++) {
+          if (all_states_[e].Active() == false) continue;
+          if (orders_.Order(floor, btn)->ObservedBy(e) == false) {
+               return false;
+          }
+     }
+     return true;
 }
 
 int Peers::ElevatorWithLowestCost(int floor, int btn) {
@@ -133,7 +132,7 @@ elev::elevator::ElevatorState* Peers::State(int elev_id) {
      return &all_states_[elev_id];
 }
 
-elev::ordersync::OrderMatrix* Peers::Orders() {
+elev::ordersync::OrderTable* Peers::Orders() {
      return &orders_;
 }
 
@@ -141,17 +140,10 @@ int Peers::NumElevs() {
      return num_elevs_;
 }
 
-void Peers::SetNumElevs(int num_elevs) {
-     num_elevs_ = num_elevs;
-}
-
 void Peers::ClearOrders(int node_id, int floor, ButtonFlags b2c) {
-     for (int e = 0; e < kElevs; e++) {
-          if (all_states_[e].Active() == false) continue;
-          for (int b = 0; b < kButtons; b++) {
-               if (b2c.at(b)) {
-                    orders_.Table(e)->Order(floor, b)->OnClear();
-               }
+     for (int b = 0; b < kButtons; b++) {
+          if (b2c.at(b)) {
+               orders_.Order(floor, b)->OnClear();
           }
      }
 }
@@ -162,6 +154,14 @@ void Peers::UpdateNumElevs() {
           count += (int)all_states_[e].Active();
      }
      num_elevs_ = count;
+}
+
+elev::ordersync::Order* Peers::CabButtonOrder(int elev_id, int floor) {
+     return &cab_button_orders_[elev_id][floor];
+}
+
+std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* Peers::CabButtonOrders() {
+     return &cab_button_orders_;
 }
 
 } // namespace elev::network

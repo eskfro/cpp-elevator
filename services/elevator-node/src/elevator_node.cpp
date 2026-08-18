@@ -58,19 +58,27 @@ void ElevatorNode::StepPeers() {
     const int n = node_id_;
 
     UpdateOrderMatrixFromButtonSignals();
-    controller_.SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
-    peers_.State(n)->CopyFrom(elev_.State());
+    controller_.SetRequests(peers_.Orders()->ToBoolTable(n));
 
+    elev_.State()->IncrementVersion();
+    peers_.State(n)->CopyFrom(elev_.State());
     peers_.Step(n);
 }
 
 void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
-    std::lock_guard<std::mutex> lock(peers_mutex_);
-    using namespace elev::ordersync;
-    
-    peers_.State(packet.ID())->OnUpdate(*packet.State());
+    if (packet.ID() == node_id_) return;
 
+    std::lock_guard<std::mutex> lock(peers_mutex_);
+
+    peers_.State(packet.ID())->OnUpdate(*packet.State());
     peers_.Orders()->Join(*packet.Orders());
+    
+    // Preserve cab button status so it can be restored after
+    // a node potentially crashes
+    for (int f = 0; f < kFloors; f++) {
+        elev::ordersync::Order cab = *packet.Orders()->Order(f, (int)BtnType::Cab);
+        peers_.CabButtonOrder(packet.ID(), f)->OnUpdate(cab);
+    }
 }
 
 void ElevatorNode::Init() {
@@ -87,7 +95,8 @@ elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
     const int n = node_id_;
 
     elev::network::NetworkPacket packet;
-    packet.Init(peers_.Orders(), peers_.State(n));
+    
+    packet.Init(peers_.Orders(), peers_.State(n), peers_.CabButtonOrders());
 
     return packet; 
 }
@@ -107,8 +116,8 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     }
 
     // Sync requests
-    controller_.SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
-    elev_.State()->SetRequests(peers_.Orders()->Table(n)->ToBoolTable());
+    controller_.SetRequests(peers_.Orders()->ToBoolTable(n));
+    elev_.State()->SetRequests(peers_.Orders()->ToBoolTable(n));
 
     // Sync ElevatorState
     peers_.State(n)->CopyFrom(elev_.State());
@@ -127,7 +136,7 @@ void ElevatorNode::UpdateOrderMatrixFromButtonSignals() {
         for (int b = 0; b < kButtons; b++) {
             if (elev_.Buttons()->Button(f, (BtnType)b)->Pressed()) {
                 PrintBtnPress(n, f, (BtnType)b);
-                peers_.Orders()->Table(n)->Order(f, b)->OnRequest();
+                peers_.Orders()->Order(f, b)->OnRequest(n);
             }
         }
     }

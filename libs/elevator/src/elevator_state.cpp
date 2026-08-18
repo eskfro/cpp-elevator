@@ -114,10 +114,6 @@ void ElevatorState::SetDoorOpen(bool door_open) {
     door_open_ = door_open;
 }
 
-void ElevatorState::SetVersion(uint64_t version) {
-    version_ = version;
-}
-
 void ElevatorState::CopyFrom(ElevatorState* rhs) {
     id_ = rhs->Id();
     floor_ = rhs->Floor();

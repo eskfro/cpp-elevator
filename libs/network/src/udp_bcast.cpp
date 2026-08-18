@@ -16,13 +16,15 @@
 
 namespace elev::network {
 
-void NetworkPacket::Init(elev::ordersync::OrderMatrix* matrix,
-                        elev::elevator::ElevatorState* state) {
-    if (matrix) orders_ = *matrix;
+void NetworkPacket::Init(elev::ordersync::OrderTable* orders,
+                        elev::elevator::ElevatorState* state,
+                        std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* cab_button_orders) {
+    if (orders) orders_ = *orders;
     if (state) {
         id_ = state->Id();
         state_ = *state;
     }
+    if (cab_button_orders) cab_button_orders_ = *cab_button_orders;
 }
 
 UdpBroadcaster::UdpBroadcaster(uint16_t port, const std::string& bcast_ip) {

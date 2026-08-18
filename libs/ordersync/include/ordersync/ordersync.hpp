@@ -16,22 +16,26 @@ class Order {
         Order() = default;
 
         // Set
-        void SetStatus(OrderStatus status) { status_ = status; }
-        void SetVersion(uint64_t version) { version_ = version; }
+        void Observe(int elev_id);
 
         // Get
         uint64_t Version() { return version_; }
         OrderStatus Status() { return status_; }
+        int AssignedId() { return assigned_id_; }
+        uint32_t ObservedMask() { return observed_mask_; }
+        bool ObservedBy(int elev_id);
 
         // State machine
         void OnUpdate(Order rcv);
-        void OnRequest();
-        void OnConfirm();
+        void OnRequest(int elev_id);
+        void OnConfirm(int elev_id);
         void OnClear();
         void OnReset();
         void OnRevoke();
-        
+
     private:
+        int assigned_id_{-1};
+        uint32_t observed_mask_{};
         OrderStatus status_{};
         uint64_t version_{};
 };
@@ -41,27 +45,14 @@ class OrderTable {
         OrderTable() = default;
 
         // Set
-        void SetOrder(int floor, int btn, ordersync::Order order);
         void Join(OrderTable rcv);
 
         // Get
         ordersync::Order* Order(int floor, int btn);
-        std::array<std::array<bool, kButtons>, kFloors> ToBoolTable();
+        std::array<std::array<bool, kButtons>, kFloors> ToBoolTable(int elev_id);
 
     private:
         std::array<std::array<ordersync::Order, kButtons>, kFloors> table_{};
-};
-
-class OrderMatrix {
-    public:
-        OrderMatrix() = default;
-        
-        OrderTable* Table(int elevID);
-
-        void Join(OrderMatrix rcv);
-
-    private:
-        std::array<OrderTable, kElevs> matrix_{};
 };
 
 } // namespace elev::ordersync
