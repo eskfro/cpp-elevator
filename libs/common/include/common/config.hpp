@@ -13,5 +13,6 @@ namespace elev::config {
     constexpr int kFloors = 4;
     constexpr int kButtons = 3;
     constexpr int kDoorOpenTimeMs = 3000;
+    constexpr int kReassignOrderTimeMs = 15000;
 
 } // namespace elev::config

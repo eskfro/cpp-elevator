@@ -58,6 +58,7 @@ void Peers::ConfirmHallOrders(int node_id) {
                }
 
                orders_.Order(f, b)->OnConfirm(best_elev_id);
+               order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
           }
      }
 }
@@ -149,6 +150,8 @@ void Peers::ClearOrders(int node_id, int floor, ButtonFlags b2c) {
           bool is_cab = (BtnType)b == BtnType::Cab;
 
           orders_.Order(floor, b)->OnClear();
+          order_timers_.Timer(floor, b)->Stop();
+
           if (is_cab) {
                cab_button_orders_[n][floor].OnClear();
                cab_button_orders_[n][floor].OnReset();
@@ -171,6 +174,14 @@ elev::ordersync::Order* Peers::CabButtonOrder(int elev_id, int floor) {
 
 std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* Peers::CabButtonOrders() {
      return &cab_button_orders_;
+}
+
+void Peers::CheckOrderTimers() {
+     for (int f = 0; f < kFloors; f++) {
+          for (int b = 0; b < kButtons; b++) {
+               // TODO: check timers
+          }
+     }
 }
 
 } // namespace elev::network

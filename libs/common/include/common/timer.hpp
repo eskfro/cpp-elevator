@@ -4,9 +4,9 @@
 
 namespace elev::common {
 
-class DoorTimer {
+class Timer {
     public:
-        DoorTimer() = default;
+        Timer() = default;
 
         void Start(int duration_ms) {
             end_time_ = Clock::now() + Duration(duration_ms);

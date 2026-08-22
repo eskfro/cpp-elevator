@@ -9,7 +9,7 @@ Controller::Controller() {
     inertia_ = Inertia::None;
 }
 
-DoorTimer* Controller::DoorTimer() {
+Timer* Controller::DoorTimer() {
     return &doortimer_;
 }
 

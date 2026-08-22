@@ -1,6 +1,7 @@
 #pragma once
 
 #include "elevator/elevator_state.hpp"
+#include "network/order_timers.hpp"
 #include <array>
 
 // Libs
@@ -42,6 +43,7 @@ class Peers {
         elev::ordersync::Order* CabButtonOrder(int elev_id, int floor);
         
         // Orders
+        void CheckOrderTimers(); // TODO
         void ObserveOrders(int node_id);
         void ConfirmHallOrders(int node_id);
         void ResetHallOrders(int node_id);
@@ -50,6 +52,7 @@ class Peers {
     private:
         int num_elevs_{};
         ordersync::OrderTable orders_{};
+        OrderTimers order_timers_{};
         std::array<elev::elevator::ElevatorState, elev::config::kElevs> all_states_{};
         std::array<std::array<elev::ordersync::Order, kFloors>, kElevs> cab_button_orders_{};
 };

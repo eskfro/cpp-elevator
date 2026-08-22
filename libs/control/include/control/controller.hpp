@@ -41,12 +41,12 @@ class Controller {
 
         // Get
         RequestTable Requests();
-        common::DoorTimer* DoorTimer();
+        common::Timer* DoorTimer();
 
     private:
         RequestTable prev_requests_{};
         RequestTable requests_{};
-        common::DoorTimer doortimer_;
+        common::Timer doortimer_;
         Inertia inertia_;
 };
 
