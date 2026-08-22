@@ -30,25 +30,22 @@ class Peers {
         Peers() = default;
         
         void Step(int node_id);
+        void UpdateNumElevs();
+        bool ObservedByAll(int floor, int btn);
+        int ElevatorWithLowestCost(int floor, int btn);
 
         // Get
         int NumElevs();
         elev::ordersync::OrderTable* Orders();
         elev::elevator::ElevatorState* State(int elev_id);
-        elev::ordersync::Order* CabButtonOrder(int elev_id, int floor);
         std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* CabButtonOrders();
+        elev::ordersync::Order* CabButtonOrder(int elev_id, int floor);
         
         // Orders
         void ObserveOrders(int node_id);
-        void ConfirmOrders(int node_id);
-        void ResetOrders(int node_id);
+        void ConfirmHallOrders(int node_id);
+        void ResetHallOrders(int node_id);
         void ClearOrders(int node_id, int floor, ButtonFlags b2c);
-
-        void UpdateNumElevs();
-        
-        bool ObservedByAll(int floor, int btn);
-
-        int ElevatorWithLowestCost(int floor, int btn);
 
     private:
         int num_elevs_{};

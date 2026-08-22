@@ -22,6 +22,7 @@ class NetworkPacket {
         int ID() { return id_; }
         elev::ordersync::OrderTable* Orders() { return &orders_; } 
         elev::elevator::ElevatorState* State() { return &state_; }
+        std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* CabButtonOrders() { return &cab_button_orders_; }
 
     private:
         int id_;

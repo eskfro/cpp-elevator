@@ -74,8 +74,7 @@ int main(int argc, char* argv[]) {
 void RxThreadLoop(
     elev::node::ElevatorNode& node,
     elev::network::UdpReciever& reciever,
-    const std::atomic<bool>& g_running
-) {
+    const std::atomic<bool>& g_running) {
     elev::network::NetworkPacket packet;
 
     while (g_running && node.Running()) {

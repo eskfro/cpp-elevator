@@ -14,6 +14,8 @@
 
 namespace elev::node {
 
+enum class ServiceState : uint8_t { Startup, Running, Stopped };
+
 class ElevatorNode {
     public:
         ElevatorNode() = delete;
@@ -31,7 +33,7 @@ class ElevatorNode {
         int Id();
         
         // Sync modules
-        void UpdateOrderMatrixFromButtonSignals();
+        void RegisterButtonSignals();
         void SetButtonLamps();
 
         // Network
@@ -43,8 +45,12 @@ class ElevatorNode {
         std::atomic<bool> running_{true};
         elev::elevator::Elevator elev_;
         elev::control::Controller controller_;
+        
         elev::network::Peers peers_;
         std::mutex peers_mutex_;
+
+        ServiceState service_state_{};
+
 };
 
 } //namespace elev::node

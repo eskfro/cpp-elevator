@@ -16,8 +16,8 @@ namespace elev::network {
 void Peers::Step(int node_id) {
      UpdateNumElevs();
      ObserveOrders(node_id);
-     ConfirmOrders(node_id);
-     ResetOrders(node_id);
+     ConfirmHallOrders(node_id);
+     ResetHallOrders(node_id);
 }
 
 // Mark this node as having seen a hall order, so ObservedByAll can converge
@@ -30,7 +30,8 @@ void Peers::ObserveOrders(int node_id) {
                if ((BtnType)b == BtnType::Cab) continue;
 
                ordersync::Order* order = orders_.Order(f, b);
-               if (order->Status() == OrderStatus::Requested && !order->ObservedBy(n)) {
+               if (order->ObservedBy(n)) continue;
+               if (order->Status() == OrderStatus::Requested) {
                     order->Observe(n);
                }
           }
@@ -38,7 +39,7 @@ void Peers::ObserveOrders(int node_id) {
 }
 
 // Confirm orders using the node's table
-void Peers::ConfirmOrders(int node_id) {
+void Peers::ConfirmHallOrders(int node_id) {
      using namespace elev::common;
      const int n = node_id;
 
@@ -46,11 +47,7 @@ void Peers::ConfirmOrders(int node_id) {
      for (int f = 0; f < kFloors; f++) {
           for (int b = 0; b < kButtons; b++) {
 
-               // Cab
-               if ((BtnType)b == BtnType::Cab) {
-                    orders_.Order(f, b)->OnConfirm(n);
-                    continue;
-               }
+               if ((BtnType)b == BtnType::Cab) continue;
 
                if (!ObservedByAll(f, b)) continue;
 
@@ -65,9 +62,12 @@ void Peers::ConfirmOrders(int node_id) {
      }
 }
 
-void Peers::ResetOrders(int node_id) {
+void Peers::ResetHallOrders(int node_id) {
      for (int f = 0; f < kFloors; f++) {
           for (int b = 0; b < kButtons; b++) {
+
+               if ((BtnType)b == BtnType::Cab) continue;
+
                orders_.Order(f, b)->OnReset();
           }
      }
@@ -141,9 +141,18 @@ int Peers::NumElevs() {
 }
 
 void Peers::ClearOrders(int node_id, int floor, ButtonFlags b2c) {
+     const int n = node_id;
      for (int b = 0; b < kButtons; b++) {
-          if (b2c.at(b)) {
-               orders_.Order(floor, b)->OnClear();
+          
+          if (!b2c.at(b)) continue;
+
+          bool is_cab = (BtnType)b == BtnType::Cab;
+
+          orders_.Order(floor, b)->OnClear();
+          if (is_cab) {
+               cab_button_orders_[n][floor].OnClear();
+               cab_button_orders_[n][floor].OnReset();
+               orders_.Order(floor, b)->OnReset();
           }
      }
 }
