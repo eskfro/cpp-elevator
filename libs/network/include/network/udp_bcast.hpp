@@ -2,60 +2,66 @@
 
 // TODO: code to bcast orders and elev state
 
+#include <netinet/in.h>
+
 #include "common/config.hpp"
 #include "elevator/elevator_state.hpp"
 #include "ordersync/ordersync.hpp"
-#include <netinet/in.h>
 
 namespace elev::network {
 
 // Network to be broadcasted using UDP
 #pragma pack(push, 1)
 class NetworkPacket {
-    public:
-        NetworkPacket() = default;
+public:
+    NetworkPacket() = default;
 
-        void Init(elev::ordersync::OrderTable* orders,
-                  elev::elevator::ElevatorState* state,
-                  std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* cab_button_orders);    
+    void Init(elev::ordersync::OrderTable* orders,
+              elev::elevator::ElevatorState* state,
+              std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>*
+                  cab_button_orders);
 
-        int ID() { return id_; }
-        elev::ordersync::OrderTable* Orders() { return &orders_; } 
-        elev::elevator::ElevatorState* State() { return &state_; }
-        std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* CabButtonOrders() { return &cab_button_orders_; }
+    int ID() { return id_; }
+    elev::ordersync::OrderTable* Orders() { return &orders_; }
+    elev::elevator::ElevatorState* State() { return &state_; }
+    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>*
+    CabButtonOrders() {
+        return &cab_button_orders_;
+    }
 
-    private:
-        int id_;
-        elev::ordersync::OrderTable orders_;
-        elev::elevator::ElevatorState state_;
-        std::array<std::array<elev::ordersync::Order, kFloors>, kElevs> cab_button_orders_;
+private:
+    int id_;
+    elev::ordersync::OrderTable orders_;
+    elev::elevator::ElevatorState state_;
+    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>
+        cab_button_orders_;
 };
 #pragma pack(pop)
 
 class UdpBroadcaster {
-    public:
-        UdpBroadcaster(uint16_t port, const std::string& bcast_ip);
-        ~UdpBroadcaster();
+public:
+    UdpBroadcaster(uint16_t port, const std::string& bcast_ip);
+    ~UdpBroadcaster();
 
-        UdpBroadcaster(const UdpBroadcaster&) = delete;
-        UdpBroadcaster& operator=(const UdpBroadcaster&) = delete;
+    UdpBroadcaster(const UdpBroadcaster&) = delete;
+    UdpBroadcaster& operator=(const UdpBroadcaster&) = delete;
 
-        bool SendPacket(NetworkPacket* packet);
+    bool SendPacket(NetworkPacket* packet);
 
-    private:
-        int socket_fd_{-1};
-        struct sockaddr_in bcast_addr_{};
+private:
+    int socket_fd_{-1};
+    struct sockaddr_in bcast_addr_{};
 };
 
 class UdpReciever {
-    public:
-        UdpReciever(uint16_t port);
-        ~UdpReciever();
+public:
+    UdpReciever(uint16_t port);
+    ~UdpReciever();
 
-        bool RecievePacket(NetworkPacket* packet);
+    bool RecievePacket(NetworkPacket* packet);
 
-    private:
-        int socket_fd_{-1};
+private:
+    int socket_fd_{-1};
 };
 
-} // namespace elev::network
+}  // namespace elev::network

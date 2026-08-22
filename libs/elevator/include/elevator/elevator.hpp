@@ -1,52 +1,50 @@
 #pragma once
 
-#include <string>
 #include <mutex>
+#include <string>
 
 // Libs
-#include <elevator/elevator_state.hpp>
+#include <buttons/button.hpp>
 #include <common/config.hpp>
 #include <common/types.hpp>
-#include <buttons/button.hpp>
+#include <elevator/elevator_state.hpp>
 
 namespace elev::elevator {
 
 class Elevator {
-    public:
-        Elevator() = delete;
-        Elevator(int id, std::string ip);
+public:
+    Elevator() = delete;
+    Elevator(int id, std::string ip);
 
-        void Step();
-        void Init();
-        bool HitNewFloor();
-        void InitToFloor();
+    void Step();
+    void Init();
+    bool HitNewFloor();
+    void InitToFloor();
 
-        // Get
-        ElevatorState* State();
-        ElevatorState StateCopy();
-        elev::buttons::ButtonTable* Buttons();
+    // Get
+    ElevatorState* State();
+    ElevatorState StateCopy();
+    elev::buttons::ButtonTable* Buttons();
 
-        // Door
-        void OpenDoor();
-        void CloseDoor();
+    // Door
+    void OpenDoor();
+    void CloseDoor();
 
-        // Hardware
-        void SetMotorDir(elev::common::MotorDir dir);
-        void SetDoorOpenLamp(int value);
-        void SetFloorIndicator();
-        void SetStopLamp(int value);
-        void SetButtonLamp(int floor, elev::common::BtnType btn, int value);
+    // Hardware
+    void SetMotorDir(elev::common::MotorDir dir);
+    void SetDoorOpenLamp(int value);
+    void SetFloorIndicator();
+    void SetStopLamp(int value);
+    void SetButtonLamp(int floor, elev::common::BtnType btn, int value);
 
-        // Hardware signals wrapper
-        int FloorSensor(void);
-        int StopSignal(void);
-        int ObstructionSignal(void);
+    // Hardware signals wrapper
+    int FloorSensor(void);
+    int StopSignal(void);
+    int ObstructionSignal(void);
 
-    private:
-        ElevatorState state_;
-        elev::buttons::ButtonTable buttons_;
-
+private:
+    ElevatorState state_;
+    elev::buttons::ButtonTable buttons_;
 };
 
-} // namespace elev::elevator
-
+}  // namespace elev::elevator

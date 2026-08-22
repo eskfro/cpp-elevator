@@ -15,47 +15,42 @@ using namespace std::chrono_literals;
 
 namespace elev::node {
 
-bool ElevatorNode::Running() {
-    return running_.load();
-}
+bool ElevatorNode::Running() { return running_.load(); }
 
-ElevatorNode::ElevatorNode(int id, std::string ip) :
-    node_id_(id),
-    running_(true),
-    elev_(id, ip) {}   
+ElevatorNode::ElevatorNode(int id, std::string ip)
+    : node_id_(id), running_(true), elev_(id, ip) {}
 
 void ElevatorNode::Step() {
-
     // Maybe implement some state machine here later
     switch (service_state_) {
-    case elev::node::ServiceState::Startup:
-    case elev::node::ServiceState::Running:
-    case elev::node::ServiceState::Stopped:
+        case elev::node::ServiceState::Startup:
+        case elev::node::ServiceState::Running:
+        case elev::node::ServiceState::Stopped:
 
-        elev_.Step();
-        {
-            std::lock_guard<std::mutex> lock(peers_mutex_);
-            StepPeers();
-        }
-        SetButtonLamps();
-        
-        if (elev_.StopSignal()) {
-            Event(controller_.FsmEmergencyStop(&elev_));
-            return;
-        }
-        if (elev_.HitNewFloor()) {
-            Event(controller_.FsmFloorArrival(&elev_));
-            return;
-        }
-        if (controller_.RequestTableUpdated()) { 
-            Event(controller_.FsmTableUpdate(&elev_));
-            return;
-        }
-        if (controller_.DoorTimer()->Expired()) {
-            Event(controller_.FsmDoorTimeout(&elev_));
-            return;
-        }
-    } 
+            elev_.Step();
+            {
+                std::lock_guard<std::mutex> lock(peers_mutex_);
+                StepPeers();
+            }
+            SetButtonLamps();
+
+            if (elev_.StopSignal()) {
+                Event(controller_.FsmEmergencyStop(&elev_));
+                return;
+            }
+            if (elev_.HitNewFloor()) {
+                Event(controller_.FsmFloorArrival(&elev_));
+                return;
+            }
+            if (controller_.RequestTableUpdated()) {
+                Event(controller_.FsmTableUpdate(&elev_));
+                return;
+            }
+            if (controller_.DoorTimer()->Expired()) {
+                Event(controller_.FsmDoorTimeout(&elev_));
+                return;
+            }
+    }
 };
 
 // All these operations are locked with mutex
@@ -82,13 +77,15 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
 
     peers_.State(p)->OnUpdate(*packet.State());
     peers_.Orders()->Join(*packet.Orders());
-    
+
     for (int f = 0; f < kFloors; f++) {
         // Preserve the packets cab orders
-        elev::ordersync::Order cab_packet = *packet.Orders()->Order(f, (int)BtnType::Cab);
+        elev::ordersync::Order cab_packet =
+            *packet.Orders()->Order(f, (int)BtnType::Cab);
         peers_.CabButtonOrder(p, f)->OnUpdate(cab_packet);
 
-        elev::ordersync::Order node_cab_order = packet.CabButtonOrders()->at(n).at(f);
+        elev::ordersync::Order node_cab_order =
+            packet.CabButtonOrders()->at(n).at(f);
         peers_.CabButtonOrder(n, f)->OnUpdate(node_cab_order);
         peers_.Orders()->Order(f, (int)BtnType::Cab)->OnUpdate(node_cab_order);
     }
@@ -99,18 +96,15 @@ void ElevatorNode::Init() {
     elev::common::Print("[NODE] Intitialized");
 }
 
-void ElevatorNode::Stop() {
-    running_.store(false);
-}
+void ElevatorNode::Stop() { running_.store(false); }
 
 elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
     std::lock_guard<std::mutex> lock(peers_mutex_);
     const int n = node_id_;
     elev::network::NetworkPacket packet;
     packet.Init(peers_.Orders(), peers_.State(n), peers_.CabButtonOrders());
-    return packet; 
+    return packet;
 }
-
 
 void ElevatorNode::Event(ButtonFlags b2c) {
     std::lock_guard<std::mutex> lock(peers_mutex_);
@@ -133,9 +127,7 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     peers_.State(n)->CopyFrom(elev_.State());
 }
 
-int ElevatorNode::Id() {
-   return node_id_;
-}
+int ElevatorNode::Id() { return node_id_; }
 
 // Polls BtnSignals and set status at OrderMatrix orders
 void ElevatorNode::RegisterButtonSignals() {
@@ -145,7 +137,8 @@ void ElevatorNode::RegisterButtonSignals() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
             bool is_cab = (BtnType)b == BtnType::Cab;
-            bool btn_pressed = elev_.Buttons()->Button(f, (BtnType)b)->Pressed();
+            bool btn_pressed =
+                elev_.Buttons()->Button(f, (BtnType)b)->Pressed();
 
             if (!btn_pressed) continue;
 
@@ -158,7 +151,6 @@ void ElevatorNode::RegisterButtonSignals() {
                 peers_.CabButtonOrder(n, f)->OnRequest(n);
                 peers_.CabButtonOrder(n, f)->OnConfirm(n);
             }
-            
         }
     }
 }
@@ -173,4 +165,4 @@ void ElevatorNode::SetButtonLamps() {
     }
 }
 
-} // namespace elev::node
+}  // namespace elev::node

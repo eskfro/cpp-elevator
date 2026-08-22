@@ -1,10 +1,12 @@
-#include "common/config.hpp"
 #include <array>
 #include <control/requests.hpp>
 
+#include "common/config.hpp"
+
 namespace elev::control {
 
-std::array<std::array<bool, config::kButtons>, config::kFloors> RequestTable::Table() {
+std::array<std::array<bool, config::kButtons>, config::kFloors>
+RequestTable::Table() {
     return table_;
 }
 
@@ -25,19 +27,22 @@ bool RequestTable::IsRequestHere(int floor) {
     using namespace elev::config;
     if (floor < 0 || floor >= kFloors) return false;
 
-    for (int b = 0; b < kButtons; b++) if (this->table_[floor][b]) return true;
+    for (int b = 0; b < kButtons; b++)
+        if (this->table_[floor][b]) return true;
     return false;
 }
 
 bool RequestTable::IsRequestAbove(int floor) {
     using namespace elev::config;
-    for (int f = floor+1; f < kFloors; f++) if (IsRequestHere(f)) return true;
+    for (int f = floor + 1; f < kFloors; f++)
+        if (IsRequestHere(f)) return true;
     return false;
 }
 
 bool RequestTable::IsRequestBelow(int floor) {
-    for (int df = floor-1; df >= 0; df--) if (IsRequestHere(df)) return true;
+    for (int df = floor - 1; df >= 0; df--)
+        if (IsRequestHere(df)) return true;
     return false;
 }
 
-} // namespace elev::control
+}  // namespace elev::control

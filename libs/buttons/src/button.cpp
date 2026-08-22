@@ -1,14 +1,13 @@
 #include "buttons/button.hpp"
+
+#include <cstddef>
+
 #include "common/config.hpp"
 #include "common/types.hpp"
 #include "hardware/hardware.hpp"
-#include <cstddef>
 
-elev::button::Button::Button(int floor, elev::common::BtnType btn) : 
-    curr_press_(false), 
-    prev_press_(false),
-    btn_(btn),
-    floor_(floor) {};
+elev::button::Button::Button(int floor, elev::common::BtnType btn)
+    : curr_press_(false), prev_press_(false), btn_(btn), floor_(floor) {};
 
 bool elev::button::Button::Pressed() {
     bool button_pressed = false;
@@ -23,12 +22,10 @@ bool elev::button::Button::Pressed() {
     return button_pressed;
 }
 
-
 void elev::button::Button::Init(int floor, elev::common::BtnType btn) {
     floor_ = floor;
     btn_ = btn;
 }
-
 
 elev::buttons::ButtonTable::ButtonTable() {
     for (int f = 0; f < kFloors; f++) {
@@ -38,14 +35,7 @@ elev::buttons::ButtonTable::ButtonTable() {
     }
 }
 
-
-elev::button::Button* elev::buttons::ButtonTable::Button(int floor, elev::common::BtnType btn) {
+elev::button::Button* elev::buttons::ButtonTable::Button(
+    int floor, elev::common::BtnType btn) {
     return &matrix_[floor][static_cast<std::size_t>(btn)];
 }
-
-
-
-
-
-
-

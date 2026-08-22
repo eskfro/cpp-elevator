@@ -1,6 +1,7 @@
+#include <control/controller.hpp>
+
 #include "common/config.hpp"
 #include "common/types.hpp"
-#include <control/controller.hpp>
 
 namespace elev::control {
 
@@ -9,9 +10,7 @@ Controller::Controller() {
     inertia_ = Inertia::None;
 }
 
-Timer* Controller::DoorTimer() {
-    return &doortimer_;
-}
+Timer* Controller::DoorTimer() { return &doortimer_; }
 
 void Controller::SetInertia(elev::elevator::Elevator* elev, MotorDir dir) {
     if (dir == MotorDir::Up) inertia_ = Inertia::Up;
@@ -20,19 +19,21 @@ void Controller::SetInertia(elev::elevator::Elevator* elev, MotorDir dir) {
     elev->State()->SetInertia(inertia_);
 }
 
-RequestTable Controller::Requests() {
-    return requests_;
-}
+RequestTable Controller::Requests() { return requests_; }
 
-void Controller::SetRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table) {
+void Controller::SetRequests(
+    std::array<std::array<bool, kButtons>, kFloors> bool_table) {
     using namespace elev::common;
     // yup
-    for (int f = 0; f < kFloors; f++) for (int b = 0; b < kButtons; b++) requests_.SetValue(f, b, bool_table[f][b]);
+    for (int f = 0; f < kFloors; f++)
+        for (int b = 0; b < kButtons; b++)
+            requests_.SetValue(f, b, bool_table[f][b]);
 }
 
 // FSM Emergency Stop
 ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator "<< elev->State()->Id() << " ] - FSM: Emergency Stop" << std::endl;
+    std::cout << "[ Elevator " << elev->State()->Id()
+              << " ] - FSM: Emergency Stop" << std::endl;
     ButtonFlags zero{};
 
     elev->State()->SetStopped(true);
@@ -54,7 +55,8 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
 
 // FSM Table Update
 ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator "<< elev->State()->Id() << " ] - FSM: Table Update" << std::endl;
+    std::cout << "[ Elevator " << elev->State()->Id()
+              << " ] - FSM: Table Update" << std::endl;
 
     using namespace elev::common;
 
@@ -69,7 +71,7 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
                 return ClearCurrentFloor(floor);
             }
             return zero;
-            
+
         case MovingState::Moving:
             return zero;
         case MovingState::Idle:
@@ -94,13 +96,15 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
                     return zero;
             }
         default:
-            return zero;        
+            return zero;
     }
 }
 
 // FSM Floor Arrival
 ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
-     std::cout << "[ Elevator "<< elev->State()->Id() << " ] - FSM: Arrived @ Floor " << elev->State()->Floor() << std::endl; 
+    std::cout << "[ Elevator " << elev->State()->Id()
+              << " ] - FSM: Arrived @ Floor " << elev->State()->Floor()
+              << std::endl;
     using namespace elev::common;
 
     ButtonFlags zero{};
@@ -122,11 +126,12 @@ ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
 
 // FSM Door Timeout
 ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator "<< elev->State()->Id() << " ] - FSM: Door Timeout" << std::endl;
+    std::cout << "[ Elevator " << elev->State()->Id()
+              << " ] - FSM: Door Timeout" << std::endl;
     using namespace elev::common;
-    
+
     doortimer_.Stop();
-    
+
     DirMovPair pair;
     ButtonFlags zero{};
     int floor = elev->State()->Floor();
@@ -138,9 +143,9 @@ ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
         doortimer_.Start(kDoorOpenTimeMs);
         return zero;
     }
-    switch(elev->State()->MovingState()) {
+    switch (elev->State()->MovingState()) {
         case MovingState::DoorOpen:
-            pair =  ChooseDirection(floor);
+            pair = ChooseDirection(floor);
             switch (pair.moving_state) {
                 case MovingState::DoorOpen:
                     ExecuteDecision(elev, pair);
@@ -148,7 +153,7 @@ ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
                     return ClearCurrentFloor(elev->State()->Floor());
                 case MovingState::Moving:
                 case MovingState::Idle:
-                case MovingState::Err: // TODO
+                case MovingState::Err:  // TODO
                     if (TryCloseDoor(elev)) {
                         ExecuteDecision(elev, pair);
                     }
@@ -166,14 +171,14 @@ void Controller::StopAndOpenDoor(elev::elevator::Elevator* elev) {
     doortimer_.Start(kDoorOpenTimeMs);
 }
 
-void Controller::ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair) {
-
+void Controller::ExecuteDecision(elev::elevator::Elevator* elev,
+                                 DirMovPair pair) {
     if (elev->State()->Stopped()) return;
 
     elev->SetMotorDir(pair.motor_dir);
     elev->State()->SetMovingState(pair.moving_state);
 
-    SetInertia(elev, pair.motor_dir);       
+    SetInertia(elev, pair.motor_dir);
 }
 
 int Controller::TryCloseDoor(elev::elevator::Elevator* elev) {
@@ -184,28 +189,40 @@ int Controller::TryCloseDoor(elev::elevator::Elevator* elev) {
         elev->CloseDoor();
         return 1;
     }
-}   
+}
 
 elev::common::DirMovPair Controller::ChooseDirection(int floor) {
     using namespace elev::common;
     switch (inertia_) {
         case Inertia::Up:
-        if (requests_.IsRequestAbove(floor)) return {MotorDir::Up,   MovingState::Moving};
-        if (requests_.IsRequestHere(floor))  return {MotorDir::Stop, MovingState::DoorOpen};
-        if (requests_.IsRequestBelow(floor)) return {MotorDir::Down, MovingState::Moving};
-        else return {MotorDir::Stop, MovingState::Idle};
-        
+            if (requests_.IsRequestAbove(floor))
+                return {MotorDir::Up, MovingState::Moving};
+            if (requests_.IsRequestHere(floor))
+                return {MotorDir::Stop, MovingState::DoorOpen};
+            if (requests_.IsRequestBelow(floor))
+                return {MotorDir::Down, MovingState::Moving};
+            else
+                return {MotorDir::Stop, MovingState::Idle};
+
         case Inertia::Down:
-        if (requests_.IsRequestBelow(floor)) return {MotorDir::Down, MovingState::Moving};
-            if (requests_.IsRequestHere(floor))  return {MotorDir::Stop,   MovingState::DoorOpen};
-            if (requests_.IsRequestAbove(floor)) return {MotorDir::Up,   MovingState::Moving};
-            else return {MotorDir::Stop, MovingState::Idle};
-            
+            if (requests_.IsRequestBelow(floor))
+                return {MotorDir::Down, MovingState::Moving};
+            if (requests_.IsRequestHere(floor))
+                return {MotorDir::Stop, MovingState::DoorOpen};
+            if (requests_.IsRequestAbove(floor))
+                return {MotorDir::Up, MovingState::Moving};
+            else
+                return {MotorDir::Stop, MovingState::Idle};
+
         case Inertia::None:
-            if (requests_.IsRequestHere(floor))  return {MotorDir::Stop, MovingState::DoorOpen};
-            if (requests_.IsRequestAbove(floor)) return {MotorDir::Up,   MovingState::Moving};
-            if (requests_.IsRequestBelow(floor)) return {MotorDir::Down, MovingState::Moving};
-            else return {MotorDir::Stop, MovingState::Idle};
+            if (requests_.IsRequestHere(floor))
+                return {MotorDir::Stop, MovingState::DoorOpen};
+            if (requests_.IsRequestAbove(floor))
+                return {MotorDir::Up, MovingState::Moving};
+            if (requests_.IsRequestBelow(floor))
+                return {MotorDir::Down, MovingState::Moving};
+            else
+                return {MotorDir::Stop, MovingState::Idle};
 
         default:
             return {MotorDir::Stop, MovingState::Idle};
@@ -215,25 +232,29 @@ elev::common::DirMovPair Controller::ChooseDirection(int floor) {
 bool Controller::ShouldStop(int floor) {
     using namespace elev::common;
     switch (inertia_) {
-    case(Inertia::Down):
-        return requests_.Value(floor, (int)BtnType::HallDown) || requests_.Value(floor, (int)BtnType::Cab) || !requests_.IsRequestBelow(floor);
-    case(Inertia::Up):
-        return requests_.Value(floor, (int)BtnType::HallUp) || requests_.Value(floor, (int)BtnType::Cab) || !requests_.IsRequestAbove(floor);
-    case(Inertia::None):
-    default:
-        return true;
+        case (Inertia::Down):
+            return requests_.Value(floor, (int)BtnType::HallDown) ||
+                   requests_.Value(floor, (int)BtnType::Cab) ||
+                   !requests_.IsRequestBelow(floor);
+        case (Inertia::Up):
+            return requests_.Value(floor, (int)BtnType::HallUp) ||
+                   requests_.Value(floor, (int)BtnType::Cab) ||
+                   !requests_.IsRequestAbove(floor);
+        case (Inertia::None):
+        default:
+            return true;
     }
 }
 
-bool Controller::ShouldClearImmediately(int floor, int btn_floor, elev::common::BtnType btn) {
+bool Controller::ShouldClearImmediately(int floor, int btn_floor,
+                                        elev::common::BtnType btn) {
     using namespace elev::common;
     return floor == btn_floor &&
-    (
-        (inertia_ == Inertia::Up   && btn == BtnType::HallUp)   || 
-        (inertia_ == Inertia::Down && btn == BtnType::HallDown) ||
-        (btn == BtnType::Cab) 
+           ((inertia_ == Inertia::Up && btn == BtnType::HallUp) ||
+            (inertia_ == Inertia::Down && btn == BtnType::HallDown) ||
+            (btn == BtnType::Cab)
 
-    );
+           );
 }
 
 ButtonFlags Controller::ClearCurrentFloor(int floor) {
@@ -246,16 +267,18 @@ ButtonFlags Controller::ClearCurrentFloor(int floor) {
     b2c[(int)BtnType::Cab] = true;
 
     // Clearing hall calls
-    switch(inertia_) {
+    switch (inertia_) {
         case Inertia::Up:
-            if (!requests_.IsRequestAbove(floor) && !requests_.Value(floor, (int)BtnType::HallUp)) {
+            if (!requests_.IsRequestAbove(floor) &&
+                !requests_.Value(floor, (int)BtnType::HallUp)) {
                 b2c[(int)BtnType::HallDown] = true;
             }
             b2c[(int)BtnType::HallUp] = true;
             return b2c;
 
         case Inertia::Down:
-            if (!requests_.IsRequestBelow(floor) && !requests_.Value(floor, (int)BtnType::HallDown)) {
+            if (!requests_.IsRequestBelow(floor) &&
+                !requests_.Value(floor, (int)BtnType::HallDown)) {
                 b2c[(int)BtnType::HallUp] = true;
             }
             b2c[(int)BtnType::HallDown] = true;
@@ -277,5 +300,4 @@ bool Controller::RequestTableUpdated() {
     return res;
 }
 
-} // namespace elev::control
-
+}  // namespace elev::control

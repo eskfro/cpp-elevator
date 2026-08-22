@@ -17,6 +17,4 @@ int get_floor_sensor(void);
 int get_stop_signal(void);
 int get_obstruction_signal(void);
 
-}
-
-
+}  // namespace elev::hardware

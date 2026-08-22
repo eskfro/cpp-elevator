@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <iostream>
+#include <string>
 
 // Libs
 #include <common/config.hpp>
@@ -13,12 +13,12 @@ using ButtonFlags = std::array<bool, elev::config::kButtons>;
 
 enum class DoorState : bool {
     Closed = false,
-    Open = true,   
+    Open = true,
 };
 
 enum class Inertia : std::uint8_t {
     Up,
-    Down, 
+    Down,
     None,
 };
 
@@ -30,7 +30,7 @@ enum class MotorDir : std::int8_t {
 };
 
 enum class MovingState : std::uint8_t {
-    Idle, 
+    Idle,
     DoorOpen,
     Moving,
     Err,
@@ -56,20 +56,22 @@ enum class OrderStatus : std::uint8_t {
 
 inline std::string BtnTypeToString(BtnType btn) {
     switch (btn) {
-        case BtnType::HallUp:   return "HALL_UP";
-        case BtnType::HallDown: return "HALL_DOWN";
-        case BtnType::Cab:       return "CAB";
-        default:                 return "UNKNOWN_BTN";
+        case BtnType::HallUp:
+            return "HALL_UP";
+        case BtnType::HallDown:
+            return "HALL_DOWN";
+        case BtnType::Cab:
+            return "CAB";
+        default:
+            return "UNKNOWN_BTN";
     }
 }
 
-inline void Print(std::string s) {
-    std::cout << s << std::endl;
-}
+inline void Print(std::string s) { std::cout << s << std::endl; }
 
 inline void PrintBtnPress(int elevID, int floor, BtnType btn) {
-    std::cout << "[ Elevator " << elevID << " ] - buttonpress " << BtnTypeToString(btn) << \
-    " at floor " << floor << std::endl;
+    std::cout << "[ Elevator " << elevID << " ] - buttonpress "
+              << BtnTypeToString(btn) << " at floor " << floor << std::endl;
 }
 
 inline void PrintError(std::string_view msg) {
@@ -77,4 +79,4 @@ inline void PrintError(std::string_view msg) {
     std::cerr << "\033[31m" << msg << "\033[0m\n";
 }
 
-}// namespace elev::common
+}  // namespace elev::common
