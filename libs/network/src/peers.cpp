@@ -17,11 +17,12 @@
 namespace elev::network {
 
 void Peers::Step(int node_id) {
+    MonitorWatchdogTimers();
     UpdateNumElevs();
     ObserveOrders(node_id);
     ConfirmHallOrders();
     ResetHallOrders();
-    CheckHallOrderTimers();
+    MonitorHallOrderTimers();
 }
 
 // Mark this node as having seen a hall order, so ObservedByAll can converge
@@ -66,7 +67,6 @@ void Peers::ResetHallOrders() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
             if ((BtnType)b == BtnType::Cab) continue;
-
             orders_.Order(f, b)->OnReset();
         }
     }
@@ -164,21 +164,24 @@ elev::ordersync::Order* Peers::CabButtonOrder(int elev_id, int floor) {
     return &cab_button_orders_[elev_id][floor];
 }
 
-std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>*
-Peers::CabButtonOrders() {
+std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* Peers::CabButtonOrders() {
     return &cab_button_orders_;
 }
 
-void Peers::CheckHallOrderTimers() {
+void Peers::MonitorHallOrderTimers() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
 
             if ((BtnType)b == BtnType::Cab) continue;
             if (!order_timers_.Timer(f, b)->Expired()) continue;
 
-            // Orders after this should be expired hall orders
             order_timers_.Timer(f, b)->Stop();
+
+            // Order already cleared
+            if (orders_.Order(f, b)->Status() != OrderStatus::Confirmed) continue;
+
             ReassignHallOrder(f, b);
+            order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
         }
     }
 }
@@ -211,6 +214,38 @@ void Peers::ReassignHallOrder(int floor, int btn) {
         }
     }
     orders_.Order(floor, btn)->OnReassignment(new_assignee);
+}
+
+void Peers::UpdateWatchdogTimer(int elev_id) {
+    watchdog_timers_[elev_id].Start(kWatchdogTimeMs);
+}
+
+void Peers::MonitorWatchdogTimers() {
+    for (int e = 0; e < kElevs; e++) {
+        if (watchdog_timers_[e].Expired()) {
+            watchdog_timers_[e].Stop();
+            all_states_[e].SetActivity(false);
+            elev::common::PrintError("[PEERS] Watchdog timer timed out on elevator " + std::to_string(e));
+            ReassignHallOrders(e);
+        }
+    }
+}
+
+void Peers::ReassignHallOrders(int elev_id) {
+    /*
+        Reassigns hall orders for elev_id
+    */
+    for (int f = 0; f < kFloors; f++) {
+        for (int b = 0; b < kButtons; b++) {
+            if ((BtnType)b == BtnType::Cab) continue;
+            if (orders_.Order(f, b)->Status() != OrderStatus::Confirmed) continue;
+
+            if (orders_.Order(f, b)->AssignedId() == elev_id) {
+                ReassignHallOrder(f, b);
+                order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
+            }
+        }
+    }
 }
 
 }  // namespace elev::network

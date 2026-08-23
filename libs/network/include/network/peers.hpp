@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "common/timer.hpp"
 #include "elevator/elevator_state.hpp"
 #include "network/order_timers.hpp"
 
@@ -32,30 +33,35 @@ public:
     Peers() = default;
 
     void Step(int node_id);
-    void UpdateNumElevs();
+
     bool ObservedByAll(int floor, int btn);
     int ElevatorWithLowestCost(int floor, int btn);
+    
+    void UpdateNumElevs();
+    void UpdateWatchdogTimer(int elev_id);
+    void MonitorWatchdogTimers();
+    void MonitorHallOrderTimers();
 
     // Get
     int NumElevs();
     elev::ordersync::OrderTable* Orders();
     elev::elevator::ElevatorState* State(int elev_id);
-    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>*
-    CabButtonOrders();
+    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* CabButtonOrders();
     elev::ordersync::Order* CabButtonOrder(int elev_id, int floor);
 
     // Orders
-    void CheckHallOrderTimers();
     void ObserveOrders(int node_id);
     void ConfirmHallOrders();
     void ResetHallOrders();
     void ClearOrders(int node_id, int floor, ButtonFlags b2c);
-    void ReassignHallOrder(int floor, int btn); 
+    void ReassignHallOrder(int floor, int btn);
+    void ReassignHallOrders(int elev_id);
 
 private:
     int num_elevs_{};
     ordersync::OrderTable orders_{};
     OrderTimers order_timers_{};
+    std::array<elev::common::Timer, kElevs> watchdog_timers_{};
     std::array<elev::elevator::ElevatorState, elev::config::kElevs> all_states_{};
     std::array<std::array<elev::ordersync::Order, kFloors>, kElevs> cab_button_orders_{};
 };

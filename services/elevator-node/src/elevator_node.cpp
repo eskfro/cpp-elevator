@@ -31,6 +31,7 @@ void ElevatorNode::Step() {
 
             elev_.Step();
             {
+                // --- LOCKED ---
                 std::lock_guard<std::mutex> lock(peers_mutex_);
                 StepPeers();
             }
@@ -67,21 +68,25 @@ void ElevatorNode::StepPeers() {
     elev_.State()->IncrementVersion();
     peers_.State(n)->CopyFrom(elev_.State());
 
+    // Peer logic step
     peers_.Step(n);
 }
 
 void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
     if (packet.ID() == node_id_) return;
+
     const int p = packet.ID();
     const int n = node_id_;
 
-    std::lock_guard<std::mutex> lock(peers_mutex_);
+    // --- LOCKED ---
+    std::lock_guard<std::mutex> lock(peers_mutex_); 
 
+    peers_.UpdateWatchdogTimer(p);
     peers_.State(p)->OnUpdate(*packet.State());
     peers_.Orders()->Join(*packet.Orders());
 
+    // Cab order preservation join
     for (int f = 0; f < kFloors; f++) {
-        // Preserve the packets cab orders
         elev::ordersync::Order cab_packet = *packet.Orders()->Order(f, (int)BtnType::Cab);
         peers_.CabButtonOrder(p, f)->OnUpdate(cab_packet);
 
@@ -99,8 +104,11 @@ void ElevatorNode::Init() {
 void ElevatorNode::Stop() { running_.store(false); }
 
 elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
+    // --- LOCKED ---
     std::lock_guard<std::mutex> lock(peers_mutex_);
+
     const int n = node_id_;
+    
     elev::network::NetworkPacket packet;
     packet.Init(peers_.Orders(), peers_.State(n), peers_.CabButtonOrders());
     return packet;

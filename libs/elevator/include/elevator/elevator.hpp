@@ -23,7 +23,6 @@ public:
 
     // Get
     ElevatorState* State();
-    ElevatorState StateCopy();
     elev::buttons::ButtonTable* Buttons();
 
     // Door

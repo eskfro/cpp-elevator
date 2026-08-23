@@ -43,8 +43,6 @@ void Elevator::Init() {
               << state_.Floor() << std::endl;
 }
 
-ElevatorState Elevator::StateCopy() { return state_; }
-
 bool Elevator::HitNewFloor() {
     bool res = false;
     if (state_.Floor() != state_.PrevFloor() &&
