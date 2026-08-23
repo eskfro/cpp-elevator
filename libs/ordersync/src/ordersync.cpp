@@ -14,8 +14,7 @@ ordersync::Order* OrderTable::Order(int floor, int btn) {
     return &table_[floor][btn];
 }
 
-std::array<std::array<bool, elev::config::kButtons>, config::kFloors>
-OrderTable::ToBoolTable(int elev_id) {
+std::array<std::array<bool, elev::config::kButtons>, config::kFloors> OrderTable::ToBoolTable(int elev_id) {
     using namespace elev::common;
     std::array<std::array<bool, elev::config::kButtons>, config::kFloors>
         result{};
@@ -48,18 +47,23 @@ void Order::OnUpdate(Order rcv) {
         status_ = rcv.Status();
         assigned_id_ = rcv.AssignedId();
         observed_mask_ = rcv.ObservedMask();
-    } else if (rcv.Version() == version_) {
+        return;
+    } 
+
+    if (rcv.Version() == version_) {
         observed_mask_ |= rcv.ObservedMask();
 
         if ((uint8_t)(rcv.Status()) > (uint8_t)(status_)) {
             status_ = rcv.Status();
             assigned_id_ = rcv.AssignedId();
+            return;
         }
         // Both sides confirmed the same order concurrently
-        else if (status_ == OrderStatus::Confirmed &&
-                 rcv.Status() == OrderStatus::Confirmed &&
-                 rcv.AssignedId() < assigned_id_) {
+        if (status_ == OrderStatus::Confirmed &&
+                rcv.Status() == OrderStatus::Confirmed &&
+                rcv.AssignedId() < assigned_id_) {
             assigned_id_ = rcv.AssignedId();
+            return;
         }
     }
 }
@@ -104,6 +108,15 @@ void Order::OnRevoke() {
         status_ = OrderStatus::Requested;
         version_++;
     }
+}
+
+void Order::SetAssignedId(int assigned_id) {
+    assigned_id_ = assigned_id;
+}
+
+void Order::OnReassignment(int assigned_id) {
+    assigned_id_ = assigned_id;
+    version_++;    
 }
 
 }  // namespace elev::ordersync

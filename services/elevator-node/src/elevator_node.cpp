@@ -17,8 +17,10 @@ namespace elev::node {
 
 bool ElevatorNode::Running() { return running_.load(); }
 
-ElevatorNode::ElevatorNode(int id, std::string ip)
-    : node_id_(id), running_(true), elev_(id, ip) {}
+ElevatorNode::ElevatorNode(int id, std::string ip) :
+    node_id_(id),
+    running_(true),
+    elev_(id, ip) {}
 
 void ElevatorNode::Step() {
     // Maybe implement some state machine here later
@@ -80,12 +82,10 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
 
     for (int f = 0; f < kFloors; f++) {
         // Preserve the packets cab orders
-        elev::ordersync::Order cab_packet =
-            *packet.Orders()->Order(f, (int)BtnType::Cab);
+        elev::ordersync::Order cab_packet = *packet.Orders()->Order(f, (int)BtnType::Cab);
         peers_.CabButtonOrder(p, f)->OnUpdate(cab_packet);
 
-        elev::ordersync::Order node_cab_order =
-            packet.CabButtonOrders()->at(n).at(f);
+        elev::ordersync::Order node_cab_order = packet.CabButtonOrders()->at(n).at(f);
         peers_.CabButtonOrder(n, f)->OnUpdate(node_cab_order);
         peers_.Orders()->Order(f, (int)BtnType::Cab)->OnUpdate(node_cab_order);
     }
@@ -118,7 +118,6 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     if (b2c != zeros) {
         peers_.ClearOrders(n, elev_.State()->Floor(), b2c);
     }
-
     // Sync requests
     controller_.SetRequests(peers_.Orders()->ToBoolTable(n));
     elev_.State()->SetRequests(peers_.Orders()->ToBoolTable(n));
@@ -137,8 +136,7 @@ void ElevatorNode::RegisterButtonSignals() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
             bool is_cab = (BtnType)b == BtnType::Cab;
-            bool btn_pressed =
-                elev_.Buttons()->Button(f, (BtnType)b)->Pressed();
+            bool btn_pressed = elev_.Buttons()->Button(f, (BtnType)b)->Pressed();
 
             if (!btn_pressed) continue;
 

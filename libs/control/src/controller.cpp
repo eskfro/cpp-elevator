@@ -21,13 +21,10 @@ void Controller::SetInertia(elev::elevator::Elevator* elev, MotorDir dir) {
 
 RequestTable Controller::Requests() { return requests_; }
 
-void Controller::SetRequests(
-    std::array<std::array<bool, kButtons>, kFloors> bool_table) {
+void Controller::SetRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table) {
     using namespace elev::common;
     // yup
-    for (int f = 0; f < kFloors; f++)
-        for (int b = 0; b < kButtons; b++)
-            requests_.SetValue(f, b, bool_table[f][b]);
+    for (int f = 0; f < kFloors; f++) for (int b = 0; b < kButtons; b++) requests_.SetValue(f, b, bool_table[f][b]);
 }
 
 // FSM Emergency Stop
@@ -126,8 +123,7 @@ ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
 
 // FSM Door Timeout
 ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id()
-              << " ] - FSM: Door Timeout" << std::endl;
+    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Door Timeout" << std::endl;
     using namespace elev::common;
 
     doortimer_.Stop();
@@ -171,8 +167,7 @@ void Controller::StopAndOpenDoor(elev::elevator::Elevator* elev) {
     doortimer_.Start(kDoorOpenTimeMs);
 }
 
-void Controller::ExecuteDecision(elev::elevator::Elevator* elev,
-                                 DirMovPair pair) {
+void Controller::ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair) {
     if (elev->State()->Stopped()) return;
 
     elev->SetMotorDir(pair.motor_dir);
@@ -195,37 +190,24 @@ elev::common::DirMovPair Controller::ChooseDirection(int floor) {
     using namespace elev::common;
     switch (inertia_) {
         case Inertia::Up:
-            if (requests_.IsRequestAbove(floor))
-                return {MotorDir::Up, MovingState::Moving};
-            if (requests_.IsRequestHere(floor))
-                return {MotorDir::Stop, MovingState::DoorOpen};
-            if (requests_.IsRequestBelow(floor))
-                return {MotorDir::Down, MovingState::Moving};
-            else
-                return {MotorDir::Stop, MovingState::Idle};
+            if (requests_.IsRequestAbove(floor)) return {MotorDir::Up, MovingState::Moving};
+            if (requests_.IsRequestHere(floor)) return {MotorDir::Stop, MovingState::DoorOpen};
+            if (requests_.IsRequestBelow(floor)) return {MotorDir::Down, MovingState::Moving};
+            else return {MotorDir::Stop, MovingState::Idle};
 
         case Inertia::Down:
-            if (requests_.IsRequestBelow(floor))
-                return {MotorDir::Down, MovingState::Moving};
-            if (requests_.IsRequestHere(floor))
-                return {MotorDir::Stop, MovingState::DoorOpen};
-            if (requests_.IsRequestAbove(floor))
-                return {MotorDir::Up, MovingState::Moving};
-            else
-                return {MotorDir::Stop, MovingState::Idle};
+            if (requests_.IsRequestBelow(floor)) return {MotorDir::Down, MovingState::Moving};
+            if (requests_.IsRequestHere(floor)) return {MotorDir::Stop, MovingState::DoorOpen};
+            if (requests_.IsRequestAbove(floor)) return {MotorDir::Up, MovingState::Moving};
+            else return {MotorDir::Stop, MovingState::Idle};
 
         case Inertia::None:
-            if (requests_.IsRequestHere(floor))
-                return {MotorDir::Stop, MovingState::DoorOpen};
-            if (requests_.IsRequestAbove(floor))
-                return {MotorDir::Up, MovingState::Moving};
-            if (requests_.IsRequestBelow(floor))
-                return {MotorDir::Down, MovingState::Moving};
-            else
-                return {MotorDir::Stop, MovingState::Idle};
+            if (requests_.IsRequestHere(floor)) return {MotorDir::Stop, MovingState::DoorOpen};
+            if (requests_.IsRequestAbove(floor)) return {MotorDir::Up, MovingState::Moving};
+            if (requests_.IsRequestBelow(floor)) return {MotorDir::Down, MovingState::Moving};
+            else return {MotorDir::Stop, MovingState::Idle};
 
-        default:
-            return {MotorDir::Stop, MovingState::Idle};
+        default: return {MotorDir::Stop, MovingState::Idle};
     }
 };
 
@@ -252,9 +234,7 @@ bool Controller::ShouldClearImmediately(int floor, int btn_floor,
     return floor == btn_floor &&
            ((inertia_ == Inertia::Up && btn == BtnType::HallUp) ||
             (inertia_ == Inertia::Down && btn == BtnType::HallDown) ||
-            (btn == BtnType::Cab)
-
-           );
+            (btn == BtnType::Cab));
 }
 
 ButtonFlags Controller::ClearCurrentFloor(int floor) {

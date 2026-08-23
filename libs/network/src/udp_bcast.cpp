@@ -19,8 +19,7 @@ namespace elev::network {
 
 void NetworkPacket::Init(elev::ordersync::OrderTable* orders,
                          elev::elevator::ElevatorState* state,
-                         std::array<std::array<elev::ordersync::Order, kFloors>,
-                                    kElevs>* cab_button_orders) {
+                         std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* cab_button_orders) {
     if (orders) orders_ = *orders;
     if (state) {
         id_ = state->Id();
@@ -40,8 +39,7 @@ UdpBroadcaster::UdpBroadcaster(uint16_t port, const std::string& bcast_ip) {
 
     // Enable SO_BROADCAST
     int bcast_enable = 1;
-    if ((setsockopt(socket_fd_, SOL_SOCKET, SO_BROADCAST, &bcast_enable,
-                    sizeof(bcast_enable)) < 0)) {
+    if ((setsockopt(socket_fd_, SOL_SOCKET, SO_BROADCAST, &bcast_enable, sizeof(bcast_enable)) < 0)) {
         std::cerr << "[UDP] Error setting SO_BROADCAST: " << strerror(errno)
                   << std::endl;
         close(socket_fd_);
@@ -74,10 +72,9 @@ bool UdpBroadcaster::SendPacket(NetworkPacket* packet) {
     }
 
     // Send bytes
-    ssize_t bytes_sent =
-        sendto(socket_fd_, packet, sizeof(NetworkPacket), 0,
-               reinterpret_cast<const struct sockaddr*>(&bcast_addr_),
-               sizeof(bcast_addr_));
+    ssize_t bytes_sent = sendto(socket_fd_, packet, sizeof(NetworkPacket), 0,
+        reinterpret_cast<const struct sockaddr*>(&bcast_addr_),
+        sizeof(bcast_addr_));
 
     if (bytes_sent < 0) {
         std::cerr << "[UDP] Broadcast send failed: " << strerror(errno)
@@ -106,8 +103,7 @@ UdpReciever::UdpReciever(uint16_t port) {
 
     if (bind(socket_fd_, reinterpret_cast<struct sockaddr*>(&rx_addr),
              sizeof(rx_addr)) < 0) {
-        std::cerr << "[UDP Rx] Error binding socket to port " << port << ": "
-                  << strerror(errno) << std::endl;
+        std::cerr << "[UDP Rx] Error binding socket to port " << port << ": " << strerror(errno) << std::endl;
         close(socket_fd_);
         socket_fd_ = -1;
     }

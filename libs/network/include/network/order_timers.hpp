@@ -7,9 +7,7 @@
 
 namespace elev::network {
 
-using TimerTable =
-    std::array<std::array<elev::common::Timer, elev::config::kButtons>,
-               elev::config::kFloors>;
+using TimerTable = std::array<std::array<elev::common::Timer, elev::config::kButtons>, elev::config::kFloors>;
 
 class OrderTimers {
 public:

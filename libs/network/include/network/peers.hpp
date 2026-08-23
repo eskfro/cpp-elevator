@@ -45,20 +45,19 @@ public:
     elev::ordersync::Order* CabButtonOrder(int elev_id, int floor);
 
     // Orders
-    void CheckOrderTimers();  // TODO
+    void CheckHallOrderTimers();
     void ObserveOrders(int node_id);
-    void ConfirmHallOrders(int node_id);
-    void ResetHallOrders(int node_id);
+    void ConfirmHallOrders();
+    void ResetHallOrders();
     void ClearOrders(int node_id, int floor, ButtonFlags b2c);
+    void ReassignHallOrder(int floor, int btn); 
 
 private:
     int num_elevs_{};
     ordersync::OrderTable orders_{};
     OrderTimers order_timers_{};
-    std::array<elev::elevator::ElevatorState, elev::config::kElevs>
-        all_states_{};
-    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>
-        cab_button_orders_{};
+    std::array<elev::elevator::ElevatorState, elev::config::kElevs> all_states_{};
+    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs> cab_button_orders_{};
 };
 
 }  // namespace elev::network

@@ -18,23 +18,18 @@ public:
 
     void Init(elev::ordersync::OrderTable* orders,
               elev::elevator::ElevatorState* state,
-              std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>*
-                  cab_button_orders);
+              std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* cab_button_orders);
 
     int ID() { return id_; }
     elev::ordersync::OrderTable* Orders() { return &orders_; }
     elev::elevator::ElevatorState* State() { return &state_; }
-    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>*
-    CabButtonOrders() {
-        return &cab_button_orders_;
-    }
+    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* CabButtonOrders() { return &cab_button_orders_; }
 
 private:
     int id_;
     elev::ordersync::OrderTable orders_;
     elev::elevator::ElevatorState state_;
-    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>
-        cab_button_orders_;
+    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs> cab_button_orders_;
 };
 #pragma pack(pop)
 
@@ -42,9 +37,6 @@ class UdpBroadcaster {
 public:
     UdpBroadcaster(uint16_t port, const std::string& bcast_ip);
     ~UdpBroadcaster();
-
-    UdpBroadcaster(const UdpBroadcaster&) = delete;
-    UdpBroadcaster& operator=(const UdpBroadcaster&) = delete;
 
     bool SendPacket(NetworkPacket* packet);
 

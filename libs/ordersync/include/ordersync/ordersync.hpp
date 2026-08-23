@@ -16,6 +16,7 @@ public:
 
     // Set
     void Observe(int elev_id);
+    void SetAssignedId(int assigned_id);
 
     // Get
     uint64_t Version() { return version_; }
@@ -31,6 +32,7 @@ public:
     void OnClear();
     void OnReset();
     void OnRevoke();
+    void OnReassignment(int assigned_id);
 
 private:
     int assigned_id_{-1};

@@ -8,6 +8,7 @@
 #include <limits>
 #include <mutex>
 #include <network/peers.hpp>
+#include <string>
 
 #include "common/config.hpp"
 #include "elevator/elevator_state.hpp"
@@ -18,8 +19,9 @@ namespace elev::network {
 void Peers::Step(int node_id) {
     UpdateNumElevs();
     ObserveOrders(node_id);
-    ConfirmHallOrders(node_id);
-    ResetHallOrders(node_id);
+    ConfirmHallOrders();
+    ResetHallOrders();
+    CheckHallOrderTimers();
 }
 
 // Mark this node as having seen a hall order, so ObservedByAll can converge
@@ -41,30 +43,26 @@ void Peers::ObserveOrders(int node_id) {
 }
 
 // Confirm orders using the node's table
-void Peers::ConfirmHallOrders(int node_id) {
+void Peers::ConfirmHallOrders() {
     using namespace elev::common;
-    const int n = node_id;
-
-    // Iterate over all orders (f, b)
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
-            if ((BtnType)b == BtnType::Cab) continue;
-
-            if (!ObservedByAll(f, b)) continue;
-
+            if ((BtnType)b == BtnType::Cab || 
+                !ObservedByAll(f, b) || 
+                orders_.Order(f, b)->Status() != OrderStatus::Requested) continue;
+            
             int best_elev_id = ElevatorWithLowestCost(f, b);
             if (best_elev_id == -1) {
                 common::PrintError("[Peers] No active elevators in all_elevs_");
                 continue;
             }
-
             orders_.Order(f, b)->OnConfirm(best_elev_id);
             order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
         }
     }
 }
 
-void Peers::ResetHallOrders(int node_id) {
+void Peers::ResetHallOrders() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
             if ((BtnType)b == BtnType::Cab) continue;
@@ -171,12 +169,48 @@ Peers::CabButtonOrders() {
     return &cab_button_orders_;
 }
 
-void Peers::CheckOrderTimers() {
+void Peers::CheckHallOrderTimers() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
-            // TODO: check timers
+
+            if ((BtnType)b == BtnType::Cab) continue;
+            if (!order_timers_.Timer(f, b)->Expired()) continue;
+
+            // Orders after this should be expired hall orders
+            order_timers_.Timer(f, b)->Stop();
+            ReassignHallOrder(f, b);
         }
     }
+}
+
+void Peers::ReassignHallOrder(int floor, int btn) {
+    std::string msg = 
+        std::string("[PEERS] Order (") +
+        std::to_string(floor) + ", " + std::to_string(btn) + 
+        std::string(") timed out");
+    elev::common::PrintError(msg);
+
+    if (num_elevs_ == 1) return; 
+
+    int prev_assignee = orders_.Order(floor, btn)->AssignedId();
+    assert(prev_assignee >= 0 && prev_assignee < kElevs && "prev_assignee in range");
+    int new_assignee = -1;
+
+    for (int e = 0; e < kElevs; e++) {
+        if (all_states_.at(e).Active() && e != prev_assignee) {
+            new_assignee = e;
+            break;
+        }
+    }
+    if (new_assignee == -1) {
+        if (all_states_.at(prev_assignee).Active()) {
+            new_assignee = prev_assignee;
+        } else {
+            elev::common::PrintError("[PEERS] Could not find new assigne during reassignment");
+            abort();
+        }
+    }
+    orders_.Order(floor, btn)->OnReassignment(new_assignee);
 }
 
 }  // namespace elev::network

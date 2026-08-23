@@ -38,9 +38,7 @@ public:
     void SetObstruction(bool obs);
     void SetActivity(bool active);
     void SetDoorOpen(bool door_open);
-    void SetRequests(
-        std::array<std::array<bool, config::kButtons>, config::kFloors>
-            requests);
+    void SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests);
     void SetInertia(common::Inertia inertia);
 
     // Things

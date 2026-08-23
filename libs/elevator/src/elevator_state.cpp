@@ -68,13 +68,9 @@ void ElevatorState::SetPrevFloor(int prev_floor) {
 
 void ElevatorState::SetStopped(bool stopped) { stopped_ = stopped; }
 
-void ElevatorState::SetMotorDir(elev::common::MotorDir dir) {
-    motor_dir_ = dir;
-}
+void ElevatorState::SetMotorDir(elev::common::MotorDir dir) {motor_dir_ = dir;}
 
-void ElevatorState::SetMovingState(elev::common::MovingState mov) {
-    moving_state_ = mov;
-}
+void ElevatorState::SetMovingState(elev::common::MovingState mov) {moving_state_ = mov;}
 
 void ElevatorState::SetObstruction(bool obs) { obstruction_ = obs; }
 
@@ -100,12 +96,10 @@ void ElevatorState::CopyFrom(ElevatorState* rhs) {
 
 void ElevatorState::OnUpdate(ElevatorState rcv) {
     if (rcv.Version() <= version_) return;
-
     CopyFrom(&rcv);
 }
 
-void ElevatorState::SetRequests(
-    std::array<std::array<bool, config::kButtons>, config::kFloors> requests) {
+void ElevatorState::SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests) {
     requests_ = requests;
 }
 
