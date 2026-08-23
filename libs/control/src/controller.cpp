@@ -24,7 +24,7 @@ void Controller::SetInertia(elev::elevator::Elevator* elev, MotorDir dir) {
 
 RequestTable Controller::Requests() { return requests_; }
 
-void Controller::SetRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table) {
+void Controller::SetRequests(BoolTable bool_table) {
     using namespace elev::common;
     // yup
     for (int f = 0; f < kFloors; f++) for (int b = 0; b < kButtons; b++) requests_.SetValue(f, b, bool_table[f][b]);

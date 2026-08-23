@@ -1,13 +1,10 @@
 #pragma once
 
 // Libs
-#include <array>
 #include <common/timer.hpp>
 #include <control/requests.hpp>
 #include <elevator/elevator.hpp>
 #include <ordersync/ordersync.hpp>
-
-#include "common/config.hpp"
 
 using namespace elev::common;
 
@@ -18,7 +15,7 @@ public:
     Controller();
 
     // Set
-    void SetRequests(std::array<std::array<bool, kButtons>, kFloors> bool_table);
+    void SetRequests(BoolTable bool_table);
     void SetInertia(elev::elevator::Elevator* elev, MotorDir dir);
 
     void ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair);

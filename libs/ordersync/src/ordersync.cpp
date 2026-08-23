@@ -14,10 +14,8 @@ ordersync::Order* OrderTable::Order(int floor, int btn) {
     return &table_[floor][btn];
 }
 
-std::array<std::array<bool, elev::config::kButtons>, config::kFloors> OrderTable::ToBoolTable(int elev_id) {
-    using namespace elev::common;
-    std::array<std::array<bool, elev::config::kButtons>, config::kFloors>
-        result{};
+BoolTable OrderTable::ToBoolTable(int elev_id) {
+    BoolTable result{};
 
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {

@@ -19,7 +19,7 @@ namespace elev::network {
 
 void NetworkPacket::Init(elev::ordersync::OrderTable* orders,
                          elev::elevator::ElevatorState* state,
-                         std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* cab_button_orders) {
+                         elev::ordersync::CabOrderTable* cab_button_orders) {
     if (orders) orders_ = *orders;
     if (state) {
         id_ = state->Id();

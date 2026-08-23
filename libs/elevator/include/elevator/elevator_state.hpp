@@ -1,9 +1,6 @@
 #pragma once
 
-#include <array>
 #include <common/types.hpp>
-
-#include "common/config.hpp"
 
 namespace elev::elevator {
 
@@ -25,7 +22,7 @@ public:
     elev::common::MotorDir MotorDir();
     elev::common::MovingState MovingState();
     uint64_t Version();
-    std::array<std::array<bool, config::kButtons>, config::kFloors> Requests();
+    common::BoolTable Requests();
     common::Inertia Inertia();
 
     // Setters
@@ -39,7 +36,7 @@ public:
     void SetFault(bool fault);
     void SetActivity(bool active);
     void SetDoorOpen(bool door_open);
-    void SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests);
+    void SetRequests(common::BoolTable requests);
     void SetInertia(common::Inertia inertia);
 
     // Things
@@ -60,7 +57,7 @@ private:
     elev::common::MotorDir motor_dir_{0};
     elev::common::MovingState moving_state_{0};
     uint64_t version_{0};
-    std::array<std::array<bool, config::kButtons>, config::kFloors> requests_{};
+    common::BoolTable requests_{};
     elev::common::Inertia inertia_{common::Inertia::None};
 };
 

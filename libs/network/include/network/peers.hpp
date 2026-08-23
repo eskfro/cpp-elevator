@@ -37,7 +37,7 @@ public:
     int NumElevs();
     elev::ordersync::OrderTable* Orders();
     elev::elevator::ElevatorState* State(int elev_id);
-    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* CabButtonOrders();
+    elev::ordersync::CabOrderTable* CabButtonOrders();
     elev::ordersync::Order* CabButtonOrder(int elev_id, int floor);
 
     // Orders
@@ -54,7 +54,7 @@ private:
     OrderTimers order_timers_{};
     std::array<elev::common::Timer, kElevs> watchdog_timers_{};
     std::array<elev::elevator::ElevatorState, elev::config::kElevs> all_states_{};
-    std::array<std::array<elev::ordersync::Order, kFloors>, kElevs> cab_button_orders_{};
+    elev::ordersync::CabOrderTable cab_button_orders_{};
 };
 
 }  // namespace elev::network

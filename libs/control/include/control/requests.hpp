@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <common/config.hpp>
 #include <common/types.hpp>
 
@@ -15,14 +14,14 @@ public:
 
     // Get
     bool Value(int floor, int btn);
-    std::array<std::array<bool, config::kButtons>, config::kFloors> Table();
+    common::BoolTable Table();
 
     bool IsRequestAbove(int floor);
     bool IsRequestBelow(int floor);
     bool IsRequestHere(int floor);
 
 private:
-    std::array<std::array<bool, config::kButtons>, config::kFloors> table_{};
+    common::BoolTable table_{};
 };
 
 }  // namespace elev::control

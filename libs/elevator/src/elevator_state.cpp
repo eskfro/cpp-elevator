@@ -45,8 +45,7 @@ elev::common::MovingState ElevatorState::MovingState() { return moving_state_; }
 
 uint64_t ElevatorState::Version() { return version_; }
 
-std::array<std::array<bool, config::kButtons>, config::kFloors>
-ElevatorState::Requests() {
+common::BoolTable ElevatorState::Requests() {
     return requests_;
 }
 
@@ -101,7 +100,7 @@ void ElevatorState::OnUpdate(ElevatorState rcv) {
     CopyFrom(&rcv);
 }
 
-void ElevatorState::SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests) {
+void ElevatorState::SetRequests(common::BoolTable requests) {
     requests_ = requests;
 }
 

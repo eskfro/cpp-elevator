@@ -1,17 +1,10 @@
-#include <array>
 #include <control/requests.hpp>
 
 #include "common/config.hpp"
 
-namespace {
-    
-using BoolTable = std::array<std::array<bool, elev::config::kButtons>, elev::config::kFloors>;
-
-} // namespace
-
 namespace elev::control {
 
-BoolTable RequestTable::Table() {
+common::BoolTable RequestTable::Table() {
     return table_;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <iostream>
 #include <string>
@@ -10,6 +11,7 @@
 namespace elev::common {
 
 using ButtonFlags = std::array<bool, elev::config::kButtons>;
+using BoolTable = std::array<std::array<bool, elev::config::kButtons>, elev::config::kFloors>;
 
 enum class DoorState : bool {
     Closed = false,

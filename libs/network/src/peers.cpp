@@ -167,7 +167,7 @@ elev::ordersync::Order* Peers::CabButtonOrder(int elev_id, int floor) {
     return &cab_button_orders_[elev_id][floor];
 }
 
-std::array<std::array<elev::ordersync::Order, kFloors>, kElevs>* Peers::CabButtonOrders() {
+elev::ordersync::CabOrderTable* Peers::CabButtonOrders() {
     return &cab_button_orders_;
 }
 

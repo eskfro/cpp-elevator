@@ -41,6 +41,8 @@ private:
     uint64_t version_{};
 };
 
+using CabOrderTable = std::array<std::array<Order, kFloors>, kElevs>;
+
 class OrderTable {
 public:
     OrderTable() = default;
@@ -50,7 +52,7 @@ public:
 
     // Get
     ordersync::Order* Order(int floor, int btn);
-    std::array<std::array<bool, kButtons>, kFloors> ToBoolTable(int elev_id);
+    BoolTable ToBoolTable(int elev_id);
 
 private:
     std::array<std::array<ordersync::Order, kButtons>, kFloors> table_{};
