@@ -77,9 +77,9 @@ void ElevatorNode::StepPeers() {
 }
 
 void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
-    if (packet.ID() == node_id_) return;
+    if (packet.Id() == node_id_) return;
 
-    const int p = packet.ID();
+    const int p = packet.Id();
     const int n = node_id_;
 
     // --- LOCKED ---
@@ -92,11 +92,11 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
     // Cab order preservation join
     for (int f = 0; f < kFloors; f++) {
         elev::ordersync::Order cab_packet = *packet.Orders()->Order(f, (int)BtnType::Cab);
-        peers_.CabButtonOrder(p, f)->OnUpdate(cab_packet);
+        elev::ordersync::Order cab_node = packet.CabButtonOrders()->at(n).at(f);
 
-        elev::ordersync::Order node_cab_order = packet.CabButtonOrders()->at(n).at(f);
-        peers_.CabButtonOrder(n, f)->OnUpdate(node_cab_order);
-        peers_.Orders()->Order(f, (int)BtnType::Cab)->OnUpdate(node_cab_order);
+        peers_.CabButtonOrder(p, f)->OnUpdate(cab_packet);
+        peers_.CabButtonOrder(n, f)->OnUpdate(cab_node);
+        peers_.Orders()->Order(f, (int)BtnType::Cab)->OnUpdate(cab_node);
     }
 }
 

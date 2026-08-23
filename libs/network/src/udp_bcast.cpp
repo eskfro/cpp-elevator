@@ -65,11 +65,8 @@ UdpBroadcaster::~UdpBroadcaster() {
 }
 
 bool UdpBroadcaster::SendPacket(NetworkPacket* packet) {
-    if (packet->ID() < 0 || packet->ID() >= kElevs) return false;
-
-    if (socket_fd_ < 0 || !packet) {
-        return false;
-    }
+    if (socket_fd_ < 0 || !packet) return false;
+    if (packet->Id() < 0 || packet->Id() >= kElevs) return false;
 
     // Send bytes
     ssize_t bytes_sent = sendto(socket_fd_, packet, sizeof(NetworkPacket), 0,
@@ -87,8 +84,7 @@ bool UdpBroadcaster::SendPacket(NetworkPacket* packet) {
 UdpReciever::UdpReciever(uint16_t port) {
     socket_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (socket_fd_ < 0) {
-        std::cerr << "[UDP RX] Error creating socket: " << strerror(errno)
-                  << std::endl;
+        std::cerr << "[UDP RX] Error creating socket: " << strerror(errno) << std::endl;
         return;
     }
 
@@ -129,7 +125,7 @@ bool UdpReciever::RecievePacket(NetworkPacket* packet) {
         static_cast<size_t>(bytes_rcvd) != sizeof(NetworkPacket)) {
         return false;
     }
-    if (packet->ID() < 0 || packet->ID() >= kElevs) return false;
+    if (packet->Id() < 0 || packet->Id() >= kElevs) return false;
 
     return true;
 }

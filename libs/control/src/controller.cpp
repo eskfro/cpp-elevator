@@ -15,14 +15,14 @@ Timer* Controller::DoorTimer() { return &doortimer_; }
 
 Timer* Controller::FloorTimer() { return &floor_timer_; }
 
+RequestTable Controller::Requests() { return requests_; }
+
 void Controller::SetInertia(elev::elevator::Elevator* elev, MotorDir dir) {
     if (dir == MotorDir::Up) inertia_ = Inertia::Up;
     if (dir == MotorDir::Down) inertia_ = Inertia::Down;
 
     elev->State()->SetInertia(inertia_);
 }
-
-RequestTable Controller::Requests() { return requests_; }
 
 void Controller::SetRequests(BoolTable bool_table) {
     using namespace elev::common;
@@ -32,8 +32,7 @@ void Controller::SetRequests(BoolTable bool_table) {
 
 // FSM Emergency Stop
 ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id()
-              << " ] - FSM: Emergency Stop" << std::endl;
+    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Emergency Stop" << std::endl;
     ButtonFlags zero{};
 
     elev->State()->SetStopped(true);
@@ -56,8 +55,7 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
 
 // FSM Table Update
 ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id()
-              << " ] - FSM: Table Update" << std::endl;
+    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Table Update" << std::endl;
 
     using namespace elev::common;
 
@@ -77,7 +75,6 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
             return zero;
         case MovingState::Idle:
             pair = ChooseDirection(floor);
-            // switch (elev->State()->MovingState()) {
             switch (pair.moving_state) {
                 case MovingState::DoorOpen:
                     if (elev->State()->Floor() != kBetweenFloors) {
@@ -103,9 +100,8 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
 
 // FSM Floor Arrival
 ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id()
-              << " ] - FSM: Arrived @ Floor " << elev->State()->Floor()
-              << std::endl;
+    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Arrived @ Floor "
+              << elev->State()->Floor() << std::endl;
     using namespace elev::common;
 
     ButtonFlags zero{};
@@ -256,8 +252,7 @@ bool Controller::ShouldStop(int floor) {
     }
 }
 
-bool Controller::ShouldClearImmediately(int floor, int btn_floor,
-                                        elev::common::BtnType btn) {
+bool Controller::ShouldClearImmediately(int floor, int btn_floor, elev::common::BtnType btn) {
     using namespace elev::common;
     return floor == btn_floor &&
            ((inertia_ == Inertia::Up && btn == BtnType::HallUp) ||

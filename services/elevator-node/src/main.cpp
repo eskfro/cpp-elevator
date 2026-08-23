@@ -73,10 +73,9 @@ void RxThreadLoop(elev::node::ElevatorNode& node, elev::network::UdpReciever& re
     while (g_running && node.Running()) {
         // Blocks until network frame arrives
         if (reciever.RecievePacket(&packet)) {
-            if (packet.ID() == node.Id()) continue;
-            // Update peers
+            if (packet.Id() == node.Id()) continue;
             node.RxPacketProcessing(packet);
-            std::cout << "[RX] Processed package " << packet.ID() << std::endl;
+            std::cout << "[RX] Processed package " << packet.Id() << std::endl;
         }
     }
 }

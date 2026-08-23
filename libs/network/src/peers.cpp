@@ -142,15 +142,18 @@ void Peers::ClearOrders(int node_id, int floor, ButtonFlags b2c) {
     for (int b = 0; b < kButtons; b++) {
         if (!b2c.at(b)) continue;
 
-        bool is_cab = (BtnType)b == BtnType::Cab;
-
-        orders_.Order(floor, b)->OnClear();
-        order_timers_.Timer(floor, b)->Stop();
-
-        if (is_cab) {
+        // Clear cab
+        if ((BtnType)b == BtnType::Cab) {
+            orders_.Order(floor, b)->OnClear();
+            orders_.Order(floor, b)->OnReset();
             cab_button_orders_[n][floor].OnClear();
             cab_button_orders_[n][floor].OnReset();
-            orders_.Order(floor, b)->OnReset();
+            continue;
+        }
+        // Clear hall order if owner
+        if (orders_.Order(floor, b)->AssignedId() == n) {
+            orders_.Order(floor, b)->OnClear();
+            order_timers_.Timer(floor, b)->Stop();
         }
     }
 }

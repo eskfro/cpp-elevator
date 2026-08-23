@@ -19,7 +19,7 @@ public:
               elev::elevator::ElevatorState* state,
               elev::ordersync::CabOrderTable* cab_button_orders);
 
-    int ID() { return id_; }
+    int Id() { return id_; }
     elev::ordersync::OrderTable* Orders() { return &orders_; }
     elev::elevator::ElevatorState* State() { return &state_; }
     elev::ordersync::CabOrderTable* CabButtonOrders() { return &cab_button_orders_; }
