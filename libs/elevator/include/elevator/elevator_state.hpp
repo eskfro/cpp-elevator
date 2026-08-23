@@ -36,6 +36,7 @@ public:
     void SetMotorDir(elev::common::MotorDir dir);
     void SetMovingState(elev::common::MovingState mov);
     void SetObstruction(bool obs);
+    void SetFault(bool fault);
     void SetActivity(bool active);
     void SetDoorOpen(bool door_open);
     void SetRequests(std::array<std::array<bool, config::kButtons>, config::kFloors> requests);
@@ -45,6 +46,7 @@ public:
     void CopyFrom(ElevatorState* rhs);
     void OnUpdate(ElevatorState state);
     void IncrementVersion() { version_++; }
+    void OnWatchdogTimeout();
 
 private:
     int id_{-1};

@@ -30,6 +30,7 @@ public:
     ButtonFlags FsmFloorArrival(elev::elevator::Elevator* elev);
     ButtonFlags FsmDoorTimeout(elev::elevator::Elevator* elev);
     ButtonFlags FsmEmergencyStop(elev::elevator::Elevator* elev);
+    ButtonFlags FsmFloorTimeout(elev::elevator::Elevator* elev);
 
     // Change values on table
     ButtonFlags ClearCurrentFloor(int floor);
@@ -43,11 +44,13 @@ public:
     // Get
     RequestTable Requests();
     common::Timer* DoorTimer();
+    common::Timer* FloorTimer();
 
 private:
     RequestTable prev_requests_{};
     RequestTable requests_{};
     common::Timer doortimer_;
+    common::Timer floor_timer_;
     Inertia inertia_;
 };
 

@@ -13,20 +13,10 @@
 #include <elevator/elevator.hpp>
 #include <ordersync/ordersync.hpp>
 
-namespace {
-
-static constexpr int kPenaltyDoorOpen = 2;
-static constexpr int kPenaltyFloorDiff = 3;
-static constexpr int kPenaltyPerOrder = 5;
-static constexpr int kPenaltyWrongDir = 10;
-static constexpr int kPenaltyObstruction = 100;
-
-}  // namespace
-
 namespace elev::network {
 
 /*
-This is the world object.
+This is the world object
 */
 class Peers {
 public:
@@ -41,6 +31,7 @@ public:
     void UpdateWatchdogTimer(int elev_id);
     void MonitorWatchdogTimers();
     void MonitorHallOrderTimers();
+    void MonitorFault();
 
     // Get
     int NumElevs();
@@ -59,7 +50,7 @@ public:
 
 private:
     int num_elevs_{};
-    ordersync::OrderTable orders_{};
+    elev::ordersync::OrderTable orders_{};
     OrderTimers order_timers_{};
     std::array<elev::common::Timer, kElevs> watchdog_timers_{};
     std::array<elev::elevator::ElevatorState, elev::config::kElevs> all_states_{};

@@ -17,5 +17,15 @@ constexpr int kButtons = 3;
 constexpr int kDoorOpenTimeMs = 3000;
 constexpr int kReassignOrderTimeMs = 20000;
 constexpr int kWatchdogTimeMs = 1000;
+constexpr int kFaultTimeoutMs = 5000;
+
+// Cost function penalties
+constexpr int kPenaltyDoorOpen = 2;
+constexpr int kPenaltyFloorDiff = 3;
+constexpr int kPenaltyPerOrder = 5;
+constexpr int kPenaltyWrongDir = 10;
+constexpr int kPenaltyObstruction = 100;
+constexpr int kPenaltyFault = 1000;
+constexpr int kPenaltyStopped = 1000;
 
 }  // namespace elev::config

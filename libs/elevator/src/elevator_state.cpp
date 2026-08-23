@@ -74,6 +74,8 @@ void ElevatorState::SetMovingState(elev::common::MovingState mov) {moving_state_
 
 void ElevatorState::SetObstruction(bool obs) { obstruction_ = obs; }
 
+void ElevatorState::SetFault(bool fault) { fault_ = fault; }
+
 void ElevatorState::SetActivity(bool active) { active_ = active; }
 
 void ElevatorState::SetDoorOpen(bool door_open) { door_open_ = door_open; }
@@ -104,5 +106,10 @@ void ElevatorState::SetRequests(std::array<std::array<bool, config::kButtons>, c
 }
 
 void ElevatorState::SetInertia(common::Inertia inertia) { inertia_ = inertia; }
+
+void ElevatorState::OnWatchdogTimeout() {
+    active_ = false;
+    version_ = 0;
+}
 
 }  // namespace elev::elevator

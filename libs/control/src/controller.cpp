@@ -7,10 +7,13 @@ namespace elev::control {
 
 Controller::Controller() {
     doortimer_.Stop();
+    floor_timer_.Stop();
     inertia_ = Inertia::None;
 }
 
 Timer* Controller::DoorTimer() { return &doortimer_; }
+
+Timer* Controller::FloorTimer() { return &floor_timer_; }
 
 void Controller::SetInertia(elev::elevator::Elevator* elev, MotorDir dir) {
     if (dir == MotorDir::Up) inertia_ = Inertia::Up;
@@ -46,6 +49,7 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
     elev->State()->SetInertia(Inertia::None);
 
     elev->State()->SetMovingState(MovingState::Idle);
+    floor_timer_.Stop();
 
     return zero;
 }
@@ -107,6 +111,9 @@ ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
     ButtonFlags zero{};
     int floor = elev->State()->Floor();
 
+    floor_timer_.Start(kFaultTimeoutMs);
+    elev->State()->SetFault(false);
+
     elev->SetFloorIndicator();
 
     switch (elev->State()->MovingState()) {
@@ -161,10 +168,25 @@ ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
     }
 }
 
+// FSM Floor Timeout
+ButtonFlags Controller::FsmFloorTimeout(elev::elevator::Elevator* elev) {
+    common::PrintError("[FSM] Floor timeout - fault");
+    using namespace elev::common;
+
+    floor_timer_.Stop();
+
+    if (elev->State()->MovingState() == MovingState::Moving) {
+        elev->State()->SetFault(true);
+    }
+
+    return ButtonFlags{};
+}
+
 void Controller::StopAndOpenDoor(elev::elevator::Elevator* elev) {
     elev->SetMotorDir(MotorDir::Stop);
     elev->OpenDoor();
     doortimer_.Start(kDoorOpenTimeMs);
+    floor_timer_.Stop();
 }
 
 void Controller::ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair) {
@@ -172,6 +194,12 @@ void Controller::ExecuteDecision(elev::elevator::Elevator* elev, DirMovPair pair
 
     elev->SetMotorDir(pair.motor_dir);
     elev->State()->SetMovingState(pair.moving_state);
+
+    if (pair.moving_state == MovingState::Moving) {
+        floor_timer_.Start(kFaultTimeoutMs);
+    } else {
+        floor_timer_.Stop();
+    }
 
     SetInertia(elev, pair.motor_dir);
 }

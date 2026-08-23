@@ -18,6 +18,7 @@ namespace elev::network {
 
 void Peers::Step(int node_id) {
     MonitorWatchdogTimers();
+    MonitorFault();
     UpdateNumElevs();
     ObserveOrders(node_id);
     ConfirmHallOrders();
@@ -98,6 +99,8 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
         cost += std::abs(state.Floor() - floor) * kPenaltyFloorDiff;
 
         if (state.Obstruction()) cost += kPenaltyObstruction;
+        if (state.Fault()) cost += kPenaltyFault;
+        if (state.Stopped()) cost += kPenaltyStopped;
 
         for (int f = 0; f < kFloors; f++) {
             for (int b = 0; b < kButtons; b++) {
@@ -224,8 +227,17 @@ void Peers::MonitorWatchdogTimers() {
     for (int e = 0; e < kElevs; e++) {
         if (watchdog_timers_[e].Expired()) {
             watchdog_timers_[e].Stop();
-            all_states_[e].SetActivity(false);
+            all_states_[e].OnWatchdogTimeout();
             elev::common::PrintError("[PEERS] Watchdog timer timed out on elevator " + std::to_string(e));
+            ReassignHallOrders(e);
+        }
+    }
+}
+
+void Peers::MonitorFault() {
+    for (int e = 0; e < kElevs; e++) {
+        if (!all_states_[e].Active()) continue;
+        if (all_states_[e].Fault()) {
             ReassignHallOrders(e);
         }
     }

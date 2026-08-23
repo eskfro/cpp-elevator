@@ -53,6 +53,10 @@ void ElevatorNode::Step() {
                 Event(controller_.FsmDoorTimeout(&elev_));
                 return;
             }
+            if (controller_.FloorTimer()->Expired()) {
+                Event(controller_.FsmFloorTimeout(&elev_));
+                return;
+            }
     }
 };
 
