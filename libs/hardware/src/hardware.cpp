@@ -50,14 +50,16 @@ void init_hardware(int id, int sim) {
 
     freeaddrinfo(res);
 
-    send(sockfd, (char[4]){0}, 4, 0);
+    char msg[4] = {0};
+    send(sockfd, msg, 4, 0);
 }
 
 void set_motor_dir(elev::common::MotorDir dir) {
     int dirn = static_cast<int>(dir);
 
+    char msg[4] = {1, static_cast<char>(dirn)};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){1, dirn}, 4, 0);
+    send(sockfd, msg, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
@@ -69,8 +71,10 @@ void set_btn_lamp(elev::common::BtnType btn, int floor, int value) {
     assert(button >= 0);
     assert(button < config::kButtons);
 
+    char msg[4] = {2, static_cast<char>(button), static_cast<char>(floor),
+                   static_cast<char>(value)};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){2, button, floor, value}, 4, 0);
+    send(sockfd, msg, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
@@ -78,28 +82,32 @@ void set_floor_indicator(int floor) {
     assert(floor >= 0);
     assert(floor < elev::config::kFloors);
 
+    char msg[4] = {3, static_cast<char>(floor)};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){3, floor}, 4, 0);
+    send(sockfd, msg, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
 void set_door_open_lamp(int value) {
+    char msg[4] = {4, static_cast<char>(value)};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){4, value}, 4, 0);
+    send(sockfd, msg, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
 void set_stop_lamp(int value) {
+    char msg[4] = {5, static_cast<char>(value)};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){5, value}, 4, 0);
+    send(sockfd, msg, 4, 0);
     pthread_mutex_unlock(&sockmtx);
 }
 
 int get_button_signal(elev::common::BtnType btn, int floor) {
     int button = static_cast<int>(btn);
 
+    char msg[4] = {6, static_cast<char>(button), static_cast<char>(floor)};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){6, button, floor}, 4, 0);
+    send(sockfd, msg, 4, 0);
     char buf[4];
     recv(sockfd, buf, 4, 0);
     pthread_mutex_unlock(&sockmtx);
@@ -107,8 +115,9 @@ int get_button_signal(elev::common::BtnType btn, int floor) {
 }
 
 int get_floor_sensor(void) {
+    char msg[4] = {7};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){7}, 4, 0);
+    send(sockfd, msg, 4, 0);
     char buf[4];
     recv(sockfd, buf, 4, 0);
     pthread_mutex_unlock(&sockmtx);
@@ -116,8 +125,9 @@ int get_floor_sensor(void) {
 }
 
 int get_stop_signal(void) {
+    char msg[4] = {8};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){8}, 4, 0);
+    send(sockfd, msg, 4, 0);
     char buf[4];
     recv(sockfd, buf, 4, 0);
     pthread_mutex_unlock(&sockmtx);
@@ -125,8 +135,9 @@ int get_stop_signal(void) {
 }
 
 int get_obstruction_signal(void) {
+    char msg[4] = {9};
     pthread_mutex_lock(&sockmtx);
-    send(sockfd, (char[4]){9}, 4, 0);
+    send(sockfd, msg, 4, 0);
     char buf[4];
     recv(sockfd, buf, 4, 0);
     pthread_mutex_unlock(&sockmtx);

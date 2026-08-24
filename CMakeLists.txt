@@ -13,7 +13,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Legge til subdirs
+# Compiler flags
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(
+        -Wall
+        -Wextra
+        -Wpedantic
+    )
+endif()
+
+# Subdirs
 add_subdirectory(libs)
 add_subdirectory(services)
 

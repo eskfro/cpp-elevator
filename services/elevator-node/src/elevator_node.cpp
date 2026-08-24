@@ -122,7 +122,6 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     std::lock_guard<std::mutex> lock(peers_mutex_);
     const int n = node_id_;
 
-    // Increment state after fsm event
     elev_.State()->IncrementVersion();
 
     // Set clear orders on peers
@@ -149,17 +148,20 @@ void ElevatorNode::RegisterButtonSignals() {
         for (int b = 0; b < kButtons; b++) {
             bool is_cab = (BtnType)b == BtnType::Cab;
             bool btn_pressed = elev_.Buttons()->Button(f, (BtnType)b)->Pressed();
-
             if (!btn_pressed) continue;
-
+            
             PrintBtnPress(n, f, (BtnType)b);
-            peers_.Orders()->Order(f, b)->OnRequest(n);
-
-            // Immediately confirm cab orders
+            
+            // Cab
             if (is_cab) {
+                peers_.Orders()->Order(f, b)->OnRequest(n);
                 peers_.Orders()->Order(f, b)->OnConfirm(n);
                 peers_.CabButtonOrder(n, f)->OnRequest(n);
                 peers_.CabButtonOrder(n, f)->OnConfirm(n);
+
+            // Hall
+            } else {
+                peers_.Orders()->Order(f, b)->OnRequest(n);
             }
         }
     }

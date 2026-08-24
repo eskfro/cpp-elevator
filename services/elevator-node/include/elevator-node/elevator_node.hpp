@@ -26,17 +26,17 @@ public:
     void Init();
 
     void Step();
-    void StepPeers();
     void Stop();
+    void StepPeers();
     void Event(ButtonFlags b2c);
 
     // Get
-    bool Running();
     int Id();
+    bool Running();
 
     // Sync modules
-    void RegisterButtonSignals();
     void SetButtonLamps();
+    void RegisterButtonSignals();
 
     // Network
     elev::network::NetworkPacket TxPacketCopy();
@@ -44,14 +44,13 @@ public:
 
 private:
     int node_id_;
+    ServiceState service_state_{};
     std::atomic<bool> running_{true};
+
+    std::mutex peers_mutex_;
+    elev::network::Peers peers_;
     elev::elevator::Elevator elev_;
     elev::control::Controller controller_;
-
-    elev::network::Peers peers_;
-    std::mutex peers_mutex_;
-
-    ServiceState service_state_{};
 };
 
 }  // namespace elev::node

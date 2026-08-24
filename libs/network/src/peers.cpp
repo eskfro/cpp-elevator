@@ -129,7 +129,6 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
 
 elev::elevator::ElevatorState* Peers::State(int elev_id) {
     assert(elev_id >= 0 && elev_id < kElevs);
-
     return &all_states_[elev_id];
 }
 
@@ -142,7 +141,7 @@ void Peers::ClearOrders(int node_id, int floor, ButtonFlags b2c) {
     for (int b = 0; b < kButtons; b++) {
         if (!b2c.at(b)) continue;
 
-        // Clear cab
+        // Cab
         if ((BtnType)b == BtnType::Cab) {
             orders_.Order(floor, b)->OnClear();
             orders_.Order(floor, b)->OnReset();
@@ -150,7 +149,8 @@ void Peers::ClearOrders(int node_id, int floor, ButtonFlags b2c) {
             cab_button_orders_[n][floor].OnReset();
             continue;
         }
-        // Clear hall order if owner
+
+        // Hall
         if (orders_.Order(floor, b)->AssignedId() == n) {
             orders_.Order(floor, b)->OnClear();
             order_timers_.Timer(floor, b)->Stop();
@@ -196,7 +196,7 @@ void Peers::ReassignHallOrder(int floor, int btn) {
     std::string msg = 
         std::string("[PEERS] Order (") +
         std::to_string(floor) + ", " + std::to_string(btn) + 
-        std::string(") timed out");
+        std::string(") timed out - reassigning");
     elev::common::PrintError(msg);
 
     if (num_elevs_ == 1) return; 
