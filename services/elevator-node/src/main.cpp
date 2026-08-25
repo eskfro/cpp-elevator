@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     std::signal(SIGTERM, SigHandler);
     elev::common::Print("=== ELEVATOR NODE ===");
 
-    int id, sim = 0;
+    int id, sim;
     if (argc < 3) elev::common::Abort("[MAIN] Usage: elevator-node <id> <sim>");
     try {id = std::stoi(argv[1]);} catch (const std::exception& e) {elev::common::PrintError(e.what()); return 1;};
     try {sim = std::stoi(argv[2]);} catch (const std::exception& e) {elev::common::PrintError(e.what()); return 1;};
@@ -77,7 +77,7 @@ void RxThreadLoop(elev::node::ElevatorNode& node, elev::network::UdpReciever& re
         if (reciever.RecievePacket(&packet)) {
             if (packet.Id() == node.Id()) continue;
             node.RxPacketProcessing(packet);
-            std::cout << "[RX] Processed package " << packet.Id() << std::endl;
+            // std::cout << "[RX] Processed package " << packet.Id() << std::endl;
         }
     }
 }

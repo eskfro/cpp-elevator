@@ -21,9 +21,12 @@ void Peers::Step(int node_id) {
     MonitorFault();
     UpdateNumElevs();
     ObserveOrders(node_id);
+    
     ConfirmHallOrders();
     ResetHallOrders();
+
     MonitorHallOrderTimers();
+    ControlHallOrderTimers();
 }
 
 // Mark this node as having seen a hall order, so ObservedByAll can converge
@@ -177,9 +180,9 @@ elev::ordersync::CabOrderTable* Peers::CabButtonOrders() {
 void Peers::MonitorHallOrderTimers() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
-
             if ((BtnType)b == BtnType::Cab) continue;
-            if (!order_timers_.Timer(f, b)->Expired()) continue;
+
+            if (order_timers_.Timer(f, b)->Expired() == false) continue;
 
             order_timers_.Timer(f, b)->Stop();
 
@@ -205,10 +208,15 @@ void Peers::ReassignHallOrder(int floor, int btn) {
     assert(prev_assignee >= 0 && prev_assignee < kElevs && "prev_assignee in range");
     int new_assignee = -1;
 
-    for (int e = 0; e < kElevs; e++) {
-        if (all_states_.at(e).Active() && e != prev_assignee) {
-            new_assignee = e;
-            break;
+    int best_elev_id = ElevatorWithLowestCost(floor, btn);
+    if (best_elev_id != prev_assignee) {
+        new_assignee = best_elev_id;
+    } else {   
+        for (int e = 0; e < kElevs; e++) {
+            if (all_states_.at(e).Active() && e != prev_assignee) {
+                new_assignee = e;
+                break;
+            }
         }
     }
     if (new_assignee == -1) {
@@ -248,7 +256,7 @@ void Peers::MonitorFault() {
 
 void Peers::ReassignHallOrders(int elev_id) {
     /*
-        Reassigns hall orders for elev_id
+    Reassigns hall orders for elev_id
     */
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
@@ -258,6 +266,38 @@ void Peers::ReassignHallOrders(int elev_id) {
             if (orders_.Order(f, b)->AssignedId() == elev_id) {
                 ReassignHallOrder(f, b);
                 order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
+            }
+        }
+    }
+}
+
+void Peers::ControlHallOrderTimers() {
+    /*
+    Check if this node should start or stop hall order timers
+    */
+    for (int f = 0; f < kFloors; f++) {
+        for (int b = 0; b < kButtons; b++) {
+            if ((BtnType)b == BtnType::Cab) continue;
+
+            elev::common::Timer* timer = order_timers_.Timer(f, b);
+            elev::ordersync::Order* order = orders_.Order(f, b);
+
+            // Start
+            bool should_start_timer = 
+                order->Status() == OrderStatus::Confirmed &&
+                timer->Active() == false;
+            if (should_start_timer) {
+                timer->Start(kReassignOrderTimeMs);
+                continue;
+            }
+
+            // Stop
+            bool should_stop_timer = 
+                order->Status() != OrderStatus::Confirmed && 
+                timer->Active() == true;
+            if (should_stop_timer) {
+                timer->Stop();
+                continue;
             }
         }
     }

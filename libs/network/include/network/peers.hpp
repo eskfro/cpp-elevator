@@ -30,6 +30,7 @@ public:
     void UpdateNumElevs();
     void UpdateWatchdogTimer(int elev_id);
     void MonitorWatchdogTimers();
+    void ControlHallOrderTimers();
     void MonitorHallOrderTimers();
     void MonitorFault();
 

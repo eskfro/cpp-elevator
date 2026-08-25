@@ -89,6 +89,7 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
     peers_.UpdateWatchdogTimer(p);
     peers_.State(p)->OnUpdate(*packet.State());
     peers_.Orders()->Join(*packet.Orders());
+    peers_.ControlHallOrderTimers();
 
     // Cab order preservation join
     for (int f = 0; f < kFloors; f++) {
