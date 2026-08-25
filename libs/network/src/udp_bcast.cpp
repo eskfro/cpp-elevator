@@ -82,6 +82,7 @@ bool UdpBroadcaster::SendPacket(NetworkPacket* packet) {
 }
 
 UdpReciever::UdpReciever(uint16_t port) {
+    int ok;
     socket_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (socket_fd_ < 0) {
         std::cerr << "[UDP RX] Error creating socket: " << strerror(errno) << std::endl;
@@ -97,11 +98,21 @@ UdpReciever::UdpReciever(uint16_t port) {
     rx_addr.sin_port = htons(port);
     rx_addr.sin_addr.s_addr = INADDR_ANY;  // all network interfaces
 
-    if (bind(socket_fd_, reinterpret_cast<struct sockaddr*>(&rx_addr),
-             sizeof(rx_addr)) < 0) {
+    ok = bind(socket_fd_, reinterpret_cast<struct sockaddr*>(&rx_addr), sizeof(rx_addr));
+    if (ok < 0) {
         std::cerr << "[UDP Rx] Error binding socket to port " << port << ": " << strerror(errno) << std::endl;
         close(socket_fd_);
         socket_fd_ = -1;
+        return;
+    }
+
+    // Recieve timeout
+    timeval timeout{};
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 500000; // 500ms
+    ok = setsockopt(socket_fd_, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    if (ok < 0) {
+        std::cerr << "[UDP Rx] Error setting receive timeout" << std::endl;
     }
 }
 
@@ -128,6 +139,14 @@ bool UdpReciever::RecievePacket(NetworkPacket* packet) {
     if (packet->Id() < 0 || packet->Id() >= kElevs) return false;
 
     return true;
+}
+
+void UdpReciever::Close() {
+    if (socket_fd_ >= 0) {
+        shutdown(socket_fd_, SHUT_RDWR);
+        close(socket_fd_);
+        socket_fd_ = -1;
+    }
 }
 
 }  // namespace elev::network

@@ -1,3 +1,4 @@
+#include "common/utils.hpp"
 #include <unistd.h>
 
 #include <chrono>
@@ -32,8 +33,8 @@ int main(int argc, char* argv[]) {
     std::signal(SIGTERM, SigHandler);
     elev::common::Print("=== ELEVATOR NODE ===");
 
-    int id = 0;
-    int sim = 0;
+    int id, sim = 0;
+    if (argc < 3) elev::common::Abort("[MAIN] Usage: elevator-node <id> <sim>");
     try {id = std::stoi(argv[1]);} catch (const std::exception& e) {elev::common::PrintError(e.what()); return 1;};
     try {sim = std::stoi(argv[2]);} catch (const std::exception& e) {elev::common::PrintError(e.what()); return 1;};
 
@@ -44,10 +45,9 @@ int main(int argc, char* argv[]) {
     node.Init();
     node.Step();
 
+    // Network threads
     auto bcaster = elev::network::UdpBroadcaster(kPort, "255.255.255.255");
     auto reciever = elev::network::UdpReciever(kPort);
-
-    // Tx and Rx threads
     std::thread rx_thread(RxThreadLoop, std::ref(node), std::ref(reciever), std::cref(g_running));
     std::thread tx_thread(TxThreadLoop, std::ref(node), std::ref(bcaster), std::cref(g_running));
 
@@ -64,6 +64,8 @@ int main(int argc, char* argv[]) {
     elev::common::Print("=== SHUTTING DOWN ===");
     if (rx_thread.joinable()) rx_thread.join();
     if (tx_thread.joinable()) tx_thread.join();
+    reciever.Close();
+    elev::hardware::shutdown_hardware();
 
     return 0;
 };

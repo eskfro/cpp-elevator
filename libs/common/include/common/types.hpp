@@ -7,6 +7,7 @@
 
 // Libs
 #include <common/config.hpp>
+#include <string_view>
 
 namespace elev::common {
 
@@ -69,12 +70,12 @@ inline std::string BtnTypeToString(BtnType btn) {
     }
 }
 
-inline void Print(std::string s) { std::cout << s << std::endl; }
-
 inline void PrintBtnPress(int elevID, int floor, BtnType btn) {
     std::cout << "[ Elevator " << elevID << " ] - buttonpress "
-              << BtnTypeToString(btn) << " at floor " << floor << std::endl;
+    << BtnTypeToString(btn) << " at floor " << floor << std::endl;
 }
+
+inline void Print(std::string_view s) { std::cout << s << "\n"; }
 
 inline void PrintError(std::string_view msg) {
     // Prints message in red

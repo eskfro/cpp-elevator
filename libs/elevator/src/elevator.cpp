@@ -39,8 +39,7 @@ void Elevator::Init() {
 
     SetFloorIndicator();
 
-    std::cout << "[ Elevator " << state_.Id() << " ] Initialized at floor "
-              << state_.Floor() << std::endl;
+    std::cout << "[ Elevator " << state_.Id() << " ] Initialized at floor " << state_.Floor() << std::endl;
 }
 
 bool Elevator::HitNewFloor() {

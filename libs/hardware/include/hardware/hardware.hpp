@@ -5,6 +5,7 @@
 namespace elev::hardware {
 
 void init_hardware(int id, int sim);
+void shutdown_hardware();
 
 void set_motor_dir(elev::common::MotorDir dir);
 void set_btn_lamp(elev::common::BtnType button, int floor, int value);

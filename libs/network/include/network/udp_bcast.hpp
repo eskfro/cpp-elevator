@@ -49,6 +49,7 @@ public:
     UdpReciever(uint16_t port);
     ~UdpReciever();
 
+    void Close();
     bool RecievePacket(NetworkPacket* packet);
 
 private:

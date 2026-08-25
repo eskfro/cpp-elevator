@@ -1,4 +1,6 @@
+#include <chrono>
 #include <mutex>
+#include <ratio>
 #include <thread>
 
 // Libs
@@ -25,38 +27,37 @@ ElevatorNode::ElevatorNode(int id, std::string ip) :
 void ElevatorNode::Step() {
     // Maybe implement some state machine here later
     switch (service_state_) {
-        case elev::node::ServiceState::Startup:
-        case elev::node::ServiceState::Running:
-        case elev::node::ServiceState::Stopped:
+    case elev::node::ServiceState::Startup:
+    case elev::node::ServiceState::Running:
+    case elev::node::ServiceState::Stopped:
+        elev_.Step();
+        {
+            // --- LOCKED ---
+            std::lock_guard<std::mutex> lock(peers_mutex_);
+            StepPeers();
+        }
+        SetButtonLamps();
 
-            elev_.Step();
-            {
-                // --- LOCKED ---
-                std::lock_guard<std::mutex> lock(peers_mutex_);
-                StepPeers();
-            }
-            SetButtonLamps();
-
-            if (elev_.StopSignal()) {
-                Event(controller_.FsmEmergencyStop(&elev_));
-                return;
-            }
-            if (elev_.HitNewFloor()) {
-                Event(controller_.FsmFloorArrival(&elev_));
-                return;
-            }
-            if (controller_.RequestTableUpdated()) {
-                Event(controller_.FsmTableUpdate(&elev_));
-                return;
-            }
-            if (controller_.DoorTimer()->Expired()) {
-                Event(controller_.FsmDoorTimeout(&elev_));
-                return;
-            }
-            if (controller_.FloorTimer()->Expired()) {
-                Event(controller_.FsmFloorTimeout(&elev_));
-                return;
-            }
+        if (elev_.StopSignal()) {
+            Event(controller_.FsmEmergencyStop(&elev_));
+            return;
+        }
+        if (elev_.HitNewFloor()) {
+            Event(controller_.FsmFloorArrival(&elev_));
+            return;
+        }
+        if (controller_.RequestTableUpdated()) {
+            Event(controller_.FsmTableUpdate(&elev_));
+            return;
+        }
+        if (controller_.DoorTimer()->Expired()) {
+            Event(controller_.FsmDoorTimeout(&elev_));
+            return;
+        }
+        if (controller_.FloorTimer()->Expired()) {
+            Event(controller_.FsmFloorTimeout(&elev_));
+            return;
+        }
     }
 };
 
@@ -102,6 +103,13 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
 
 void ElevatorNode::Init() {
     elev_.Init();
+    /*
+    * Delay startup to ensure the peers' watchdog timers have timed out
+    * This is not an issue when manually restarting the nodes, but could potentially
+    * become one if process pairs are implemented in the future.
+    */
+    std::this_thread::sleep_for(std::chrono::milliseconds(kStartupTimeMs));
+
     elev::common::Print("[NODE] Intitialized");
 }
 

@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
+#include "common/types.hpp"
+#include "common/utils.hpp"
 #include <common/config.hpp>
-#include <hardware/con_load.hpp>
 #include <hardware/hardware.hpp>
 
 namespace elev::hardware {
@@ -16,17 +18,14 @@ static int sockfd;
 static pthread_mutex_t sockmtx;
 
 void init_hardware(int id, int sim) {
+    int ok;
+
     char ip[16];
     char port[8];
-
     strncpy(ip, elev::config::kIpHw, sizeof(ip) - 1);
     strncpy(port, elev::config::kPortHw, sizeof(port) - 1);
 
-    con_load(elev::config::kConfigPath,
-             con_val("com_ip", ip, "%s") con_val("com_port", port, "%s"))
-
-        if (sim == 1) {
-        // Different hardware port in sim mode
+    if (sim == 1) {
         int base = atoi(port);
         int computed = base + id;
         snprintf(port, sizeof(port), "%d", computed);
@@ -35,18 +34,26 @@ void init_hardware(int id, int sim) {
     pthread_mutex_init(&sockmtx, NULL);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    assert(sockfd != -1 && "Unable to set up socket");
+    if (sockfd == -1) elev::common::Abort("[HW] Unable to set up socket");
 
-    struct addrinfo hints = {
+   struct addrinfo hints = {
+        .ai_flags = 0,
         .ai_family = AF_INET,
         .ai_socktype = SOCK_STREAM,
         .ai_protocol = IPPROTO_TCP,
+        .ai_addrlen = 0,
+        .ai_addr = nullptr,
+        .ai_canonname = nullptr,
+        .ai_next = nullptr,
     };
-    struct addrinfo* res;
-    getaddrinfo(ip, port, &hints, &res);
 
-    int fail = connect(sockfd, res->ai_addr, res->ai_addrlen);
-    assert(fail == 0 && "Unable to connect to simulator server");
+    struct addrinfo* res;
+
+    ok = getaddrinfo(ip, port, &hints, &res);
+    if (ok != 0) elev::common::Abort("[HW] getaddrinfo failed");
+
+    ok = connect(sockfd, res->ai_addr, res->ai_addrlen);
+    if (ok != 0) elev::common::Abort("[HW] connection failed");
 
     freeaddrinfo(res);
 
@@ -55,6 +62,8 @@ void init_hardware(int id, int sim) {
 }
 
 void set_motor_dir(elev::common::MotorDir dir) {
+    if (dir == common::MotorDir::Err) elev::common::Abort("[HW] MotorDir Err has no defined actuator");
+
     int dirn = static_cast<int>(dir);
 
     char msg[4] = {1, static_cast<char>(dirn)};
@@ -71,8 +80,7 @@ void set_btn_lamp(elev::common::BtnType btn, int floor, int value) {
     assert(button >= 0);
     assert(button < config::kButtons);
 
-    char msg[4] = {2, static_cast<char>(button), static_cast<char>(floor),
-                   static_cast<char>(value)};
+    char msg[4] = {2, static_cast<char>(button), static_cast<char>(floor), static_cast<char>(value)};
     pthread_mutex_lock(&sockmtx);
     send(sockfd, msg, 4, 0);
     pthread_mutex_unlock(&sockmtx);
@@ -142,6 +150,11 @@ int get_obstruction_signal(void) {
     recv(sockfd, buf, 4, 0);
     pthread_mutex_unlock(&sockmtx);
     return buf[1];
+}
+
+void shutdown_hardware() {
+    close(sockfd);
+    pthread_mutex_destroy(&sockmtx);
 }
 
 }  // namespace elev::hardware
