@@ -34,7 +34,8 @@ void ElevatorNode::Step() {
         {
             // --- LOCKED ---
             std::lock_guard<std::mutex> lock(peers_mutex_);
-            StepPeers();
+            SyncPeers();
+            peers_.Step();
         }
         SetButtonLamps();
 
@@ -62,19 +63,16 @@ void ElevatorNode::Step() {
 };
 
 // All these operations are locked with mutex
-void ElevatorNode::StepPeers() {
+void ElevatorNode::SyncPeers() {
     const int n = node_id_;
 
-    // Button presses
+    // Button press
     RegisterButtonSignals();
     controller_.SetRequests(peers_.Orders()->ToBoolTable(n));
 
     // State update
     elev_.State()->IncrementVersion();
     peers_.State(n)->CopyFrom(elev_.State());
-
-    // Peer logic step
-    peers_.Step(n);
 }
 
 void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
@@ -89,7 +87,6 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
     peers_.UpdateWatchdogTimer(p);
     peers_.State(p)->OnUpdate(*packet.State());
     peers_.Orders()->Join(*packet.Orders());
-    peers_.ControlHallOrderTimers();
 
     // Cab order preservation join
     for (int f = 0; f < kFloors; f++) {
@@ -100,10 +97,12 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
         peers_.CabButtonOrder(n, f)->OnUpdate(cab_node);
         peers_.Orders()->Order(f, (int)BtnType::Cab)->OnUpdate(cab_node);
     }
+    peers_.Step();
 }
 
 void ElevatorNode::Init() {
     elev_.Init();
+    peers_.Init(node_id_);
     /*
     * Delay startup to ensure the peers' watchdog timers have timed out
     * This is not an issue when manually restarting the nodes, but could potentially
@@ -136,7 +135,7 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     // Set clear orders on peers
     ButtonFlags zeros{};
     if (b2c != zeros) {
-        peers_.ClearOrders(n, elev_.State()->Floor(), b2c);
+        peers_.ClearOrders(elev_.State()->Floor(), b2c);
     }
     // Sync requests
     controller_.SetRequests(peers_.Orders()->ToBoolTable(n));

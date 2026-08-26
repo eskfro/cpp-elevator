@@ -16,23 +16,21 @@
 
 namespace elev::network {
 
-void Peers::Step(int node_id) {
+void Peers::Step() {
     MonitorWatchdogTimers();
     MonitorFault();
     UpdateNumElevs();
-    ObserveOrders(node_id);
-    
+    ObserveOrders();
     ConfirmHallOrders();
     ResetHallOrders();
-
     MonitorHallOrderTimers();
     ControlHallOrderTimers();
 }
 
 // Mark this node as having seen a hall order, so ObservedByAll can converge
-void Peers::ObserveOrders(int node_id) {
+void Peers::ObserveOrders() {
     using namespace elev::common;
-    const int n = node_id;
+    const int n = node_id_;
 
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
@@ -49,6 +47,7 @@ void Peers::ObserveOrders(int node_id) {
 
 // Confirm orders using the node's table
 void Peers::ConfirmHallOrders() {
+    const int n = node_id_;
     using namespace elev::common;
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
@@ -62,7 +61,10 @@ void Peers::ConfirmHallOrders() {
                 continue;
             }
             orders_.Order(f, b)->OnConfirm(best_elev_id);
-            order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
+
+            if (best_elev_id == n) {
+                order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
+            }
         }
     }
 }
@@ -139,8 +141,8 @@ elev::ordersync::OrderTable* Peers::Orders() { return &orders_; }
 
 int Peers::NumElevs() { return num_elevs_; }
 
-void Peers::ClearOrders(int node_id, int floor, ButtonFlags b2c) {
-    const int n = node_id;
+void Peers::ClearOrders(int floor, ButtonFlags b2c) {
+    const int n = node_id_;
     for (int b = 0; b < kButtons; b++) {
         if (!b2c.at(b)) continue;
 
@@ -178,6 +180,7 @@ elev::ordersync::CabOrderTable* Peers::CabButtonOrders() {
 }
 
 void Peers::MonitorHallOrderTimers() {
+    const int n = node_id_;
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
             if ((BtnType)b == BtnType::Cab) continue;
@@ -190,7 +193,10 @@ void Peers::MonitorHallOrderTimers() {
             if (orders_.Order(f, b)->Status() != OrderStatus::Confirmed) continue;
 
             ReassignHallOrder(f, b);
-            order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
+
+            if (orders_.Order(f, b)->AssignedId() == n) {   
+                order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
+            }
         }
     }
 }
@@ -208,17 +214,15 @@ void Peers::ReassignHallOrder(int floor, int btn) {
     assert(prev_assignee >= 0 && prev_assignee < kElevs && "prev_assignee in range");
     int new_assignee = -1;
 
-    int best_elev_id = ElevatorWithLowestCost(floor, btn);
-    if (best_elev_id != prev_assignee) {
-        new_assignee = best_elev_id;
-    } else {   
-        for (int e = 0; e < kElevs; e++) {
-            if (all_states_.at(e).Active() && e != prev_assignee) {
-                new_assignee = e;
-                break;
-            }
+    // Reassigning rule
+    // - Lowest elevator id which is not the prev assigned elev id
+    for (int e = 0; e < kElevs; e++) {
+        if (all_states_.at(e).Active() && e != prev_assignee) {
+            new_assignee = e;
+            break;
         }
     }
+    
     if (new_assignee == -1) {
         if (all_states_.at(prev_assignee).Active()) {
             new_assignee = prev_assignee;
@@ -235,6 +239,7 @@ void Peers::UpdateWatchdogTimer(int elev_id) {
 }
 
 void Peers::MonitorWatchdogTimers() {
+    const int n = node_id_;
     for (int e = 0; e < kElevs; e++) {
         if (watchdog_timers_[e].Expired()) {
             watchdog_timers_[e].Stop();
@@ -246,6 +251,7 @@ void Peers::MonitorWatchdogTimers() {
 }
 
 void Peers::MonitorFault() {
+    const int n = node_id_;
     for (int e = 0; e < kElevs; e++) {
         if (!all_states_[e].Active()) continue;
         if (all_states_[e].Fault()) {
@@ -255,6 +261,7 @@ void Peers::MonitorFault() {
 }
 
 void Peers::ReassignHallOrders(int elev_id) {
+    const int n = node_id_;
     /*
     Reassigns hall orders for elev_id
     */
@@ -262,9 +269,11 @@ void Peers::ReassignHallOrders(int elev_id) {
         for (int b = 0; b < kButtons; b++) {
             if ((BtnType)b == BtnType::Cab) continue;
             if (orders_.Order(f, b)->Status() != OrderStatus::Confirmed) continue;
+            if (orders_.Order(f, b)->AssignedId() != elev_id) continue;
 
-            if (orders_.Order(f, b)->AssignedId() == elev_id) {
-                ReassignHallOrder(f, b);
+            ReassignHallOrder(f, b);
+
+            if (orders_.Order(f, b)->AssignedId() == n) {
                 order_timers_.Timer(f, b)->Start(kReassignOrderTimeMs);
             }
         }
@@ -275,6 +284,7 @@ void Peers::ControlHallOrderTimers() {
     /*
     Check if this node should start or stop hall order timers
     */
+    const int n = node_id_;
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
             if ((BtnType)b == BtnType::Cab) continue;
@@ -285,22 +295,26 @@ void Peers::ControlHallOrderTimers() {
             // Start
             bool should_start_timer = 
                 order->Status() == OrderStatus::Confirmed &&
-                timer->Active() == false;
+                timer->Active() == false && 
+                order->AssignedId() == n;
             if (should_start_timer) {
                 timer->Start(kReassignOrderTimeMs);
                 continue;
             }
-
             // Stop
             bool should_stop_timer = 
-                order->Status() != OrderStatus::Confirmed && 
-                timer->Active() == true;
+                timer->Active() == true &&
+                (order->Status() != OrderStatus::Confirmed || order->AssignedId() != n);
             if (should_stop_timer) {
                 timer->Stop();
                 continue;
             }
         }
     }
+}
+
+void Peers::Init(int node_id) {
+    node_id_ = node_id;
 }
 
 }  // namespace elev::network

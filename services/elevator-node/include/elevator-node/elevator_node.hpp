@@ -27,7 +27,7 @@ public:
 
     void Step();
     void Stop();
-    void StepPeers();
+    void SyncPeers();
     void Event(ButtonFlags b2c);
 
     // Get

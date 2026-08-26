@@ -22,7 +22,8 @@ class Peers {
 public:
     Peers() = default;
 
-    void Step(int node_id);
+    void Step();
+    void Init(int node_id);
 
     bool ObservedByAll(int floor, int btn);
     int ElevatorWithLowestCost(int floor, int btn);
@@ -42,14 +43,15 @@ public:
     elev::ordersync::Order* CabButtonOrder(int elev_id, int floor);
 
     // Orders
-    void ObserveOrders(int node_id);
+    void ObserveOrders();
     void ConfirmHallOrders();
     void ResetHallOrders();
-    void ClearOrders(int node_id, int floor, ButtonFlags b2c);
+    void ClearOrders(int floor, ButtonFlags b2c);
     void ReassignHallOrder(int floor, int btn);
     void ReassignHallOrders(int elev_id);
 
 private:
+    int node_id_{-1};
     int num_elevs_{};
     elev::ordersync::OrderTable orders_{};
     OrderTimers order_timers_{};
