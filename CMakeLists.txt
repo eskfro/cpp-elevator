@@ -26,6 +26,13 @@ endif()
 add_subdirectory(libs)
 add_subdirectory(services)
 
+# Tests (on by default; disable with -DBUILD_TESTING=OFF)
+option(BUILD_TESTING "Build the unit tests" ON)
+if(BUILD_TESTING AND PROJECT_IS_TOP_LEVEL)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
 # Generate compile_commands.json for clangd / clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
