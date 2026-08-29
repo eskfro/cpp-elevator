@@ -46,5 +46,8 @@ target_link_libraries(test_elevator_state PRIVATE elevator)
 elev_add_test(test_order test_order.cpp)
 target_link_libraries(test_order PRIVATE ordersync)
 
+elev_add_test(test_network_packet test_network_packet.cpp)
+target_link_libraries(test_network_packet PRIVATE network)
+
 elev_add_test(test_timer test_timer.cpp)
 target_link_libraries(test_timer PRIVATE common)

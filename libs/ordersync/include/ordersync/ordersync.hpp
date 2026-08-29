@@ -24,6 +24,7 @@ public:
     int AssignedId() { return assigned_id_; }
     uint32_t ObservedMask() { return observed_mask_; }
     bool ObservedBy(int elev_id);
+    bool Valid() const;
 
     // State machine
     void OnUpdate(Order rcv);
@@ -53,6 +54,7 @@ public:
     // Get
     ordersync::Order* Order(int floor, int btn);
     BoolTable ToBoolTable(int elev_id);
+    bool Valid() const;
 
 private:
     std::array<std::array<ordersync::Order, kButtons>, kFloors> table_{};

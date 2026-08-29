@@ -1,7 +1,5 @@
 #pragma once
 
-// TODO: code to bcast orders and elev state
-
 #include <netinet/in.h>
 
 #include "elevator/elevator_state.hpp"
@@ -20,6 +18,7 @@ public:
               elev::ordersync::CabOrderTable* cab_button_orders);
 
     int Id() { return id_; }
+    bool Valid() const;
     elev::ordersync::OrderTable* Orders() { return &orders_; }
     elev::elevator::ElevatorState* State() { return &state_; }
     elev::ordersync::CabOrderTable* CabButtonOrders() { return &cab_button_orders_; }

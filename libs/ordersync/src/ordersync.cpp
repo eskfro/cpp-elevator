@@ -26,6 +26,15 @@ BoolTable OrderTable::ToBoolTable(int elev_id) {
     return result;
 }
 
+bool OrderTable::Valid() const {
+    for (int f = 0; f < kFloors; f++) {
+        for (int b = 0; b < kButtons; b++) {
+            if (!table_[f][b].Valid()) return false;
+        }
+    }
+    return true;
+}
+
 void OrderTable::Join(OrderTable rcv) {
     // p2p schema for distributing orders
     // OrderStatus: NONE, REQUESTED, CONFIRMED, CLEAR
@@ -37,6 +46,14 @@ void OrderTable::Join(OrderTable rcv) {
             table_[f][b].OnUpdate(*rcv.Order(f, b));
         }
     }
+}
+
+bool Order::Valid() const {
+    if (assigned_id_ < -1 || assigned_id_ >= kElevs) return false;
+    if (static_cast<std::uint8_t>(status_) >
+        static_cast<std::uint8_t>(OrderStatus::Clear)) return false;
+    if (observed_mask_ & ~((1u << kElevs) - 1u)) return false;
+    return true;
 }
 
 void Order::OnUpdate(Order rcv) {

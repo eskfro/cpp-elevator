@@ -87,6 +87,15 @@ void ElevatorState::CopyFrom(ElevatorState* rhs) {
     inertia_ = rhs->Inertia();
 }
 
+bool ElevatorState::Valid() const {
+    if (id_ < 0 || id_ >= config::kElevs) return false;
+    if (floor_ < 0 || floor_ >= config::kFloors) return false;
+    if (motor_dir_ < common::MotorDir::Down || motor_dir_ > common::MotorDir::Err) return false;
+    if (moving_state_ > common::MovingState::Err) return false;
+    if (inertia_ > common::Inertia::None) return false;
+    return true;
+}
+
 void ElevatorState::OnUpdate(ElevatorState rcv) {
     if (rcv.Version() <= version_) return;
     CopyFrom(&rcv);

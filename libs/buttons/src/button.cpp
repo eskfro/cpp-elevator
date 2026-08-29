@@ -6,13 +6,13 @@
 #include "common/types.hpp"
 #include "hardware/hardware.hpp"
 
-elev::button::Button::Button(int floor, elev::common::BtnType btn) :
+elev::buttons::Button::Button(int floor, elev::common::BtnType btn) :
     floor_(floor),
     btn_(btn),
     curr_press_(false),
     prev_press_(false) {}
 
-bool elev::button::Button::Pressed() {
+bool elev::buttons::Button::Pressed() {
     bool button_pressed = false;
     curr_press_ = elev::hardware::get_button_signal(btn_, floor_);
     if (curr_press_ == true && prev_press_ == false) {
@@ -22,7 +22,7 @@ bool elev::button::Button::Pressed() {
     return button_pressed;
 }
 
-void elev::button::Button::Init(int floor, elev::common::BtnType btn) {
+void elev::buttons::Button::Init(int floor, elev::common::BtnType btn) {
     floor_ = floor;
     btn_ = btn;
 }
@@ -35,7 +35,7 @@ elev::buttons::ButtonTable::ButtonTable() {
     }
 }
 
-elev::button::Button* elev::buttons::ButtonTable::Button(
+elev::buttons::Button* elev::buttons::ButtonTable::Button(
     int floor, elev::common::BtnType btn) {
     return &matrix_[floor][static_cast<std::size_t>(btn)];
 }

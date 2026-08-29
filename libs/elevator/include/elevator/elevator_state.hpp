@@ -24,6 +24,7 @@ public:
     uint64_t Version();
     common::BoolTable Requests();
     common::Inertia Inertia();
+    bool Valid() const;
 
     // Setters
     void SetId(int id);

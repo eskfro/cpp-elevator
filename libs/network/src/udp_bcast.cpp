@@ -28,6 +28,18 @@ void NetworkPacket::Init(elev::ordersync::OrderTable* orders,
     if (cab_button_orders) cab_button_orders_ = *cab_button_orders;
 }
 
+bool NetworkPacket::Valid() const {
+    if (id_ < 0 || id_ >= kElevs) return false;
+    if (!state_.Valid()) return false;
+    if (!orders_.Valid()) return false;
+    for (int e = 0; e < kElevs; e++) {
+        for (int f = 0; f < kFloors; f++) {
+            if (!cab_button_orders_[e][f].Valid()) return false;
+        }
+    }
+    return true;
+}
+
 UdpBroadcaster::UdpBroadcaster(uint16_t port, const std::string& bcast_ip) {
     // Create udp socket (SOCK_DGRAM)
     socket_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
@@ -136,7 +148,7 @@ bool UdpReciever::RecievePacket(NetworkPacket* packet) {
         static_cast<size_t>(bytes_rcvd) != sizeof(NetworkPacket)) {
         return false;
     }
-    if (packet->Id() < 0 || packet->Id() >= kElevs) return false;
+    if (!packet->Valid()) return false;
 
     return true;
 }

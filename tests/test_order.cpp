@@ -68,6 +68,35 @@ TEST(Order, RevokeSendsConfirmedBackToRequested) {
     EXPECT_EQ(o.Version(), 3u);
 }
 
+// --- Valid --------------------------------------------------------------
+
+TEST(Order, ValidAcceptsDefaultAndLifecycleStates) {
+    Order o;
+    EXPECT_TRUE(o.Valid());
+
+    o.OnRequest(0);
+    o.OnConfirm(config::kElevs - 1);
+    o.OnClear();
+    EXPECT_TRUE(o.Valid());
+}
+
+TEST(Order, ValidRejectsOutOfRangeAssignedId) {
+    Order o;
+    o.SetAssignedId(config::kElevs);
+    EXPECT_FALSE(o.Valid());
+
+    o.SetAssignedId(-2);
+    EXPECT_FALSE(o.Valid());
+}
+
+TEST(OrderTable, ValidRejectsATableWithACorruptOrder) {
+    OrderTable t;
+    EXPECT_TRUE(t.Valid());
+
+    t.Order(1, static_cast<int>(BtnType::HallUp))->SetAssignedId(99);
+    EXPECT_FALSE(t.Valid());
+}
+
 // --- Merge logic (OnUpdate) ------------------------------------------------
 
 TEST(Order, OnUpdateAdoptsStrictlyHigherVersion) {

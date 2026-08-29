@@ -8,7 +8,7 @@
 
 using namespace elev::config;
 
-namespace elev::button {
+namespace elev::buttons {
 
 class Button {
 public:
@@ -24,17 +24,13 @@ private:
     bool prev_press_{};
 };
 
-}  // namespace elev::button
-
-namespace elev::buttons {
-
 class ButtonTable {
 public:
     ButtonTable();
-    elev::button::Button* Button(int floor, elev::common::BtnType btn);
+    elev::buttons::Button* Button(int floor, elev::common::BtnType btn);
 
 private:
-    std::array<std::array<elev::button::Button, kButtons>, kFloors> matrix_{};
+    std::array<std::array<elev::buttons::Button, kButtons>, kFloors> matrix_{};
 };
 
 class StopButton {

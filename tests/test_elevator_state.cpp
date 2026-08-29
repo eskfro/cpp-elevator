@@ -97,6 +97,28 @@ TEST(ElevatorState, CopyFromDuplicatesEverything) {
     EXPECT_EQ(dst.Version(), src.Version());
 }
 
+TEST(ElevatorState, ValidRejectsUnsetIdentity) {
+    ElevatorState s;
+    s.Init();
+    EXPECT_FALSE(s.Valid());  // id / floor still -1
+}
+
+TEST(ElevatorState, ValidAcceptsAConsistentState) {
+    ElevatorState s;
+    s.Init();
+    s.SetId(0);
+    s.SetFloor(0);
+    EXPECT_TRUE(s.Valid());
+}
+
+TEST(ElevatorState, ValidRejectsOutOfRangeIdentity) {
+    ElevatorState s;
+    s.Init();
+    s.SetId(config::kElevs);
+    s.SetFloor(0);
+    EXPECT_FALSE(s.Valid());
+}
+
 TEST(ElevatorState, WatchdogTimeoutMarksInactive) {
     ElevatorState s;
     s.Init();

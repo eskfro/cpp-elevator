@@ -14,7 +14,7 @@ constexpr int kButtons = 3;
 
 // Time
 constexpr int kDoorOpenTimeMs = 3000;
-constexpr int kReassignOrderTimeMs = 5000; // lol
+constexpr int kReassignOrderTimeMs = 25000;
 constexpr int kWatchdogTimeMs = 600;
 constexpr int kFaultTimeoutMs = 5000;
 constexpr int kStartupTimeMs = 2 * kWatchdogTimeMs;
