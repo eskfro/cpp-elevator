@@ -25,6 +25,7 @@ void Elevator::InitToFloor() {
 void Elevator::Step() {
     state_.SetFloor(FloorSensor());
     state_.SetObstruction(ObstructionSignal());
+    stop_pressed_ = stop_button_.Pressed();
 }
 
 void Elevator::Init() {
@@ -33,7 +34,6 @@ void Elevator::Init() {
 
     // Read signals
     state_.SetFloor(FloorSensor());
-    state_.SetPrevFloor(FloorSensor());
     state_.SetStopped(StopSignal());
     state_.SetObstruction(ObstructionSignal());
 
@@ -44,17 +44,21 @@ void Elevator::Init() {
 
 bool Elevator::HitNewFloor() {
     bool res = false;
-    if (state_.Floor() != state_.PrevFloor() &&
+    if (state_.Floor() != prev_floor_ &&
         state_.Floor() != kBetweenFloors) {
         res = true;
     }
-    state_.SetPrevFloor(state_.Floor());
+    prev_floor_ = state_.Floor();
     return res;
 }
 
+bool Elevator::EmergencyStop() { return stop_pressed_ && state_.Stopped() == false; }
+
+bool Elevator::EmergencyStopReset() { return stop_pressed_ && state_.Stopped() == true; }
+
 ElevatorState* Elevator::State() { return &state_; }
 
-elev::buttons::ButtonTable* Elevator::Buttons() { return &buttons_; }
+elev::buttons::ButtonTable* Elevator::Buttons() { return &order_buttons_; }
 
 void Elevator::SetMotorDir(elev::common::MotorDir dir) {
     using namespace elev::common;
@@ -98,8 +102,8 @@ int Elevator::FloorSensor() { return elev::hardware::get_floor_sensor(); }
 
 int Elevator::StopSignal() { return elev::hardware::get_stop_signal(); }
 
-int Elevator::ObstructionSignal() {
-    return elev::hardware::get_obstruction_signal();
-}
+int Elevator::ObstructionSignal() { return elev::hardware::get_obstruction_signal(); }
+
+elev::buttons::StopButton* Elevator::StopButton() { return &stop_button_; }
 
 }  // namespace elev::elevator

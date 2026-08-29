@@ -2,6 +2,7 @@
 
 #include "common/config.hpp"
 #include "common/types.hpp"
+#include "elevator/elevator.hpp"
 
 namespace elev::control {
 
@@ -44,12 +45,35 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
         doortimer_.Start(kDoorOpenTimeMs);
     }
 
-    inertia_ = Inertia::None;
-    elev->State()->SetInertia(Inertia::None);
-
     elev->State()->SetMovingState(MovingState::Idle);
     floor_timer_.Stop();
 
+    return zero;
+}
+
+// FSM Emergency Stop Reset
+ButtonFlags Controller::FsmEmergencyStopReset(elev::elevator::Elevator* elev) {
+    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Emergency Stop Reset" << std::endl;
+    ButtonFlags zero{};
+
+    elev->State()->SetStopped(false);
+    elev->SetStopLamp(0);
+
+    const int floor = elev->State()->Floor();
+    if (elev->State()->DoorOpen()) {
+        elev->State()->SetMovingState(MovingState::DoorOpen);
+        doortimer_.Start(kDoorOpenTimeMs);
+        return ClearCurrentFloor(floor);
+    }
+
+    // Stopped between floors: ChooseDirection can't reason about a floor
+    // relative to kBetweenFloors, so resume in the direction we were
+    // already moving instead. Normal floor-arrival logic takes back over
+    // once a real floor is reached.
+    DirMovPair pair{MotorDir::Stop, MovingState::Idle};
+    if (inertia_ == Inertia::Up) pair = {MotorDir::Up, MovingState::Moving};
+    if (inertia_ == Inertia::Down) pair = {MotorDir::Down, MovingState::Moving};
+    ExecuteDecision(elev, pair);
     return zero;
 }
 

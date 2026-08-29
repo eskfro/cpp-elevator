@@ -31,6 +31,7 @@ void ElevatorNode::Step() {
     case elev::node::ServiceState::Running:
     case elev::node::ServiceState::Stopped:
         elev_.Step();
+        RegisterButtonSignals();
         {
             // --- LOCKED ---
             std::lock_guard<std::mutex> lock(peers_mutex_);
@@ -39,8 +40,12 @@ void ElevatorNode::Step() {
         }
         SetButtonLamps();
 
-        if (elev_.StopSignal()) {
+        if (elev_.EmergencyStop()) {
             Event(controller_.FsmEmergencyStop(&elev_));
+            return;
+        }
+        if (elev_.EmergencyStopReset()) {
+            Event(controller_.FsmEmergencyStopReset(&elev_));
             return;
         }
         if (elev_.HitNewFloor()) {
@@ -67,7 +72,7 @@ void ElevatorNode::SyncPeers() {
     const int n = node_id_;
 
     // Button press
-    RegisterButtonSignals();
+    SyncButtonSignals();
     controller_.SetRequests(peers_.Orders()->ToBoolTable(n));
 
     // State update
@@ -97,7 +102,6 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
         peers_.CabButtonOrder(n, f)->OnUpdate(cab_node);
         peers_.Orders()->Order(f, (int)BtnType::Cab)->OnUpdate(cab_node);
     }
-    peers_.Step();
 }
 
 void ElevatorNode::Init() {
@@ -116,19 +120,21 @@ void ElevatorNode::Init() {
 void ElevatorNode::Stop() { running_.store(false); }
 
 elev::network::NetworkPacket ElevatorNode::TxPacketCopy() {
+    const int n = node_id_;
+
     // --- LOCKED ---
     std::lock_guard<std::mutex> lock(peers_mutex_);
 
-    const int n = node_id_;
-    
     elev::network::NetworkPacket packet;
     packet.Init(peers_.Orders(), peers_.State(n), peers_.CabButtonOrders());
     return packet;
 }
 
 void ElevatorNode::Event(ButtonFlags b2c) {
-    std::lock_guard<std::mutex> lock(peers_mutex_);
     const int n = node_id_;
+    
+    // --- LOCKED ---
+    std::lock_guard<std::mutex> lock(peers_mutex_);
 
     elev_.State()->IncrementVersion();
 
@@ -148,14 +154,15 @@ void ElevatorNode::Event(ButtonFlags b2c) {
 int ElevatorNode::Id() { return node_id_; }
 
 // Polls BtnSignals and set status at OrderMatrix orders
-void ElevatorNode::RegisterButtonSignals() {
+void ElevatorNode::SyncButtonSignals() {
     using namespace elev::common;
     const int n = node_id_;
 
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
             bool is_cab = (BtnType)b == BtnType::Cab;
-            bool btn_pressed = elev_.Buttons()->Button(f, (BtnType)b)->Pressed();
+
+            bool btn_pressed = button_signals_[f][b];
             if (!btn_pressed) continue;
             
             PrintBtnPress(n, f, (BtnType)b);
@@ -180,7 +187,19 @@ void ElevatorNode::SetButtonLamps() {
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
             bool light = controller_.Requests().Value(f, b);
+
+            if (light == button_lamps_[f][b]) continue;
+
+            button_lamps_[f][b] = light;
             elev_.SetButtonLamp(f, (BtnType)b, light);
+        }
+    }
+}
+
+void ElevatorNode::RegisterButtonSignals() {
+    for (int f = 0; f < kFloors; f++) {
+        for (int b = 0; b < kButtons; b++) {
+            button_signals_[f][b] = elev_.Buttons()->Button(f, (BtnType)b)->Pressed();
         }
     }
 }

@@ -37,4 +37,14 @@ private:
     std::array<std::array<elev::button::Button, kButtons>, kFloors> matrix_{};
 };
 
+class StopButton {
+public:
+    StopButton() = default;
+    bool Pressed();
+
+private:
+    bool curr_press_{};
+    bool prev_press_{};
+};
+
 }  // namespace elev::buttons

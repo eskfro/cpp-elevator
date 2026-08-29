@@ -48,7 +48,6 @@ public:
 private:
     int id_{-1};
     int floor_{-1};
-    int prev_floor_{-1};
     bool active_{false};
     bool obstruction_{true};
     bool fault_{false};

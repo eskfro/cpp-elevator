@@ -11,6 +11,7 @@
 #include <string>
 
 #include "common/config.hpp"
+#include "common/utils.hpp"
 #include "elevator/elevator_state.hpp"
 #include "ordersync/ordersync.hpp"
 
@@ -227,8 +228,7 @@ void Peers::ReassignHallOrder(int floor, int btn) {
         if (all_states_.at(prev_assignee).Active()) {
             new_assignee = prev_assignee;
         } else {
-            elev::common::PrintError("[PEERS] Could not find new assigne during reassignment");
-            abort();
+            elev::common::Abort("[PEERS] Could not find new assigne during reassignment");
         }
     }
     orders_.Order(floor, btn)->OnReassignment(new_assignee);
@@ -251,7 +251,6 @@ void Peers::MonitorWatchdogTimers() {
 }
 
 void Peers::MonitorFault() {
-    const int n = node_id_;
     for (int e = 0; e < kElevs; e++) {
         if (!all_states_[e].Active()) continue;
         if (all_states_[e].Fault()) {

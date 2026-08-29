@@ -36,6 +36,7 @@ public:
 
     // Sync modules
     void SetButtonLamps();
+    void SyncButtonSignals();
     void RegisterButtonSignals();
 
     // Network
@@ -46,6 +47,9 @@ private:
     int node_id_;
     ServiceState service_state_{};
     std::atomic<bool> running_{true};
+
+    BoolTable button_signals_{};
+    BoolTable button_lamps_{};
 
     std::mutex peers_mutex_;
     elev::network::Peers peers_;

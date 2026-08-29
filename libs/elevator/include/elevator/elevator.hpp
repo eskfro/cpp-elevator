@@ -18,12 +18,17 @@ public:
 
     void Step();
     void Init();
-    bool HitNewFloor();
     void InitToFloor();
+
+    // Events
+    bool HitNewFloor();
+    bool EmergencyStop();
+    bool EmergencyStopReset();
 
     // Get
     ElevatorState* State();
     elev::buttons::ButtonTable* Buttons();
+    elev::buttons::StopButton* StopButton();
 
     // Door
     void OpenDoor();
@@ -43,7 +48,11 @@ public:
 
 private:
     ElevatorState state_;
-    elev::buttons::ButtonTable buttons_;
+    elev::buttons::ButtonTable order_buttons_;
+    elev::buttons::StopButton stop_button_;
+
+    int prev_floor_{};
+    bool stop_pressed_{};
 };
 
 }  // namespace elev::elevator

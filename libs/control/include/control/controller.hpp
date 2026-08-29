@@ -27,6 +27,7 @@ public:
     ButtonFlags FsmFloorArrival(elev::elevator::Elevator* elev);
     ButtonFlags FsmDoorTimeout(elev::elevator::Elevator* elev);
     ButtonFlags FsmEmergencyStop(elev::elevator::Elevator* elev);
+    ButtonFlags FsmEmergencyStopReset(elev::elevator::Elevator* elev);
     ButtonFlags FsmFloorTimeout(elev::elevator::Elevator* elev);
 
     // Change values on table

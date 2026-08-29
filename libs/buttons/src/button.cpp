@@ -6,19 +6,19 @@
 #include "common/types.hpp"
 #include "hardware/hardware.hpp"
 
-elev::button::Button::Button(int floor, elev::common::BtnType btn)
-    : curr_press_(false), prev_press_(false), btn_(btn), floor_(floor) {};
+elev::button::Button::Button(int floor, elev::common::BtnType btn) :
+    floor_(floor),
+    btn_(btn),
+    curr_press_(false),
+    prev_press_(false) {}
 
 bool elev::button::Button::Pressed() {
     bool button_pressed = false;
     curr_press_ = elev::hardware::get_button_signal(btn_, floor_);
-
     if (curr_press_ == true && prev_press_ == false) {
         button_pressed = true;
     }
-
     prev_press_ = curr_press_;
-
     return button_pressed;
 }
 
@@ -38,4 +38,14 @@ elev::buttons::ButtonTable::ButtonTable() {
 elev::button::Button* elev::buttons::ButtonTable::Button(
     int floor, elev::common::BtnType btn) {
     return &matrix_[floor][static_cast<std::size_t>(btn)];
+}
+
+bool elev::buttons::StopButton::Pressed() {
+    bool button_pressed = false;
+    curr_press_ = elev::hardware::get_stop_signal();
+    if (curr_press_ == true && prev_press_ == false) {
+        button_pressed = true;
+    }
+    prev_press_ = curr_press_;
+    return button_pressed;
 }

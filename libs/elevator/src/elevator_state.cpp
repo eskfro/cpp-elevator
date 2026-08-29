@@ -27,8 +27,6 @@ int ElevatorState::Id() { return id_; }
 
 int ElevatorState::Floor() { return floor_; }
 
-int ElevatorState::PrevFloor() { return prev_floor_; }
-
 bool ElevatorState::Active() { return active_; }
 
 bool ElevatorState::Obstruction() { return obstruction_; }
@@ -60,11 +58,6 @@ void ElevatorState::SetFloor(int floor) {
     floor_ = floor;
 }
 
-void ElevatorState::SetPrevFloor(int prev_floor) {
-    if (prev_floor < 0 || prev_floor >= config::kFloors) return;
-    prev_floor_ = prev_floor;
-}
-
 void ElevatorState::SetStopped(bool stopped) { stopped_ = stopped; }
 
 void ElevatorState::SetMotorDir(elev::common::MotorDir dir) {motor_dir_ = dir;}
@@ -82,7 +75,6 @@ void ElevatorState::SetDoorOpen(bool door_open) { door_open_ = door_open; }
 void ElevatorState::CopyFrom(ElevatorState* rhs) {
     id_ = rhs->Id();
     floor_ = rhs->Floor();
-    prev_floor_ = rhs->PrevFloor();
     active_ = rhs->Active();
     obstruction_ = rhs->Obstruction();
     fault_ = rhs->Fault();
