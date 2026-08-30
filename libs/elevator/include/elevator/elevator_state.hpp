@@ -45,6 +45,7 @@ public:
     void OnUpdate(ElevatorState state);
     void IncrementVersion() { version_++; }
     void OnWatchdogTimeout();
+    bool Usable();
 
 private:
     int id_{-1};

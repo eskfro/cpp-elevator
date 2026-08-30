@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <elevator/elevator.hpp>
 #include <ordersync/ordersync.hpp>
+#include <utility>
 
 namespace elev::network {
 
@@ -26,7 +27,7 @@ public:
     void Init(int node_id);
 
     bool ObservedByAll(int floor, int btn);
-    int ElevatorWithLowestCost(int floor, int btn);
+    std::array<std::pair<int, int>, kElevs> CalculateElevatorCosts(int floor, int btn);
     
     void UpdateNumElevs();
     void UpdateWatchdogTimer(int elev_id);

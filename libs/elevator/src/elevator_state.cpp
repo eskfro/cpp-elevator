@@ -112,4 +112,6 @@ void ElevatorState::OnWatchdogTimeout() {
     version_ = 0;
 }
 
+bool ElevatorState::Usable() { return active_ && !obstruction_ && !stopped_ && !fault_; }
+
 }  // namespace elev::elevator

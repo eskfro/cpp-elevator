@@ -1,3 +1,4 @@
+#include <array>
 #include <assert.h>
 #include <limits.h>
 #include <stdatomic.h>
@@ -9,6 +10,8 @@
 #include <mutex>
 #include <network/peers.hpp>
 #include <string>
+#include <utility>
+#include <algorithm>
 
 #include "common/config.hpp"
 #include "common/utils.hpp"
@@ -56,11 +59,15 @@ void Peers::ConfirmHallOrders() {
                 !ObservedByAll(f, b) || 
                 orders_.Order(f, b)->Status() != OrderStatus::Requested) continue;
             
-            int best_elev_id = ElevatorWithLowestCost(f, b);
-            if (best_elev_id == -1) {
+            // pair: (cost, elev_id)
+            std::array<std::pair<int, int>, kElevs> costs = CalculateElevatorCosts(f, b);
+            int best_elev_id = costs[0].second;
+
+            if (costs[0].first == std::numeric_limits<int>::max()) {
                 common::PrintError("[Peers] No active elevators in all_elevs_");
                 continue;
             }
+
             orders_.Order(f, b)->OnConfirm(best_elev_id);
 
             if (best_elev_id == n) {
@@ -89,18 +96,19 @@ bool Peers::ObservedByAll(int floor, int btn) {
     return true;
 }
 
-int Peers::ElevatorWithLowestCost(int floor, int btn) {
+std::array<std::pair<int, int>, kElevs> Peers::CalculateElevatorCosts(int floor, int btn) {
     using namespace elev::common;
-    int best_elev_id = -1;
-    int lowest_cost = std::numeric_limits<int>::max();
+
+    std::array<std::pair<int, int>, kElevs> costs{};
 
     for (int e = 0; e < kElevs; e++) {
         elevator::ElevatorState state = all_states_[e];
         int cost = 0;
 
-        if (!state.Active()) continue;
-
-        if (num_elevs_ == 1) return e;
+        if (!state.Active()) {
+            costs[e] = {std::numeric_limits<int>::max(), e};
+            continue;
+        }
 
         cost += std::abs(state.Floor() - floor) * kPenaltyFloorDiff;
 
@@ -108,9 +116,10 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
         if (state.Fault()) cost += kPenaltyFault;
         if (state.Stopped()) cost += kPenaltyStopped;
 
+        auto reqs = state.Requests();
         for (int f = 0; f < kFloors; f++) {
             for (int b = 0; b < kButtons; b++) {
-                if (state.Requests().at(f).at(b)) {
+                if (reqs.at(f).at(b)) {
                     cost += kPenaltyPerOrder;
                 }
             }
@@ -118,19 +127,29 @@ int Peers::ElevatorWithLowestCost(int floor, int btn) {
 
         if (state.DoorOpen()) cost += kPenaltyDoorOpen;
 
-        // Very simple directional penalty
+        // Directional penalties
+        bool moving = state.MotorDir() != MotorDir::Stop;
         bool order_below = floor < state.Floor();
         bool order_above = floor > state.Floor();
-        bool wrong_dir = (order_below && state.Inertia() == Inertia::Up) ||
-                         (order_above && state.Inertia() == Inertia::Down);
-        if (wrong_dir) cost += kPenaltyWrongDir;
+        bool order_here = floor == state.Floor();
+        bool going_up = state.Inertia() == Inertia::Up;
+        bool going_down = state.Inertia() == Inertia::Down;
 
-        if (cost < lowest_cost) {
-            lowest_cost = cost;
-            best_elev_id = e;
-        }
+        bool wrong_dir_1 =
+            (moving && order_below && going_up) ||
+            (moving && order_above && going_down);
+        if (wrong_dir_1) cost += kPenaltyWrongDir;
+
+        bool wrong_dir_2 = 
+            (order_here && moving);
+        if (wrong_dir_2) cost += kPenaltyWrongDir;
+
+        costs[e] = {cost, e};
     }
-    return best_elev_id;
+
+    std::sort(costs.begin(), costs.end());
+
+    return costs;
 }
 
 elev::elevator::ElevatorState* Peers::State(int elev_id) {
@@ -209,21 +228,51 @@ void Peers::ReassignHallOrder(int floor, int btn) {
         std::string(") timed out - reassigning");
     elev::common::PrintError(msg);
 
-    if (num_elevs_ == 1) return; 
-
     int prev_assignee = orders_.Order(floor, btn)->AssignedId();
     assert(prev_assignee >= 0 && prev_assignee < kElevs && "prev_assignee in range");
+
+    // Reassign to self
+    if (num_elevs_ == 1) {
+        orders_.Order(floor, btn)->OnReassignment(prev_assignee);
+        return;
+    }
+    
+    // Reassigning rules for > 1 elev
+    bool prev_assigne_usable = all_states_[prev_assignee].Usable();
     int new_assignee = -1;
 
-    // Reassigning rule
-    // - Lowest elevator id which is not the prev assigned elev id
-    for (int e = 0; e < kElevs; e++) {
-        if (all_states_.at(e).Active() && e != prev_assignee) {
-            new_assignee = e;
-            break;
+    // pair: (cost, elev_id)
+    std::array<std::pair<int, int>, kElevs> costs = CalculateElevatorCosts(floor, btn);
+
+    // Return the elevid with lowest cost that is not prev_assigne
+    if (!prev_assigne_usable) {
+        for (int i = 0; i < kElevs; i++) {
+            int cost = costs[i].first;
+            int e = costs[i].second;
+            if (e != prev_assignee && cost != std::numeric_limits<int>::max()) {
+                new_assignee = e;
+                break;
+            }
+        }
+    // Assign to another elev only if usable    
+    } else {
+        int best_other_usable = -1;
+        for (int i = 0; i < kElevs; i++) {
+            int cost = costs[i].first;
+            int e = costs[i].second;
+            if (e != prev_assignee && cost != std::numeric_limits<int>::max() && all_states_[e].Usable()) {
+                best_other_usable = e;
+                break;
+            }
+        } 
+        if (best_other_usable != -1) {
+            new_assignee = best_other_usable;
+        } else {
+            new_assignee = prev_assignee;
         }
     }
     
+    // No new assigne found - just reassign
     if (new_assignee == -1) {
         if (all_states_.at(prev_assignee).Active()) {
             new_assignee = prev_assignee;
@@ -239,7 +288,6 @@ void Peers::UpdateWatchdogTimer(int elev_id) {
 }
 
 void Peers::MonitorWatchdogTimers() {
-    const int n = node_id_;
     for (int e = 0; e < kElevs; e++) {
         if (watchdog_timers_[e].Expired()) {
             watchdog_timers_[e].Stop();
