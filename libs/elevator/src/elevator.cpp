@@ -38,6 +38,7 @@ void Elevator::Init() {
     state_.SetObstruction(ObstructionSignal());
 
     SetFloorIndicator();
+    prev_floor_ = state_.Floor();
 
     std::cout << "[ Elevator " << state_.Id() << " ] Initialized at floor " << state_.Floor() << std::endl;
 }

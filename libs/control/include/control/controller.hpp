@@ -14,6 +14,8 @@ class Controller {
 public:
     Controller();
 
+    void Init();
+
     // Set
     void SetRequests(BoolTable bool_table);
     void SetInertia(elev::elevator::Elevator* elev, MotorDir dir);

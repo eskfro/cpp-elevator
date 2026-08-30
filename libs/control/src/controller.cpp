@@ -12,6 +12,10 @@ Controller::Controller() {
     inertia_ = Inertia::None;
 }
 
+void Controller::Init() {
+    floor_timer_.Stop();
+}
+
 Timer* Controller::DoorTimer() { return &doortimer_; }
 
 Timer* Controller::FloorTimer() { return &floor_timer_; }
@@ -131,8 +135,8 @@ ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
     ButtonFlags zero{};
     int floor = elev->State()->Floor();
 
-    floor_timer_.Start(kFaultTimeoutMs);
     elev->State()->SetFault(false);
+    floor_timer_.Start(kFaultTimeoutMs);
 
     elev->SetFloorIndicator();
 

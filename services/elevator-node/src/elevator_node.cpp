@@ -107,6 +107,7 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
 void ElevatorNode::Init() {
     elev_.Init();
     peers_.Init(node_id_);
+    controller_.Init();
     /*
     * Delay startup to ensure the peers' watchdog timers have timed out
     * This is not an issue when manually restarting the nodes, but could potentially
