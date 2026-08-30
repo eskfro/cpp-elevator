@@ -4,6 +4,12 @@
 #include "common/types.hpp"
 #include "elevator/elevator.hpp"
 
+namespace {
+
+constexpr ButtonFlags kNoClear = ButtonFlags{};
+
+} // namespace
+
 namespace elev::control {
 
 Controller::Controller() {
@@ -38,7 +44,6 @@ void Controller::SetRequests(BoolTable bool_table) {
 // FSM Emergency Stop
 ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Emergency Stop" << std::endl;
-    ButtonFlags zero{};
 
     elev->State()->SetStopped(true);
     elev->SetMotorDir(MotorDir::Stop);
@@ -52,144 +57,106 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
     elev->State()->SetMovingState(MovingState::Idle);
     floor_timer_.Stop();
 
-    return zero;
+    return kNoClear;
 }
 
 // FSM Emergency Stop Reset
 ButtonFlags Controller::FsmEmergencyStopReset(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Emergency Stop Reset" << std::endl;
-    ButtonFlags zero{};
+    const int floor = elev->State()->Floor();
 
     elev->State()->SetStopped(false);
     elev->SetStopLamp(0);
 
-    const int floor = elev->State()->Floor();
+    // Reset at DoorOpen
     if (elev->State()->DoorOpen()) {
         elev->State()->SetMovingState(MovingState::DoorOpen);
         doortimer_.Start(kDoorOpenTimeMs);
         return ClearCurrentFloor(floor);
     }
 
-    // Stopped between floors: ChooseDirection can't reason about a floor
-    // relative to kBetweenFloors, so resume in the direction we were
-    // already moving instead. Normal floor-arrival logic takes back over
-    // once a real floor is reached.
+    // Set new direction after reset
     DirMovPair pair{MotorDir::Stop, MovingState::Idle};
     if (inertia_ == Inertia::Up) pair = {MotorDir::Up, MovingState::Moving};
     if (inertia_ == Inertia::Down) pair = {MotorDir::Down, MovingState::Moving};
     ExecuteDecision(elev, pair);
-    return zero;
+    return kNoClear;
 }
 
-// FSM Table Update
 ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Table Update" << std::endl;
-
     using namespace elev::common;
-
-    DirMovPair pair{};
-    ButtonFlags zero{};
     int floor = elev->State()->Floor();
+    MovingState mov = elev->State()->MovingState();
 
-    switch (elev->State()->MovingState()) {
-        case MovingState::DoorOpen:
-            if (ShouldStop(floor)) {
-                doortimer_.Start(kDoorOpenTimeMs);
-                return ClearCurrentFloor(floor);
-            }
-            return zero;
-
-        case MovingState::Moving:
-            return zero;
-        case MovingState::Idle:
-            pair = ChooseDirection(floor);
-            switch (pair.moving_state) {
-                case MovingState::DoorOpen:
-                    if (elev->State()->Floor() != kBetweenFloors) {
-                        elev->OpenDoor();
-                    }
-                    doortimer_.Start(kDoorOpenTimeMs);
-                    ExecuteDecision(elev, pair);
-                    return ClearCurrentFloor(floor);
-                case MovingState::Moving:
-                case MovingState::Idle:
-                    if (TryCloseDoor(elev)) {
-                        ExecuteDecision(elev, pair);
-                    }
-                    return zero;
-
-                default:
-                    return zero;
-            }
-        default:
-            return zero;
+    if (mov == MovingState::DoorOpen) {
+        if (!ShouldStop(floor)) return kNoClear;
+        doortimer_.Start(kDoorOpenTimeMs);
+        return ClearCurrentFloor(floor);
     }
+
+    // Exit while moving or err
+    if (mov == common::MovingState::Moving || 
+        mov == common::MovingState::Err) {
+        return kNoClear;
+    }
+
+    // Idle
+    DirMovPair pair = ChooseDirection(floor);
+    if (pair.moving_state == MovingState::DoorOpen) {
+        if (elev->State()->Floor() != kBetweenFloors) elev->OpenDoor();
+        doortimer_.Start(kDoorOpenTimeMs);
+        ExecuteDecision(elev, pair);
+        return ClearCurrentFloor(floor);
+    }
+
+    // Move in new direction
+    if (TryCloseDoor(elev)) ExecuteDecision(elev, pair);
+
+    return kNoClear;
 }
 
-// FSM Floor Arrival
 ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Arrived @ Floor "
-              << elev->State()->Floor() << std::endl;
+    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Arrived @ Floor " << elev->State()->Floor() << std::endl;
     using namespace elev::common;
-
-    ButtonFlags zero{};
     int floor = elev->State()->Floor();
 
+    elev->SetFloorIndicator();
     elev->State()->SetFault(false);
     floor_timer_.Start(kFaultTimeoutMs);
 
-    elev->SetFloorIndicator();
+    if (elev->State()->MovingState() != MovingState::Moving) return kNoClear;
+    if (!ShouldStop(floor)) return kNoClear;
 
-    switch (elev->State()->MovingState()) {
-        case MovingState::Moving:
-            if (ShouldStop(floor)) {
-                StopAndOpenDoor(elev);
-                return ClearCurrentFloor(floor);
-            }
-            return zero;
-        default:
-            return zero;
-    }
+    StopAndOpenDoor(elev);
+    return ClearCurrentFloor(floor);
 }
 
-// FSM Door Timeout
 ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Door Timeout" << std::endl;
     using namespace elev::common;
-
+    const int floor = elev->State()->Floor();
+    
     doortimer_.Stop();
-
-    DirMovPair pair;
-    ButtonFlags zero{};
-    int floor = elev->State()->Floor();
-
-    elev->State()->SetObstruction(elev->ObstructionSignal());
 
     if (elev->State()->Obstruction()) {
         common::PrintError("[FSM] Obs!");
         doortimer_.Start(kDoorOpenTimeMs);
-        return zero;
+        return kNoClear;
     }
-    switch (elev->State()->MovingState()) {
-        case MovingState::DoorOpen:
-            pair = ChooseDirection(floor);
-            switch (pair.moving_state) {
-                case MovingState::DoorOpen:
-                    ExecuteDecision(elev, pair);
-                    doortimer_.Start(kDoorOpenTimeMs);
-                    return ClearCurrentFloor(elev->State()->Floor());
-                case MovingState::Moving:
-                case MovingState::Idle:
-                case MovingState::Err:  // TODO
-                    if (TryCloseDoor(elev)) {
-                        ExecuteDecision(elev, pair);
-                    }
-                    return zero;
-            }
 
-        default:
-            return zero;
+    if (elev->State()->MovingState() != MovingState::DoorOpen) return kNoClear;
+
+    DirMovPair pair = ChooseDirection(floor);
+    if (pair.moving_state == MovingState::DoorOpen) {
+        ExecuteDecision(elev, pair);
+        doortimer_.Start(kDoorOpenTimeMs);
+        return ClearCurrentFloor(elev->State()->Floor());
     }
+
+    if (TryCloseDoor(elev)) ExecuteDecision(elev, pair);
+
+    return kNoClear;
 }
 
 // FSM Floor Timeout
@@ -203,7 +170,7 @@ ButtonFlags Controller::FsmFloorTimeout(elev::elevator::Elevator* elev) {
         elev->State()->SetFault(true);
     }
 
-    return ButtonFlags{};
+    return kNoClear;
 }
 
 void Controller::StopAndOpenDoor(elev::elevator::Elevator* elev) {
