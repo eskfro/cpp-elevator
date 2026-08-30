@@ -22,4 +22,7 @@ make server
 ### Run tests
 ```bash
 ctest --test-dir build
-``` 
+```
+### Simulator environment image
+<img width="1920" height="1031" alt="image" src="https://github.com/user-attachments/assets/84894df0-8a9f-41f0-8e35-a28f7627d68c" />
+
