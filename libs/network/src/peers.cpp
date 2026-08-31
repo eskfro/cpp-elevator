@@ -86,7 +86,7 @@ void Peers::ResetHallOrders() {
     }
 }
 
-bool Peers::ObservedByAll(int floor, int btn) {
+bool Peers::ObservedByAll(int floor, int btn) const {
     for (int e = 0; e < kElevs; e++) {
         if (all_states_[e].Active() == false) continue;
         if (orders_.Order(floor, btn)->ObservedBy(e) == false) {
@@ -96,13 +96,13 @@ bool Peers::ObservedByAll(int floor, int btn) {
     return true;
 }
 
-std::array<std::pair<int, int>, kElevs> Peers::CalculateElevatorCosts(int floor, int btn) {
+std::array<std::pair<int, int>, kElevs> Peers::CalculateElevatorCosts(int floor, int btn) const {
     using namespace elev::common;
 
     std::array<std::pair<int, int>, kElevs> costs{};
 
     for (int e = 0; e < kElevs; e++) {
-        elevator::ElevatorState state = all_states_[e];
+        const elevator::ElevatorState state = all_states_[e];
         int cost = 0;
 
         if (!state.Active()) {
@@ -116,7 +116,7 @@ std::array<std::pair<int, int>, kElevs> Peers::CalculateElevatorCosts(int floor,
         if (state.Fault()) cost += kPenaltyFault;
         if (state.Stopped()) cost += kPenaltyStopped;
 
-        auto reqs = state.Requests();
+        const auto reqs = state.Requests();
         for (int f = 0; f < kFloors; f++) {
             for (int b = 0; b < kButtons; b++) {
                 if (reqs.at(f).at(b)) {
@@ -128,19 +128,19 @@ std::array<std::pair<int, int>, kElevs> Peers::CalculateElevatorCosts(int floor,
         if (state.DoorOpen()) cost += kPenaltyDoorOpen;
 
         // Directional penalties
-        bool moving = state.MotorDir() != MotorDir::Stop;
-        bool order_below = floor < state.Floor();
-        bool order_above = floor > state.Floor();
-        bool order_here = floor == state.Floor();
-        bool going_up = state.Inertia() == Inertia::Up;
-        bool going_down = state.Inertia() == Inertia::Down;
+        const bool moving = state.MotorDir() != MotorDir::Stop;
+        const bool order_below = floor < state.Floor();
+        const bool order_above = floor > state.Floor();
+        const bool order_here = floor == state.Floor();
+        const bool going_up = state.Inertia() == Inertia::Up;
+        const bool going_down = state.Inertia() == Inertia::Down;
 
-        bool wrong_dir_1 =
+        const bool wrong_dir_1 =
             (moving && order_below && going_up) ||
             (moving && order_above && going_down);
         if (wrong_dir_1) cost += kPenaltyWrongDir;
 
-        bool wrong_dir_2 = 
+        const bool wrong_dir_2 = 
             (order_here && moving);
         if (wrong_dir_2) cost += kPenaltyWrongDir;
 
@@ -159,7 +159,7 @@ elev::elevator::ElevatorState* Peers::State(int elev_id) {
 
 elev::ordersync::OrderTable* Peers::Orders() { return &orders_; }
 
-int Peers::NumElevs() { return num_elevs_; }
+int Peers::NumElevs() const { return num_elevs_; }
 
 void Peers::ClearOrders(int floor, ButtonFlags b2c) {
     const int n = node_id_;

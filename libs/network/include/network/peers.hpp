@@ -26,8 +26,8 @@ public:
     void Step();
     void Init(int node_id);
 
-    bool ObservedByAll(int floor, int btn);
-    std::array<std::pair<int, int>, kElevs> CalculateElevatorCosts(int floor, int btn);
+    bool ObservedByAll(int floor, int btn) const;
+    std::array<std::pair<int, int>, kElevs> CalculateElevatorCosts(int floor, int btn) const;
     
     void UpdateNumElevs();
     void UpdateWatchdogTimer(int elev_id);
@@ -37,7 +37,7 @@ public:
     void MonitorFault();
 
     // Get
-    int NumElevs();
+    int NumElevs() const;
     elev::ordersync::OrderTable* Orders();
     elev::elevator::ElevatorState* State(int elev_id);
     elev::ordersync::CabOrderTable* CabButtonOrders();

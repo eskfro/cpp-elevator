@@ -23,31 +23,31 @@ void ElevatorState::Init() {
 
 // --- Getters ---
 
-int ElevatorState::Id() { return id_; }
+int ElevatorState::Id() const { return id_; }
 
-int ElevatorState::Floor() { return floor_; }
+int ElevatorState::Floor() const { return floor_; }
 
-bool ElevatorState::Active() { return active_; }
+bool ElevatorState::Active() const { return active_; }
 
-bool ElevatorState::Obstruction() { return obstruction_; }
+bool ElevatorState::Obstruction() const { return obstruction_; }
 
-bool ElevatorState::Fault() { return fault_; }
+bool ElevatorState::Fault() const { return fault_; }
 
-bool ElevatorState::DoorOpen() { return door_open_; }
+bool ElevatorState::DoorOpen() const { return door_open_; }
 
-bool ElevatorState::Stopped() { return stopped_; }
+bool ElevatorState::Stopped() const { return stopped_; }
 
-elev::common::MotorDir ElevatorState::MotorDir() { return motor_dir_; }
+elev::common::MotorDir ElevatorState::MotorDir() const { return motor_dir_; }
 
-elev::common::MovingState ElevatorState::MovingState() { return moving_state_; }
+elev::common::MovingState ElevatorState::MovingState() const { return moving_state_; }
 
-uint64_t ElevatorState::Version() { return version_; }
+uint64_t ElevatorState::Version() const { return version_; }
 
-common::BoolTable ElevatorState::Requests() {
+common::BoolTable ElevatorState::Requests() const {
     return requests_;
 }
 
-common::Inertia ElevatorState::Inertia() { return inertia_; }
+common::Inertia ElevatorState::Inertia() const { return inertia_; }
 
 // --- Setters ---
 
@@ -72,7 +72,7 @@ void ElevatorState::SetActivity(bool active) { active_ = active; }
 
 void ElevatorState::SetDoorOpen(bool door_open) { door_open_ = door_open; }
 
-void ElevatorState::CopyFrom(ElevatorState* rhs) {
+void ElevatorState::CopyFrom(const ElevatorState* rhs) {
     id_ = rhs->Id();
     floor_ = rhs->Floor();
     active_ = rhs->Active();
@@ -96,7 +96,7 @@ bool ElevatorState::Valid() const {
     return true;
 }
 
-void ElevatorState::OnUpdate(ElevatorState rcv) {
+void ElevatorState::OnUpdate(const ElevatorState& rcv) {
     if (rcv.Version() <= version_) return;
     CopyFrom(&rcv);
 }
@@ -112,6 +112,6 @@ void ElevatorState::OnWatchdogTimeout() {
     version_ = 0;
 }
 
-bool ElevatorState::Usable() { return active_ && !obstruction_ && !stopped_ && !fault_; }
+bool ElevatorState::Usable() const { return active_ && !obstruction_ && !stopped_ && !fault_; }
 
 }  // namespace elev::elevator

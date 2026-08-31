@@ -4,7 +4,7 @@
 
 namespace elev::control {
 
-common::BoolTable RequestTable::Table() {
+common::BoolTable RequestTable::Table() const {
     return table_;
 }
 
@@ -14,25 +14,25 @@ void RequestTable::SetValue(int floor, int btn, bool value) {
     this->table_[floor][btn] = value;
 }
 
-bool RequestTable::Value(int floor, int btn) {
+bool RequestTable::Value(int floor, int btn) const {
     if (floor < 0 || floor >= config::kFloors) return false;
     return table_[floor][btn];
 }
 
-bool RequestTable::IsRequestHere(int floor) {
+bool RequestTable::IsRequestHere(int floor) const {
     using namespace elev::config;
     if (floor < 0 || floor >= kFloors) return false;
     for (int b = 0; b < kButtons; b++) if (this->table_[floor][b]) return true;
     return false;
 }
 
-bool RequestTable::IsRequestAbove(int floor) {
+bool RequestTable::IsRequestAbove(int floor) const {
     using namespace elev::config;
     for (int f = floor + 1; f < kFloors; f++) if (IsRequestHere(f)) return true;
     return false;
 }
 
-bool RequestTable::IsRequestBelow(int floor) {
+bool RequestTable::IsRequestBelow(int floor) const {
     for (int df = floor - 1; df >= 0; df--) if (IsRequestHere(df)) return true;
     return false;
 }

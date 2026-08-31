@@ -13,12 +13,12 @@ public:
     void SetValue(int floor, int btn, bool value);
 
     // Get
-    bool Value(int floor, int btn);
-    common::BoolTable Table();
+    bool Value(int floor, int btn) const;
+    common::BoolTable Table() const;
 
-    bool IsRequestAbove(int floor);
-    bool IsRequestBelow(int floor);
-    bool IsRequestHere(int floor);
+    bool IsRequestAbove(int floor) const;
+    bool IsRequestBelow(int floor) const;
+    bool IsRequestHere(int floor) const;
 
 private:
     common::BoolTable table_{};

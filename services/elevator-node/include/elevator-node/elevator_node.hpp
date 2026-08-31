@@ -31,8 +31,8 @@ public:
     void Event(ButtonFlags b2c);
 
     // Get
-    int Id();
-    bool Running();
+    int Id() const;
+    bool Running() const;
 
     // Sync modules
     void SetButtonLamps();
