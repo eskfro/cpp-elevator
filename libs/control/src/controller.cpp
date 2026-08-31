@@ -26,7 +26,7 @@ Timer* Controller::DoorTimer() { return &doortimer_; }
 
 Timer* Controller::FloorTimer() { return &floor_timer_; }
 
-RequestTable Controller::Requests() { return requests_; }
+RequestTable Controller::Requests() const { return requests_; }
 
 void Controller::SetInertia(elev::elevator::Elevator* elev, MotorDir dir) {
     if (dir == MotorDir::Up) inertia_ = Inertia::Up;
@@ -86,8 +86,8 @@ ButtonFlags Controller::FsmEmergencyStopReset(elev::elevator::Elevator* elev) {
 ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Table Update" << std::endl;
     using namespace elev::common;
-    int floor = elev->State()->Floor();
-    MovingState mov = elev->State()->MovingState();
+    const int floor = elev->State()->Floor();
+    const MovingState mov = elev->State()->MovingState();
 
     if (mov == MovingState::DoorOpen) {
         if (!ShouldStop(floor)) return kNoClear;
@@ -119,7 +119,7 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
 ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
     std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Arrived @ Floor " << elev->State()->Floor() << std::endl;
     using namespace elev::common;
-    int floor = elev->State()->Floor();
+    const int floor = elev->State()->Floor();
 
     elev->SetFloorIndicator();
     elev->State()->SetFault(false);
@@ -205,7 +205,7 @@ int Controller::TryCloseDoor(elev::elevator::Elevator* elev) {
     }
 }
 
-elev::common::DirMovPair Controller::ChooseDirection(int floor) {
+elev::common::DirMovPair Controller::ChooseDirection(int floor) const {
     using namespace elev::common;
     switch (inertia_) {
         case Inertia::Up:
@@ -230,7 +230,7 @@ elev::common::DirMovPair Controller::ChooseDirection(int floor) {
     }
 };
 
-bool Controller::ShouldStop(int floor) {
+bool Controller::ShouldStop(int floor) const {
     using namespace elev::common;
     switch (inertia_) {
         case (Inertia::Down):
@@ -247,7 +247,7 @@ bool Controller::ShouldStop(int floor) {
     }
 }
 
-bool Controller::ShouldClearImmediately(int floor, int btn_floor, elev::common::BtnType btn) {
+bool Controller::ShouldClearImmediately(int floor, int btn_floor, elev::common::BtnType btn) const {
     using namespace elev::common;
     return floor == btn_floor &&
            ((inertia_ == Inertia::Up && btn == BtnType::HallUp) ||
@@ -255,7 +255,7 @@ bool Controller::ShouldClearImmediately(int floor, int btn_floor, elev::common::
             (btn == BtnType::Cab));
 }
 
-ButtonFlags Controller::ClearCurrentFloor(int floor) {
+ButtonFlags Controller::ClearCurrentFloor(int floor) const {
     using namespace elev::common;
 
     // Buttons to clear

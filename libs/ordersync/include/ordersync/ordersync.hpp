@@ -19,15 +19,15 @@ public:
     void SetAssignedId(int assigned_id);
 
     // Get
-    uint64_t Version() { return version_; }
-    OrderStatus Status() { return status_; }
-    int AssignedId() { return assigned_id_; }
-    uint32_t ObservedMask() { return observed_mask_; }
-    bool ObservedBy(int elev_id);
+    uint64_t Version() const { return version_; }
+    OrderStatus Status() const { return status_; }
+    int AssignedId() const { return assigned_id_; }
+    uint32_t ObservedMask() const { return observed_mask_; }
+    bool ObservedBy(int elev_id) const;
     bool Valid() const;
 
     // State machine
-    void OnUpdate(Order rcv);
+    void OnUpdate(const Order& rcv);
     void OnRequest(int elev_id);
     void OnConfirm(int elev_id);
     void OnClear();
@@ -49,11 +49,12 @@ public:
     OrderTable() = default;
 
     // Set
-    void Join(OrderTable rcv);
+    void Join(const OrderTable& rcv);
 
     // Get
     ordersync::Order* Order(int floor, int btn);
-    BoolTable ToBoolTable(int elev_id);
+    const ordersync::Order* Order(int floor, int btn) const;
+    BoolTable ToBoolTable(int elev_id) const;
     bool Valid() const;
 
 private:

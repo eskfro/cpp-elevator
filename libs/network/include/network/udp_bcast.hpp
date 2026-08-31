@@ -17,11 +17,14 @@ public:
               elev::elevator::ElevatorState* state,
               elev::ordersync::CabOrderTable* cab_button_orders);
 
-    int Id() { return id_; }
+    int Id() const { return id_; }
     bool Valid() const;
     elev::ordersync::OrderTable* Orders() { return &orders_; }
+    const elev::ordersync::OrderTable* Orders() const { return &orders_; }
     elev::elevator::ElevatorState* State() { return &state_; }
+    const elev::elevator::ElevatorState* State() const { return &state_; }
     elev::ordersync::CabOrderTable* CabButtonOrders() { return &cab_button_orders_; }
+    const elev::ordersync::CabOrderTable* CabButtonOrders() const { return &cab_button_orders_; }
 
 private:
     int id_;

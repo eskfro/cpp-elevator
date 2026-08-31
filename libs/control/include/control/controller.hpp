@@ -33,16 +33,16 @@ public:
     ButtonFlags FsmFloorTimeout(elev::elevator::Elevator* elev);
 
     // Change values on table
-    ButtonFlags ClearCurrentFloor(int floor);
+    ButtonFlags ClearCurrentFloor(int floor) const;
 
     // Decisions
-    bool ShouldStop(int floor);
-    bool ShouldClearImmediately(int floor, int btn_floor, BtnType btn);
+    bool ShouldStop(int floor) const;
+    bool ShouldClearImmediately(int floor, int btn_floor, BtnType btn) const;
     bool RequestTableUpdated();
-    DirMovPair ChooseDirection(int floor);
+    DirMovPair ChooseDirection(int floor) const;
 
     // Get
-    RequestTable Requests();
+    RequestTable Requests() const;
     common::Timer* DoorTimer();
     common::Timer* FloorTimer();
 

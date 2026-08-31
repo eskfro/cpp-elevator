@@ -11,19 +11,19 @@ public:
     void Init();
 
     // Getters
-    int Id();
-    int Floor();
+    int Id() const;
+    int Floor() const;
     int PrevFloor();
-    bool Active();
-    bool Obstruction();
-    bool Fault();
-    bool DoorOpen();
-    bool Stopped();
-    elev::common::MotorDir MotorDir();
-    elev::common::MovingState MovingState();
-    uint64_t Version();
-    common::BoolTable Requests();
-    common::Inertia Inertia();
+    bool Active() const;
+    bool Obstruction() const;
+    bool Fault() const;
+    bool DoorOpen() const;
+    bool Stopped() const;
+    elev::common::MotorDir MotorDir() const;
+    elev::common::MovingState MovingState() const;
+    uint64_t Version() const;
+    common::BoolTable Requests() const;
+    common::Inertia Inertia() const;
     bool Valid() const;
 
     // Setters
@@ -41,11 +41,11 @@ public:
     void SetInertia(common::Inertia inertia);
 
     // Things
-    void CopyFrom(ElevatorState* rhs);
-    void OnUpdate(ElevatorState state);
+    void CopyFrom(const ElevatorState* rhs);
+    void OnUpdate(const ElevatorState& state);
     void IncrementVersion() { version_++; }
     void OnWatchdogTimeout();
-    bool Usable();
+    bool Usable() const;
 
 private:
     int id_{-1};

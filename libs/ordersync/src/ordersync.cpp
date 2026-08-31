@@ -14,7 +14,11 @@ ordersync::Order* OrderTable::Order(int floor, int btn) {
     return &table_[floor][btn];
 }
 
-BoolTable OrderTable::ToBoolTable(int elev_id) {
+const ordersync::Order* OrderTable::Order(int floor, int btn) const {
+    return &table_[floor][btn];
+}
+
+BoolTable OrderTable::ToBoolTable(int elev_id) const {
     BoolTable result{};
 
     for (int f = 0; f < kFloors; f++) {
@@ -35,7 +39,7 @@ bool OrderTable::Valid() const {
     return true;
 }
 
-void OrderTable::Join(OrderTable rcv) {
+void OrderTable::Join(const OrderTable& rcv) {
     // p2p schema for distributing orders
     // OrderStatus: NONE, REQUESTED, CONFIRMED, CLEAR
     for (int f = 0; f < kFloors; f++) {
@@ -56,7 +60,7 @@ bool Order::Valid() const {
     return true;
 }
 
-void Order::OnUpdate(Order rcv) {
+void Order::OnUpdate(const Order& rcv) {
     if (rcv.Version() > version_) {
         version_ = rcv.Version();
         status_ = rcv.Status();
@@ -85,7 +89,7 @@ void Order::OnUpdate(Order rcv) {
 
 void Order::Observe(int elev_id) { observed_mask_ |= (1u << elev_id); }
 
-bool Order::ObservedBy(int elev_id) { return observed_mask_ & (1u << elev_id); }
+bool Order::ObservedBy(int elev_id) const { return observed_mask_ & (1u << elev_id); }
 
 void Order::OnRequest(int elev_id) {
     if (status_ == OrderStatus::None || status_ == OrderStatus::Clear) {

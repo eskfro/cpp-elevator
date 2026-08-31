@@ -17,7 +17,7 @@ using namespace std::chrono_literals;
 
 namespace elev::node {
 
-bool ElevatorNode::Running() { return running_.load(); }
+bool ElevatorNode::Running() const { return running_.load(); }
 
 ElevatorNode::ElevatorNode(int id, std::string ip) :
     node_id_(id),
@@ -95,8 +95,8 @@ void ElevatorNode::RxPacketProcessing(network::NetworkPacket packet) {
 
     // Cab order preservation join
     for (int f = 0; f < kFloors; f++) {
-        elev::ordersync::Order cab_packet = *packet.Orders()->Order(f, (int)BtnType::Cab);
-        elev::ordersync::Order cab_node = packet.CabButtonOrders()->at(n).at(f);
+        const elev::ordersync::Order cab_packet = *packet.Orders()->Order(f, (int)BtnType::Cab);
+        const elev::ordersync::Order cab_node = packet.CabButtonOrders()->at(n).at(f);
 
         peers_.CabButtonOrder(p, f)->OnUpdate(cab_packet);
         peers_.CabButtonOrder(n, f)->OnUpdate(cab_node);
@@ -152,7 +152,7 @@ void ElevatorNode::Event(ButtonFlags b2c) {
     peers_.State(n)->CopyFrom(elev_.State());
 }
 
-int ElevatorNode::Id() { return node_id_; }
+int ElevatorNode::Id() const { return node_id_; }
 
 // Polls BtnSignals and set status at OrderMatrix orders
 void ElevatorNode::SyncButtonSignals() {
@@ -161,9 +161,9 @@ void ElevatorNode::SyncButtonSignals() {
 
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
-            bool is_cab = (BtnType)b == BtnType::Cab;
+            const bool is_cab = (BtnType)b == BtnType::Cab;
 
-            bool btn_pressed = button_signals_[f][b];
+            const bool btn_pressed = button_signals_[f][b];
             if (!btn_pressed) continue;
             
             PrintBtnPress(n, f, (BtnType)b);
@@ -187,7 +187,7 @@ void ElevatorNode::SetButtonLamps() {
     using namespace elev::common;
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
-            bool light = controller_.Requests().Value(f, b);
+            const bool light = controller_.Requests().Value(f, b);
 
             if (light == button_lamps_[f][b]) continue;
 
