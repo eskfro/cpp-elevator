@@ -18,7 +18,7 @@ public:
               elev::ordersync::CabOrderTable* cab_button_orders);
 
     int Id() const { return id_; }
-    bool Valid() const;
+    [[nodiscard]] bool Valid() const;
     elev::ordersync::OrderTable* Orders() { return &orders_; }
     const elev::ordersync::OrderTable* Orders() const { return &orders_; }
     elev::elevator::ElevatorState* State() { return &state_; }
@@ -39,7 +39,7 @@ public:
     UdpBroadcaster(uint16_t port, const std::string& bcast_ip);
     ~UdpBroadcaster();
 
-    bool SendPacket(NetworkPacket* packet);
+    [[nodiscard]] bool SendPacket(NetworkPacket* packet);
 
 private:
     int socket_fd_{-1};
@@ -52,7 +52,7 @@ public:
     ~UdpReciever();
 
     void Close();
-    bool RecievePacket(NetworkPacket* packet);
+    [[nodiscard]] bool RecievePacket(NetworkPacket* packet);
 
 private:
     int socket_fd_{-1};

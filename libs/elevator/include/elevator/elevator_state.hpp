@@ -24,7 +24,7 @@ public:
     uint64_t Version() const;
     common::BoolTable Requests() const;
     common::Inertia Inertia() const;
-    bool Valid() const;
+    [[nodiscard]] bool Valid() const;
 
     // Setters
     void SetId(int id);
@@ -45,7 +45,7 @@ public:
     void OnUpdate(const ElevatorState& state);
     void IncrementVersion() { version_++; }
     void OnWatchdogTimeout();
-    bool Usable() const;
+    [[nodiscard]] bool Usable() const;
 
 private:
     int id_{-1};
