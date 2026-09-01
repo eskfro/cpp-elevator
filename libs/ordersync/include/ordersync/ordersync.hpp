@@ -23,8 +23,8 @@ public:
     OrderStatus Status() const { return status_; }
     int AssignedId() const { return assigned_id_; }
     uint32_t ObservedMask() const { return observed_mask_; }
-    bool ObservedBy(int elev_id) const;
-    bool Valid() const;
+    [[nodiscard]] bool ObservedBy(int elev_id) const;
+    [[nodiscard]] bool Valid() const;
 
     // State machine
     void OnUpdate(const Order& rcv);
@@ -55,7 +55,7 @@ public:
     ordersync::Order* Order(int floor, int btn);
     const ordersync::Order* Order(int floor, int btn) const;
     BoolTable ToBoolTable(int elev_id) const;
-    bool Valid() const;
+    [[nodiscard]] bool Valid() const;
 
 private:
     std::array<std::array<ordersync::Order, kButtons>, kFloors> table_{};
