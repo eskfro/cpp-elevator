@@ -24,6 +24,13 @@ public:
 
     bool Active() const { return active_; }
 
+    double TimeLeftMs() const {
+        if (!active_) return 0.0;
+        const auto remaining = end_time_ - Clock::now();
+        if (remaining <= Clock::duration::zero()) return 0.0;
+        return std::chrono::duration<double, std::milli>(remaining).count();
+    }
+
 private:
     using Clock = std::chrono::steady_clock;
     using TimePoint = std::chrono::time_point<Clock>;

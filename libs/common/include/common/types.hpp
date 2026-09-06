@@ -57,29 +57,4 @@ enum class OrderStatus : std::uint8_t {
     Clear = 3,
 };
 
-inline std::string BtnTypeToString(BtnType btn) {
-    switch (btn) {
-        case BtnType::HallUp:
-            return "HALL_UP";
-        case BtnType::HallDown:
-            return "HALL_DOWN";
-        case BtnType::Cab:
-            return "CAB";
-        default:
-            return "UNKNOWN_BTN";
-    }
-}
-
-inline void PrintBtnPress(int elevID, int floor, BtnType btn) {
-    std::cout << "[ Elevator " << elevID << " ] - buttonpress "
-    << BtnTypeToString(btn) << " at floor " << floor << std::endl;
-}
-
-inline void Print(std::string_view s) { std::cout << s << "\n"; }
-
-inline void PrintError(std::string_view msg) {
-    // Prints message in red
-    std::cerr << "\033[31m" << msg << "\033[0m\n";
-}
-
 }  // namespace elev::common

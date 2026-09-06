@@ -2,7 +2,7 @@
 
 namespace elev::config {
 
-// Hardware config
+// Hardware
 constexpr char kIpHw[] = "localhost";
 constexpr char kPortHw[] = "15657";
 constexpr int kBetweenFloors = -1;
@@ -13,8 +13,10 @@ constexpr int kFloors = 4;
 constexpr int kButtons = 3;
 
 // Time
+constexpr int kSampleTimeMs = 40;
 constexpr int kDoorOpenTimeMs = 3000;
 constexpr int kReassignOrderTimeMs = 25000;
+constexpr int kObstructionReassignOrderTimeMs = 4800;
 constexpr int kWatchdogTimeMs = 600;
 constexpr int kFaultTimeoutMs = 5000;
 constexpr int kStartupTimeMs = 2 * kWatchdogTimeMs;

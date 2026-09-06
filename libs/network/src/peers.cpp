@@ -21,9 +21,9 @@
 namespace elev::network {
 
 void Peers::Step() {
+    UpdateNumElevs();
     MonitorWatchdogTimers();
     MonitorFault();
-    UpdateNumElevs();
     ObserveOrders();
     ConfirmHallOrders();
     ResetHallOrders();
@@ -102,7 +102,7 @@ std::array<std::pair<int, int>, kElevs> Peers::CalculateElevatorCosts(int floor,
     std::array<std::pair<int, int>, kElevs> costs{};
 
     for (int e = 0; e < kElevs; e++) {
-        const elevator::ElevatorState state = all_states_[e];
+        const elevator::ElevatorState& state = all_states_[e];
         int cost = 0;
 
         if (!state.Active()) {
@@ -327,10 +327,10 @@ void Peers::ReassignHallOrders(int elev_id) {
     }
 }
 
+/*
+Check if this node should start or stop hall order timers
+*/
 void Peers::ControlHallOrderTimers() {
-    /*
-    Check if this node should start or stop hall order timers
-    */
     const int n = node_id_;
     for (int f = 0; f < kFloors; f++) {
         for (int b = 0; b < kButtons; b++) {
@@ -354,6 +354,23 @@ void Peers::ControlHallOrderTimers() {
                 (order->Status() != OrderStatus::Confirmed || order->AssignedId() != n);
             if (should_stop_timer) {
                 timer->Stop();
+                continue;
+            }
+            /*
+            If an elevator detects itself as being obstructed
+            it should decrease its time so the order is
+            reassigned to another elevator faster
+            */
+            bool is_obstruction = all_states_[n].Obstruction();
+            double time_left = timer->TimeLeftMs();
+            bool should_decrease_timer = 
+                is_obstruction &&
+                order->Status() == OrderStatus::Confirmed && 
+                timer->Active() == true && 
+                order->AssignedId() == n && 
+                time_left > kObstructionReassignOrderTimeMs + 5 * kSampleTimeMs;
+            if (should_decrease_timer) {
+                timer->Start(kObstructionReassignOrderTimeMs);
                 continue;
             }
         }

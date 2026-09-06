@@ -6,6 +6,7 @@
 // Libs
 #include "common/config.hpp"
 #include "common/types.hpp"
+#include "common/utils.hpp"
 #include "elevator/elevator.hpp"
 #include "network/udp_bcast.hpp"
 #include "ordersync/ordersync.hpp"

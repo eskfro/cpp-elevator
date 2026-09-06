@@ -1,7 +1,10 @@
 #include <control/controller.hpp>
+#include <string>
+#include <string_view>
 
 #include "common/config.hpp"
 #include "common/types.hpp"
+#include "common/utils.hpp"
 #include "elevator/elevator.hpp"
 
 namespace {
@@ -43,7 +46,7 @@ void Controller::SetRequests(BoolTable bool_table) {
 
 // FSM Emergency Stop
 ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Emergency Stop" << std::endl;
+    elev::common::PrintFSM("Emergency stop", elev->State()->Id());
 
     elev->State()->SetStopped(true);
     elev->SetMotorDir(MotorDir::Stop);
@@ -62,7 +65,7 @@ ButtonFlags Controller::FsmEmergencyStop(elev::elevator::Elevator* elev) {
 
 // FSM Emergency Stop Reset
 ButtonFlags Controller::FsmEmergencyStopReset(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Emergency Stop Reset" << std::endl;
+    elev::common::PrintFSM("Emergency stop reset", elev->State()->Id());
     const int floor = elev->State()->Floor();
 
     elev->State()->SetStopped(false);
@@ -84,7 +87,8 @@ ButtonFlags Controller::FsmEmergencyStopReset(elev::elevator::Elevator* elev) {
 }
 
 ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Table Update" << std::endl;
+    elev::common::PrintFSM("Table update", elev->State()->Id());
+    
     using namespace elev::common;
     const int floor = elev->State()->Floor();
     const MovingState mov = elev->State()->MovingState();
@@ -117,30 +121,40 @@ ButtonFlags Controller::FsmTableUpdate(elev::elevator::Elevator* elev) {
 }
 
 ButtonFlags Controller::FsmFloorArrival(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Arrived @ Floor " << elev->State()->Floor() << std::endl;
-    using namespace elev::common;
     const int floor = elev->State()->Floor();
+    elev::common::PrintFSM("Arrived at floor " + std::to_string(floor), elev->State()->Id());
+    
+    using namespace elev::common;
+    const MovingState mov = elev->State()->MovingState();
+
+    // Safety
+    if (floor == 0 || floor == kFloors) {
+        elev->SetMotorDir(elev::common::MotorDir::Stop);
+    }
 
     elev->SetFloorIndicator();
     elev->State()->SetFault(false);
     floor_timer_.Start(kFaultTimeoutMs);
 
-    if (elev->State()->MovingState() != MovingState::Moving) return kNoClear;
-    if (!ShouldStop(floor)) return kNoClear;
+    if (mov != MovingState::Moving || !ShouldStop(floor)) {
+        return kNoClear;
+    }
 
     StopAndOpenDoor(elev);
+
     return ClearCurrentFloor(floor);
 }
 
 ButtonFlags Controller::FsmDoorTimeout(elev::elevator::Elevator* elev) {
-    std::cout << "[ Elevator " << elev->State()->Id() << " ] - FSM: Door Timeout" << std::endl;
+    elev::common::PrintFSM("Door timeout", elev->State()->Id());
+    
     using namespace elev::common;
     const int floor = elev->State()->Floor();
     
     doortimer_.Stop();
 
     if (elev->State()->Obstruction()) {
-        common::PrintError("[FSM] Obs!");
+        common::PrintWarning("[FSM] Door obstruction ...");
         doortimer_.Start(kDoorOpenTimeMs);
         return kNoClear;
     }

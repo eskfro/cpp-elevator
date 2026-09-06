@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
     std::thread tx_thread(TxThreadLoop, std::ref(node), std::ref(bcaster), std::cref(g_running));
 
     // Control loop
-    constexpr auto kSampleTime = std::chrono::milliseconds(40);
+    constexpr auto kSampleTime = std::chrono::milliseconds(kSampleTimeMs);
     auto next_tick = std::chrono::steady_clock::now();
     while (g_running && node.Running()) {
         node.Step();
