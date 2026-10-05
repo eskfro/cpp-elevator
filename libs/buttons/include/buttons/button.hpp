@@ -10,10 +10,10 @@ using namespace elev::config;
 
 namespace elev::buttons {
 
-class Button {
+class OrderButton {
 public:
-    Button() = default;
-    Button(int floor, elev::common::BtnType btn);
+    OrderButton() = default;
+    OrderButton(int floor, elev::common::BtnType btn);
     bool Pressed();
     void Init(int floor, elev::common::BtnType btn);
 
@@ -24,13 +24,13 @@ private:
     bool prev_press_{};
 };
 
-class ButtonTable {
+class OrderButtonTable {
 public:
-    ButtonTable();
-    elev::buttons::Button* Button(int floor, elev::common::BtnType btn);
+    OrderButtonTable();
+    elev::buttons::OrderButton* Button(int floor, elev::common::BtnType btn);
 
 private:
-    std::array<std::array<elev::buttons::Button, kButtons>, kFloors> matrix_{};
+    std::array<std::array<elev::buttons::OrderButton, kButtons>, kFloors> matrix_{};
 };
 
 class StopButton {

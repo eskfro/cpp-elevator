@@ -59,7 +59,7 @@ bool Elevator::EmergencyStopReset() { return stop_pressed_ && state_.Stopped() =
 
 ElevatorState* Elevator::State() { return &state_; }
 
-elev::buttons::ButtonTable* Elevator::Buttons() { return &order_buttons_; }
+elev::buttons::OrderButtonTable* Elevator::Buttons() { return &order_buttons_; }
 
 void Elevator::SetMotorDir(elev::common::MotorDir dir) {
     using namespace elev::common;

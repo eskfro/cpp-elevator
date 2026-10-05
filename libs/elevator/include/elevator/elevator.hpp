@@ -27,7 +27,7 @@ public:
 
     // Get
     ElevatorState* State();
-    elev::buttons::ButtonTable* Buttons();
+    elev::buttons::OrderButtonTable* Buttons();
     elev::buttons::StopButton* StopButton();
 
     // Door
@@ -48,7 +48,7 @@ public:
 
 private:
     ElevatorState state_;
-    elev::buttons::ButtonTable order_buttons_;
+    elev::buttons::OrderButtonTable order_buttons_;
     elev::buttons::StopButton stop_button_;
 
     int prev_floor_{};
